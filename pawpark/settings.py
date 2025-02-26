@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-5eooghf%un4sb3)r4=d9%97$(wdb)4cdd75)1xzo3!5%4#@)@-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['pawpark-env.eba-5phvbfd9.us-west-2.elasticbeanstalk.com', '127.0.0.1','pawpark-env-new.eba-c4s2huee.us-east-1.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['pawpark-env.eba-5phvbfd9.us-west-2.elasticbeanstalk.com', '127.0.0.1','pawpark-env-new.eba-c4s2huee.us-east-1.elasticbeanstalk.com','pawpark-env-new.eba-c4s2huee.us-east-1.elasticbeanstalk.com']
 
 
 # Application definition
@@ -80,7 +80,7 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'pawpark-mysql-database'),
+        'NAME': os.getenv('DB_NAME', 'dogpark_db'),
         'USER': os.getenv('DB_USER', 'admin'),
         'PASSWORD': os.getenv('DB_PASSWORD', '6063SDEPawpark!'),
         'HOST': os.getenv('DB_HOST', 'pawpark-mysql-database.c8foy222wsse.us-east-1.rds.amazonaws.com'),
