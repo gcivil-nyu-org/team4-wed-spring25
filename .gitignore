@@ -1,0 +1,16 @@
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+venv/
+eb-virt/
+
+db.sqlite3
+
+__pycache__/
+*.pyc
+*.pyo
+
+
