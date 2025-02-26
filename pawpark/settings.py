@@ -75,12 +75,19 @@ WSGI_APPLICATION = "pawpark.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import os
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'pawpark-mysql-database'),
+        'USER': os.getenv('DB_USER', 'admin'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '6063SDEPawpark!'),
+        'HOST': os.getenv('DB_HOST', 'pawpark-mysql-database.c8foy222wsse.us-east-1.rds.amazonaws.com'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
+
 
 
 # Password validation
