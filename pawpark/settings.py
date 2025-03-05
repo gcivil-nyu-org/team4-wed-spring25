@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,11 +78,14 @@ WSGI_APPLICATION = "pawpark.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('RDS_DB_NAME', 'pawpark'),
+        'USER': os.environ.get('RDS_USERNAME', 'postgres'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD', '6063SDEPawpark!'),
+        'HOST': os.environ.get('RDS_HOSTNAME', 'pawpark-db.c8foy222wsse.us-east-1.rds.amazonaws.com'),
+        'PORT': os.environ.get('RDS_PORT', '5432'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -107,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
