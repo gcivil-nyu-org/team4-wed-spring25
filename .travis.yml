@@ -1,0 +1,22 @@
+language: python
+python:
+  - "3.11""
+
+services:
+  - postgresql
+
+install:
+  - pip install -r requirements.txt  # Install dependencies
+before_script:
+  - python3 manage.py makemigrations
+  - python3 manage.py migrate
+  - python3 manage.py collectstatic --noinput
+deploy:
+   provider: elasticbeanstalk
+   access_key_id: "$AWS_ACCESS_KEY_ID_INT"
+   secret_access_key: "$AWS_SECRET_ACCESS_KEY_INT"
+   region: us-east-1
+   app: pawpark
+   on: 
+     branch: develop
+skip_cleanup: 'true'

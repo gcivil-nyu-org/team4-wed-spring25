@@ -55,19 +55,23 @@
     
     <table>
         <tr>
-            <th>Property ID</th>
+            <th>ID</th>
+            <th>Prop_id</th>
             <th>Name</th>
-            <th>Location</th>
-            <th>Acres</th>
-            <th>Status</th>
+            <th>Addess</th>
+            <th>Dogruns_type</th>
+            <th>Accessible</th>
+            <th>Notes</th>
         </tr>
         {% for park in parks %}
         <tr>
+            <td>{{ park.id }}</td>
             <td>{{ park.prop_id }}</td>
             <td>{{ park.name }}</td>
-            <td>{{ park.location }}</td>
-            <td>{{ park.acres }}</td>
-            <td>{{ park.status }}</td>
+            <td>{{ park.address }}</td>
+            <td>{{ park.dogruns_type }}</td>
+            <td>{{ park.accessible }}</td>
+            <td>{{ park.notes }}</td>
         </tr>
         {% endfor %}
     </table>
