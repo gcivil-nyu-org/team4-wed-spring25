@@ -17,8 +17,8 @@ script:
 deploy:
    provider: elasticbeanstalk
    bucket: elasticbeanstalk-us-east-1-783764589295
-   access_key_id: $AWS_ACCESS_KEY_ID_INT
-   secret_access_key: $AWS_SECRET_ACCESS_KEY_INT
+   access_key_id: $AWS_ACCESS_KEY_ID
+   secret_access_key: $AWS_SECRET_ACCESS_KEY
    region: us-east-1
    app: pawpark
    on: 
