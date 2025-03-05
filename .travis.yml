@@ -1,15 +1,12 @@
 language: python
 python:
-  - "3.9"
+  - "3.11""
 
 services:
   - postgresql
 
 install:
   - pip install -r requirements.txt  # Install dependencies
-
-before_script:
-  - python manage.py collectstatic --noinput
 
 deploy:
    provider: elasticbeanstalk
