@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Park
 from django.shortcuts import render
 from .models import DogRun
 
