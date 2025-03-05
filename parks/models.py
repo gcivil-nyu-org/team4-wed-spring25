@@ -1,13 +1,17 @@
 from django.db import models
 
-class Park(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    location = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    opening_hours = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.name
-        
+class DogRun(models.Model):
 
+  id = models.CharField(max_length=255)
+  prop_id = models.CharField(max_length=255, primary_key=True)
+  name = models.CharField(max_length=255)
+  address = models.CharField(max_length=255)
+  dogruns_type = models.CharField()
+  accessible = models.CharField(max_length=50)
+  notes = models.TextField(max_length=255)
+
+  class Meta:
+      db_table = "dog_runs"
+
+  def __str__(self):
+    return self.name
