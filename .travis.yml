@@ -21,6 +21,7 @@ deploy:
     secure: U0zcWylBJbDHCvsdGm8HCZ0oQ/N1vcQpHFs8Vg1oQWpv+RpdV65nGW/SzCu3+9jbAWetK9sVHG9UIn3eVQjt4R+UIa0BtyqXqR+tI9o7KvXn1s7mtlnA0Cpx8NkGWQoUrv1Qp4FLRlqxrCdvpBNgD0yUXTdVrljL/sIoutNftbjHdj6ffr692a/xTnVyAzEPRscKykA4+YbPiGKXgno15Isu61BJHPHU342nVvgl+Z3NnKJuj0d48La1KhVh84F2wZuel8UMmAEPOt2sPPEc9xlZ4H3hXMwNFhhNQHoFZkiZxL/OAC4cU5p+EIQSYS6B7/Zqu00tddCwuYkAp4iM+5zwmIzx33Q8yqiJwwxBiZKH1w/o4vkNR9Zpt+fTgMJd4IfjprHXcpGVv6bjpz8asFlmj6kYlYcj/ChA9k8nbT+gTAJm456AWN3ACLQs4HYuul1wPZ4/0MbHPnboxKBXzNAjEFyEDjkyWPF6nGP7oPhBAHl3veaS93Y0jmMqKfRaNjPHioiV1wNlQIeo9irPYmgwwjb4TqHHyp0DJUaeIktE8rdP3wafRfo6UtPWQvPZj9H2ykqkcDuREAi9YqghWNOj9T/88a0kOqlLt1MXy16U5T6/BkUS0BSJqBbMuCtWpU/s/XQtmV1glBScK9/y0oOMbhp1BECR+CcAONtJaMg=
   region: us-east-1
   app: pawpark
+  env: pawpark-env
   on:
     branch: develop
 skip_cleanup: 'true'
