@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Park
 
+
 def park_list(request):
     # Sample Data: List of dictionaries (no database required)
     parks = [
