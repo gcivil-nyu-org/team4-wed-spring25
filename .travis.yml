@@ -24,5 +24,6 @@ deploy:
   app: pawpark
   env: pawpark-env
   on:
+    repo: gcivil-nyu-org/team4-wed-spring25
     branch: develop
 skip_cleanup: 'true'
