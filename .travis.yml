@@ -1,0 +1,29 @@
+language: python
+dist: focal
+python:
+- '3.11'
+services:
+- postgresql
+install:
+- pip install -r requirements.txt
+before_script:
+- python3 manage.py makemigrations
+- python3 manage.py migrate parks --fake
+- python3 manage.py collectstatic --noinput
+script:
+- echo "No tests yet. Build successful."
+deploy:
+  provider: elasticbeanstalk
+  bucket_name: elasticbeanstalk-us-east-1-783764589295
+  bucket_path: pawpark
+  access_key_id:
+    secure: Ciebu4NxgcUb7eul0bZWP2urcAw7jrKf9TO3cyMdugH5/3BE4M1GlsWR8Nn1RjUJ3fgcrHEeD69e7w5VLPJjjDC1wn7xwKgh3f2kiwpK9hXyoZBUTiAoXrHL6mom22SeqNMKmiNWrPKc1MZ/R5+Gw67HX5rGL5hE1G5YEg7FHufj/SoRHsrwjGXWUNmqTF+Gi2sRGwX3FGgyjMAVj0gsUtLqgovfPt7FKrHWp9qy/L9kxGkD4SCULfIV/CwnEUt0UOgTx5c2W5JLiAamuPJ1Xb8O9arHlBcNmOijiChaABkzPXqm4sCq3EHsZaiUSkk3SMWvL6c9u6//WQ0/JLd7fYSIQUxvryYLgwCSG/S4h6yqc9mELD2my0tfbUmPRbWNmDxG9T1M/TCrQi6YW0jgL+BabwUFCZbRKWimzNIjcwCenRcnrshyye7uvNNvLibpfywdGhqc7xDmKJBOaIJQ34/1x2AnLH6AAfCjXfg8I7PMO3onlC7tFtJufGvot/PHCqM03yVtG0npvj6ongd13SgQlwesR4Oyte6dshyhFz1DtCaKWNxpzpMFABxCtbNytTXXWvtYg5Zw1Sa9jFJTLII5UcuZ7tZIBvnMOB+LQ841dMd0M4IAFQQ0rP4TnZxYibKEXvW/fBQPFr4b/jnyDVLIOY+ZLmWHABEAY+2rzo0=
+  secret_access_key:
+    secure: U0zcWylBJbDHCvsdGm8HCZ0oQ/N1vcQpHFs8Vg1oQWpv+RpdV65nGW/SzCu3+9jbAWetK9sVHG9UIn3eVQjt4R+UIa0BtyqXqR+tI9o7KvXn1s7mtlnA0Cpx8NkGWQoUrv1Qp4FLRlqxrCdvpBNgD0yUXTdVrljL/sIoutNftbjHdj6ffr692a/xTnVyAzEPRscKykA4+YbPiGKXgno15Isu61BJHPHU342nVvgl+Z3NnKJuj0d48La1KhVh84F2wZuel8UMmAEPOt2sPPEc9xlZ4H3hXMwNFhhNQHoFZkiZxL/OAC4cU5p+EIQSYS6B7/Zqu00tddCwuYkAp4iM+5zwmIzx33Q8yqiJwwxBiZKH1w/o4vkNR9Zpt+fTgMJd4IfjprHXcpGVv6bjpz8asFlmj6kYlYcj/ChA9k8nbT+gTAJm456AWN3ACLQs4HYuul1wPZ4/0MbHPnboxKBXzNAjEFyEDjkyWPF6nGP7oPhBAHl3veaS93Y0jmMqKfRaNjPHioiV1wNlQIeo9irPYmgwwjb4TqHHyp0DJUaeIktE8rdP3wafRfo6UtPWQvPZj9H2ykqkcDuREAi9YqghWNOj9T/88a0kOqlLt1MXy16U5T6/BkUS0BSJqBbMuCtWpU/s/XQtmV1glBScK9/y0oOMbhp1BECR+CcAONtJaMg=
+  region: us-east-1
+  app: pawpark
+  env: pawpark-env
+  on:
+    repo: gcivil-nyu-org/team4-wed-spring25
+    branch: develop
+skip_cleanup: 'true'

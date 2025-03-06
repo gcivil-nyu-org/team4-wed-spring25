@@ -1,0 +1,602 @@
+{
+    "Bronx River Park Off-Leash Area": [
+        40.8725696,
+        -73.8717253
+    ],
+    "Claremont Park Off-Leash Area": [
+        40.8409,
+        -73.9075506
+    ],
+    "Crotona Park Off-Leash Area": [
+        40.8384993,
+        -73.8951228
+    ],
+    "Ewen Park Dog Run": [
+        40.8822833,
+        -73.91003309999999
+    ],
+    "Frank S. Hackett Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Franz Sigel Park Dog Run": [
+        40.823285,
+        -73.92554319999999
+    ],
+    "Henry Hudson Park Off-Leash Area": [
+        40.8404149,
+        -73.9460692
+    ],
+    "Foster Park Off-Leash Area": [
+        40.8327854,
+        -73.9243201
+    ],
+    "Pelham Bay Park Off-Leash Area": [
+        40.8667516,
+        -73.81011029999999
+    ],
+    "Seton Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Walter Gladwin Park Off-Leash Area": [
+        40.8452505,
+        -73.8952338
+    ],
+    "Van Cortlandt Park: Canine Court": [
+        40.8988805,
+        -73.8952845
+    ],
+    "Van Cortlandt Park: Dog Bone Run": [
+        40.8837403,
+        -73.8829093
+    ],
+    "Williamsbridge Oval Dog Run": [
+        40.8776938,
+        -73.87771289999999
+    ],
+    "Asser Levy Park Off-Leash Area": [
+        40.5751863,
+        -73.9713897
+    ],
+    "Breukelen Park Off-Leash Area": [
+        40.7127753,
+        -74.0059728
+    ],
+    "Brooklyn Bridge Park Dog Run": [
+        40.7039888,
+        -73.988511
+    ],
+    "Brooklyn War Memorial Off-Leash Area": [
+        40.6984595,
+        -73.99067029999999
+    ],
+    "Canarsie Park Off-Leash Area": [
+        40.6277696,
+        -73.89508649999999
+    ],
+    "DiMattina Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Dyker Beach Park Dog Run": [
+        40.6091564,
+        -74.0199569
+    ],
+    "Dyker Beach Park Off-Leash Area": [
+        40.6091564,
+        -74.0199569
+    ],
+    "Fort Greene Park Off-Leash Area": [
+        40.6914322,
+        -73.975246
+    ],
+    "Friends Field Park Off-Leash Area": [
+        40.6185597,
+        -73.9728811
+    ],
+    "Fulton Park Off-Leash Area": [
+        40.6797339,
+        -73.9328673
+    ],
+    "Grand Ferry Park Off-Leash Area": [
+        40.7165888,
+        -73.9669053
+    ],
+    "Herbert Von King Park Dog Run": [
+        40.6897935,
+        -73.94787269999999
+    ],
+    "Hillside Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Washington Park Dog Run": [
+        40.6730055,
+        -73.98577449999999
+    ],
+    "John Paul Jones Park Off-Leash Area": [
+        40.6108083,
+        -74.03409189999999
+    ],
+    "Kaiser Park Off-Leash Area": [
+        40.5790202,
+        -73.99565570000001
+    ],
+    "Leif Ericson Park Off-Leash Area": [
+        40.6372953,
+        -74.0229794
+    ],
+    "Lincoln Terrace Park Off-Leash Area": [
+        40.6668637,
+        -73.92720530000001
+    ],
+    "Macri Square Park Off-Leash Area": [
+        40.7144015,
+        -73.95202909999999
+    ],
+    "Manhattan Beach Dog Run": [
+        40.57787709999999,
+        -73.9416595
+    ],
+    "Marine Park Off-Leash Area": [
+        40.6113817,
+        -73.93318649999999
+    ],
+    "McCarren Park Dog Run": [
+        40.7200908,
+        -73.9528866
+    ],
+    "McGolrick Park Dog Run": [
+        40.7244763,
+        -73.9433497
+    ],
+    "McKinley Park Off-Leash Area": [
+        40.6268125,
+        -74.01656249999999
+    ],
+    "Mount Prospect Park Off-Leash Area": [
+        40.6707677,
+        -73.96717020000001
+    ],
+    "Owls Head Park Dog Run": [
+        40.6412707,
+        -74.0328805
+    ],
+    "Adam Yauch Park Dog Run": [
+        40.6919545,
+        -73.99877889999999
+    ],
+    "Prospect Park Off-Leash Area": [
+        40.6602037,
+        -73.9689558
+    ],
+    "Frank Decolvenaere Dog Run": [
+        40.6120594,
+        -74.03639629999999
+    ],
+    "Sunset Park Off-Leash Area": [
+        40.6526345,
+        -74.0091872
+    ],
+    "Carl Schurz Park Dog Run (2 runs)": [
+        40.7742629,
+        -73.9440271
+    ],
+    "Central Park Off-Leash Area": [
+        40.7825547,
+        -73.9655834
+    ],
+    "Chelsea Waterside Park Dog Run": [
+        40.7495115,
+        -74.0074976
+    ],
+    "Coleman Oval Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "De Witt Clinton Park Dog Run (2 runs)": [
+        40.7683979,
+        -73.99443529999999
+    ],
+    "Fishbridge Park Garden Dog Run": [
+        40.7092766,
+        -74.0015794
+    ],
+    "Fort Tryon Park Dog Run": [
+        40.8625608,
+        -73.9312995
+    ],
+    "Ft. Washington Park Dog Run": [
+        40.6730055,
+        -73.98577449999999
+    ],
+    "Highbridge Park Dog Run": [
+        40.855988,
+        -73.9250173
+    ],
+    "Hudson River Park Dog Run (Greenwich Village)": [
+        40.7335719,
+        -74.0027418
+    ],
+    "Hudson River Park Dog Run (North Chelsea)": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Inwood Hill Park Dog Run: Homer's Run": [
+        40.8710625,
+        -73.92168749999999
+    ],
+    "J. Hood Wright Park Dog Run": [
+        40.8465496,
+        -73.9421303
+    ],
+    "Madison Square Park Dog Run": [
+        40.742295,
+        -73.98859399999999
+    ],
+    "Marcus Garvey Park Dog Run": [
+        40.8044257,
+        -73.9437629
+    ],
+    "Morningside Park Dog Run": [
+        40.8044,
+        -73.95930609999999
+    ],
+    "Peter Detmold Park Dog Run": [
+        40.753123,
+        -73.96409
+    ],
+    "Randalls Island Park Off-Leash Area": [
+        40.7929771,
+        -73.92441219999999
+    ],
+    "Riverside Park Dog Run (3 runs)": [
+        40.7812078,
+        -73.9865526
+    ],
+    "Robert Moses Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "St. Nicholas Park Dog Run": [
+        40.8182398,
+        -73.94859319999999
+    ],
+    "Theodore Roosevelt Park Dog Run": [
+        40.7824902,
+        -73.9742272
+    ],
+    "Thomas Jefferson Park Dog Run": [
+        40.7933578,
+        -73.9352341
+    ],
+    "Tompkins Square Park Dog Run": [
+        40.72642949999999,
+        -73.9817841
+    ],
+    "Union Square Dog Run": [
+        40.7356274,
+        -73.9909705
+    ],
+    "Washington Square Park Dog Run": [
+        40.7307044,
+        -73.9986304
+    ],
+    "Alley Pond Park Off-Leash Area": [
+        40.74239470000001,
+        -73.73843409999999
+    ],
+    "Astoria Park Off-Leash Area": [
+        40.7785364,
+        -73.92283359999999
+    ],
+    "Baisley Pond Park Off-Leash Area": [
+        40.6737751,
+        -73.786025
+    ],
+    "Bayswater Park Off-Leash Area": [
+        40.599056,
+        -73.7691138
+    ],
+    "Crocheron Park Off-Leash Area": [
+        40.7718307,
+        -73.76764299999999
+    ],
+    "Cunningham Park Dog Run": [
+        40.725919,
+        -73.7750973
+    ],
+    "Flushing Meadows Corona Park Off-Leash Area": [
+        40.7400625,
+        -73.8406875
+    ],
+    "Forest Park: Overlook Dog Park/The Barking Lot": [
+        40.7105449,
+        -73.83659540000001
+    ],
+    "Forest Park: K9 Korral": [
+        40.6967218,
+        -73.8604495
+    ],
+    "Juniper Valley Park Off-Leash Area": [
+        40.7204799,
+        -73.8796677
+    ],
+    "La Guardia Landing Lights Off-Leash Area": [
+        40.7127753,
+        -74.0059728
+    ],
+    "Landing Lights Off-Leash Area": [
+        40.7127753,
+        -74.0059728
+    ],
+    "Little Bay Park Dog Run": [
+        40.7901835,
+        -73.7850566
+    ],
+    "MacNeil Park Off-Leash Area: 6:00 a.m. - 9:00 a.m. Only": [
+        40.7926994,
+        -73.8521593
+    ],
+    "Murray Playground Dog Run": [
+        40.7468739,
+        -73.9481656
+    ],
+    "Queensbridge Park Off-Leash Area": [
+        40.7566667,
+        -73.9486111
+    ],
+    "Rainey Park Off-Leash Area": [
+        40.7661129,
+        -73.9407026
+    ],
+    "Ralph DeMarco Park Off-Leash Area": [
+        40.7840851,
+        -73.9174816
+    ],
+    "Rockaway Community Park Off-Leash Area": [
+        40.5991285,
+        -73.7850751
+    ],
+    "Rockaway Freeway Dog Park": [
+        40.5912721,
+        -73.7945863
+    ],
+    "Sherry Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Springfield Park Off-Leash Area": [
+        40.6629975,
+        -73.7612001
+    ],
+    "Underbridge Playground Dog Run": [
+        40.7127753,
+        -74.0059728
+    ],
+    "Veteran's Grove Dog Run": [
+        40.7426611,
+        -73.8775703
+    ],
+    "Windmuller Park Dog Run (Doughboy Plaza)": [
+        40.7465581,
+        -73.908982
+    ],
+    "Yellowstone Park Off-Leash Area": [
+        40.7263153,
+        -73.8475519
+    ],
+    "Allison Park Off-Leash Area": [
+        40.7611199,
+        -73.8314532
+    ],
+    "Arthur Von Briesen Park Off-Leash Area": [
+        40.6073536,
+        -74.0597543
+    ],
+    "Clove Lakes Park Off-Leash Area": [
+        40.6186608,
+        -74.11163979999999
+    ],
+    "Clove&rsquo;s Tail Park Off-Leash Area": [
+        40.6131197,
+        -74.113689
+    ],
+    "Siedenburg Park Off-Leash Area": [
+        40.5560385,
+        -74.14418169999999
+    ],
+    "Father Macris Park Off-Leash Area": [
+        40.6164813,
+        -74.1614187
+    ],
+    "Lemon Creek Park Off-Leash Area": [
+        40.5116427,
+        -74.19748799999999
+    ],
+    "Silver Lake Park Dog Run": [
+        40.6245495,
+        -74.0916944
+    ],
+    "South Beach Park Off-Leash Area": [
+        40.7127753,
+        -74.0059728
+    ],
+    "Willowbrook Park Off-Leash Area": [
+        40.6008954,
+        -74.1583113
+    ],
+    "Wolfe's Pond Park Dog Run": [
+        40.519141,
+        -74.1902206
+    ],
+    "Coffey Park Off-Leash Area": [
+        40.6776243,
+        -74.008479
+    ],
+    "Corlears Hook Park Dog Run": [
+        40.71166669999999,
+        -73.9797222
+    ],
+    "Andrew Haswell Green Park Dog Run": [
+        40.7596492,
+        -73.9574008
+    ],
+    "Amundsen Trail Off-Leash Area": [
+        40.5687337,
+        -74.13097719999999
+    ],
+    "Bloomingdale Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Hunter's Point South Park Dog Run": [
+        40.74336720000001,
+        -73.9602506
+    ],
+    "Torsney/Lou Lodati Playground Dog Run": [
+        40.7473614,
+        -73.9216831
+    ],
+    "Brower Park Off-Leash Area": [
+        40.673499,
+        -73.94323399999999
+    ],
+    "Cooper Park Dog Run": [
+        40.715383,
+        -73.93594499999999
+    ],
+    "Dyckman Fields Off-Leash Area": [
+        40.87001619999999,
+        -73.9317524
+    ],
+    "St. Mary's Dog Run": [
+        40.8096253,
+        -73.9121229
+    ],
+    "Conference House Park Dog Run": [
+        40.5005834,
+        -74.2512474
+    ],
+    "Soundview Dog Run": [
+        40.8247728,
+        -73.8695889
+    ],
+    "Van Cortlandt Park: Oneida Run": [
+        40.899519,
+        -73.8731754
+    ],
+    "Maria Hernandez Park Dog Run": [
+        40.7037939,
+        -73.9231051
+    ],
+    "Forest Park Off-Leash Area": [
+        40.7000227,
+        -73.8566087
+    ],
+    "Bronx Park Dog Run": [
+        40.8556002,
+        -73.8705303
+    ],
+    "Triborough Bridge Playground C Dog Run": [
+        40.77365320000001,
+        -73.9221373
+    ],
+    "Pelham Bay Park Dog Run": [
+        40.8667516,
+        -73.81011029999999
+    ],
+    "Fort Independence Playground Dog Run": [
+        40.8815687,
+        -73.8958869
+    ],
+    "Fox Park Dog Run": [
+        40.7044065,
+        -74.0056061
+    ],
+    "Sternberg Park Dog Run": [
+        40.706162,
+        -73.94667729999999
+    ],
+    "Greenwood Playground Dog Run": [
+        40.6504477,
+        -73.9765316
+    ],
+    "Stuyvesant Square Dog Park": [
+        40.73394649999999,
+        -73.9841048
+    ],
+    "Tribeca Dog Run": [
+        40.7161657,
+        -74.0120816
+    ],
+    "Riverside Park South Dog Run": [
+        40.7812078,
+        -73.9865526
+    ],
+    "Riverside Park: 142nd Street Dog Run": [
+        40.8254179,
+        -73.95397439999999
+    ],
+    "Bellevue South Park Dog Run": [
+        40.7397751,
+        -73.9780883
+    ],
+    "Ida Court Playground Dog Run": [
+        40.5384576,
+        -74.18693139999999
+    ],
+    "Barretto Point Park Off-Leash Area": [
+        40.8055893,
+        -73.8882407
+    ],
+    "Concrete Plant Park   Off-Leash Area": [
+        40.8264817,
+        -73.88502489999999
+    ],
+    "Ferry Point Park Off-Leash Area": [
+        40.81149550000001,
+        -73.8377874
+    ],
+    "Haffen Park  Off-Leash Area": [
+        40.8736837,
+        -73.8391073
+    ],
+    "Seton Falls Park Off-Leash Area": [
+        40.8867535,
+        -73.8382306
+    ],
+    "Starlight Park Dog Run": [
+        40.8303709,
+        -73.8838238
+    ],
+    "Kensington Dog Run": [
+        40.649045,
+        -73.97134609999999
+    ],
+    "LaGuardia Landing Lights Dog Run": [
+        40.7616503,
+        -73.8900053
+    ],
+    "Devoe Park Dog Run": [
+        40.8629843,
+        -73.90855499999999
+    ],
+    "St. James Park": [
+        40.86502369999999,
+        -73.89777269999999
+    ],
+    "Snug Harbor Cultural Center": [
+        40.6428687,
+        -74.104249
+    ],
+    "L/CPL Thomas P. Noonan Jr. Playground": [
+        40.7412558,
+        -73.9225823
+    ],
+    "Shore Front Parkway Dog Run": [
+        40.5838127,
+        -73.8153587
+    ]
+}
