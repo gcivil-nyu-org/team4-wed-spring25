@@ -44,8 +44,27 @@ def map(request):
     return render(request, "parks/map.html", context)
 
 
+from django.shortcuts import render
+from .models import DogRun
+import folium
+import json
+import os
+from django.conf import settings
+
 def park_and_map(request):
-    parks = DogRun.objects.all()  # Fetch all dog runs from the database
+    # Get filter values from GET request
+    filter_value = request.GET.get('filter', '')
+    accessible_value = request.GET.get('accessible', '')
+
+    # Apply filters based on the selected values
+    parks = DogRun.objects.all()
+
+    if filter_value:
+        parks = parks.filter(dogruns_type__icontains=filter_value)
+    
+    if accessible_value:
+        parks = parks.filter(accessible=accessible_value)
+
     NYC_LAT_AND_LONG = (40.730610, -73.935242)
 
     # Create map centered on NYC
@@ -66,3 +85,4 @@ def park_and_map(request):
 
     # Render map as HTML
     return render(request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()})
+
