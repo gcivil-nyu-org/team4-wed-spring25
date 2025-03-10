@@ -1,17 +1,24 @@
 language: python
+
 dist: focal
+
 python:
 - '3.11'
+
 services:
 - postgresql
+
 install:
 - pip install -r requirements.txt
+
 before_script:
 - python3 manage.py makemigrations
 - python3 manage.py migrate parks --fake
 - python3 manage.py collectstatic --noinput
+
 script:
 - echo "No tests yet. Build successful."
+
 deploy:
   provider: elasticbeanstalk
   bucket_name: elasticbeanstalk-us-east-1-783764589295
@@ -26,4 +33,17 @@ deploy:
   on:
     repo: gcivil-nyu-org/team4-wed-spring25
     branch: develop
+
+  provider: elasticbeanstalk
+  bucket_name: elasticbeanstalk-us-west-2-940482403872
+  region: us-west-2
+  bucket_path: pawpark-prod
+  access_key_id: $AWS_ACCESS_KEY_ID_PROD
+  secret_access_key: $AWS_SECRET_ACCESS_KEY_PROD
+  app: pawpark-prod
+  env: pawpark-prod-env
+  on:
+    repo: gcivil-nyu-org/team4-wed-spring25
+    branch: main
+    
 skip_cleanup: 'true'
