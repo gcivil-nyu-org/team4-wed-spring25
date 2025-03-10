@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-5eooghf%un4sb3)r4=d9%97$(wdb)4cdd75)1xzo3!5%4#@)@-
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['http://pawpark-prod-env.eba-3rmwysme.us-west-2.elasticbeanstalk.com', 'pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com', '127.0.0.1']
+ALLOWED_HOSTS = ['pawpark-prod-env.eba-3rmwysme.us-west-2.elasticbeanstalk.com', 'pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com', '127.0.0.1']
 
 
 # Application definition
