@@ -90,8 +90,11 @@
         .park-item {
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Ensures proper spacing */
             padding: 10px;
             border-bottom: 1px solid #e0e0e0;
+            position: relative; /* Needed for absolute positioning */
+            width: 100%;
         }
 
         .park-item img {
@@ -123,7 +126,7 @@
 
         .view-details-container {
             align-self: flex-start;
-            margin-top: auto;
+            margin-left: auto;
         }
 
         .view-details-link {
@@ -188,9 +191,7 @@
                         <p>{{ park.dogruns_type }}</p> <!-- Show the park type -->
                         <p>Accessible: {{ park.accessible }}</p> <!-- Show accessibility -->
                     </div>
-                    <div class="view-details-container">
                         <a href="{% url 'park_detail' park.id %}" class="view-details-link">View Details</a>
-                    </div>
                 </div>                
                 {% endfor %}
             </div>
