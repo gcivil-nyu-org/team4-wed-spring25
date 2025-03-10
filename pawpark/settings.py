@@ -12,10 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -26,7 +28,8 @@ SECRET_KEY = "django-insecure-5eooghf%un4sb3)r4=d9%97$(wdb)4cdd75)1xzo3!5%4#@)@-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['pawpark-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com', '127.0.0.1']
+
+ALLOWED_HOSTS = ['pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com', '127.0.0.1']
 
 
 # Application definition
@@ -72,18 +75,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pawpark.wsgi.application"
 
-
+load_dotenv()
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('RDS_DB_NAME', 'pawpark'),
-        'USER': os.environ.get('RDS_USERNAME', 'postgres'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD', '6063SDEPawpark!'),
-        'HOST': os.environ.get('RDS_HOSTNAME', 'pawpark-db.c8foy222wsse.us-east-1.rds.amazonaws.com'),
-        'PORT': os.environ.get('RDS_PORT', '5432'),
+        'NAME': os.environ.get('RDS_DB_NAME'),
+        'USER': os.environ.get('RDS_USERNAME'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD'),
+        'HOST': os.environ.get('RDS_HOSTNAME'),
+        'PORT': os.environ.get('RDS_PORT'),
     }
 }
 
