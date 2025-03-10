@@ -80,11 +80,11 @@ WSGI_APPLICATION = "pawpark.wsgi.application"
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('RDS_DB_NAME', 'pawpark'),
-        'USER': os.environ.get('RDS_USERNAME', 'postgres'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD', '6063SDEPawpark!'),
-        'HOST': os.environ.get('RDS_HOSTNAME', 'pawpark-db.c8foy222wsse.us-east-1.rds.amazonaws.com'),
-        'PORT': os.environ.get('RDS_PORT', '5432'),
+        'NAME': os.environ.get('RDS_DB_NAME'),
+        'USER': os.environ.get('RDS_USERNAME'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD'),
+        'HOST': os.environ.get('RDS_HOSTNAME'),
+        'PORT': os.environ.get('RDS_PORT'),
     }
 }
 
