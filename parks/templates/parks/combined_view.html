@@ -87,6 +87,11 @@
             overflow-y: auto;
         }
 
+        .park-item:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
         .park-item {
             display: flex;
             align-items: center;
@@ -184,7 +189,11 @@
             <div class="list-container">
                 {% for park in parks %}
                 <div class="park-item">
-                    <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" alt="Dog Park Image">
+                    {% if park.image %}
+                        <img src="/parks{{ park.image.url }}" alt="{{ park.name }} Image">
+                    {% else %}
+                        <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" alt="Dog Park Image">
+                    {% endif %}
                     <div class="park-info">
                         <h3>{{ park.name }}</h3>
                         <p>{{ park.address }}</p>
@@ -202,5 +211,36 @@
             {{ map|safe }}
         </div>
     </div>
+    
+
+    <script>
+        // Store markers using the park ID
+        const markers = {% autoescape off %}{{ marker_dict|json_script:"markers" }}{% endautoescape %};
+
+        // Add hover event listeners for each park item
+        document.querySelectorAll('.park-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                const parkId = item.getAttribute('data-park-id');
+                const marker = markers[parkId];  // Access the marker from the marker_dict
+
+                if (marker) {
+                    // Change marker color to highlight
+                    marker.setIcon(L.icon({iconUrl: 'path_to_your_highlighted_icon.png', iconSize: [25, 41], iconAnchor: [12, 41]}));
+                    // Optionally, zoom and center the map on the marker
+                    map.setView(marker.getLatLng(), 15);  // Adjust zoom level as needed
+                }
+            });
+
+            item.addEventListener('mouseleave', function() {
+                const parkId = item.getAttribute('data-park-id');
+                const marker = markers[parkId];
+
+                if (marker) {
+                    // Reset marker icon to the default one
+                    marker.setIcon(L.icon({iconUrl: 'path_to_your_default_icon.png', iconSize: [25, 41], iconAnchor: [12, 41]}));
+                }
+            });
+        });
+    </script>
 </body>
 </html>

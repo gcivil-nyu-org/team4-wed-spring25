@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import DogRun
@@ -56,7 +56,7 @@ def park_and_map(request):
     accessible_value = request.GET.get('accessible', '')
 
     # Apply filters based on the selected values
-    parks = DogRun.objects.all()
+    parks = DogRun.objects.all().order_by('id')
 
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
@@ -89,4 +89,15 @@ def park_and_map(request):
 
 def park_detail(request, id):
     park = get_object_or_404(DogRun, id=id)  # Get the park by id
+
+    if request.method == 'POST' and request.FILES.get('image'):
+
+        if park.image:
+            if os.path.exists(park.image.path):
+                os.remove(park.image.path)  # Delete the existing image file
+                print(f"Deleted old image: {park.image.name}")
+        park.image = request.FILES['image']
+        park.save()
+        return redirect('park_detail', id=park.id)
+
     return render(request, 'parks/park_detail.html', {'park': park})

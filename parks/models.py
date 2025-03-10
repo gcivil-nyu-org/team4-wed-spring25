@@ -8,6 +8,8 @@ class DogRun(models.Model):
     dogruns_type = models.CharField(max_length=100)  # Fix here
     accessible = models.CharField(max_length=50)
     notes = models.TextField(max_length=255)
+    image = models.ImageField(upload_to='dogruns/', null=True, blank=True)  # New field
+
 
     class Meta:
         db_table = "dog_runs"
