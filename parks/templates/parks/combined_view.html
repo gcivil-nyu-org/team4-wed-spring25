@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAWPARK - NYC Dog Parks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            height: 100vh; /* Full height */
+            display: flex;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh; /* Full screen height */
+        }
+
+        .park-list {
+            width: 30%;
+            background: white;
+            padding: 15px;
+            border-right: 2px solid #d7ccc8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .park-list h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #6D4C41;
+        }
+
+        .list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .park-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .park-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #6D4C41;
+            margin-right: 15px;
+        }
+
+        .park-info h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #6D4C41;
+        }
+
+        .park-info p {
+            margin: 2px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .map-container {
+            flex: 1; /* Ensures it takes up the remaining space */
+            height: 100vh; /* Make map full height */
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left: Dog Parks List -->
+        <div class="park-list">
+            <h2>Dog Parks in NYC</h2>
+            <div class="list-container">
+                {% for park in parks %}  <!-- No limit on number of parks -->
+                <div class="park-item">
+                    <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" alt="Dog Park Image"> <!-- Placeholder image -->
+                    <div class="park-info">
+                        <h3>{{ park.name }}</h3>
+                        <p>{{ park.address }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Full-Screen Map -->
+        <div class="map-container">
+            {{ map|safe }}
+        </div>
+    </div>
+</body>
+</html>

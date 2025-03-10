@@ -44,3 +44,25 @@ def map(request):
     return render(request, "parks/map.html", context)
 
 
+def park_and_map(request):
+    parks = DogRun.objects.all()  # Fetch all dog runs from the database
+    NYC_LAT_AND_LONG = (40.730610, -73.935242)
+
+    # Create map centered on NYC
+    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
+
+    coordinates = os.path.join(settings.BASE_DIR, "coordinates.json")
+    with open(coordinates, "r") as file:
+        coor_dict = json.load(file)
+
+    # Mark every park on the map
+    for park in parks:
+        park_name = park.name
+        if park_name in coor_dict:
+            folium.Marker(
+                location=coor_dict[park_name],
+                popup=park_name,
+            ).add_to(m)
+
+    # Render map as HTML
+    return render(request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()})
