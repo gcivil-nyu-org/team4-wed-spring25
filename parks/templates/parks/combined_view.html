@@ -106,17 +106,38 @@
             margin: 0;
             font-size: 18px;
             color: #6D4C41;
+            flex-grow: 1;
         }
 
         .park-info p {
             margin: 2px 0;
             font-size: 14px;
             color: #555;
+            flex-grow: 1;
         }
 
         .map-container {
             flex: 1;
             height: 100vh;
+        }
+
+        .view-details-container {
+            align-self: flex-start;
+            margin-top: auto;
+        }
+
+        .view-details-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .view-details-link:hover {
+            background-color: #0056b3;
         }
 
         .map-container iframe {
@@ -167,7 +188,10 @@
                         <p>{{ park.dogruns_type }}</p> <!-- Show the park type -->
                         <p>Accessible: {{ park.accessible }}</p> <!-- Show accessibility -->
                     </div>
-                </div>
+                    <div class="view-details-container">
+                        <a href="{% url 'park_detail' park.id %}" class="view-details-link">View Details</a>
+                    </div>
+                </div>                
                 {% endfor %}
             </div>
         </div>

@@ -1,8 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import DogRun
-
 import os
 from django.conf import settings
 
@@ -86,3 +85,8 @@ def park_and_map(request):
     # Render map as HTML
     return render(request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()})
 
+
+
+def park_detail(request, id):
+    park = get_object_or_404(DogRun, id=id)  # Get the park by id
+    return render(request, 'parks/park_detail.html', {'park': park})
