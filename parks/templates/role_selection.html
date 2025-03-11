@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select Login Type</title>
+  <style>
+    body {
+      background-image: url("{% static 'images/puppies.jpg' %}");
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: rgba(255,255,255,0.85);
+      padding: 20px 30px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .container h2 {
+      margin-bottom: 20px;
+    }
+    .container a {
+      text-decoration: none;
+    }
+    .container button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Select Login Type</h2>
+    <!-- The query parameter ?role=admin or ?role=user can be used later to differentiate behavior -->
+    <a href="{% url 'login' %}?role=admin"><button>Admin Login</button></a>
+    <a href="{% url 'login' %}?role=user"><button>User Login</button></a>
+  </div>
+</body>
+</html>

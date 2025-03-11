@@ -6,7 +6,7 @@ from .models import DogRun
 import os
 from django.conf import settings
 
-import folium
+#import folium
 import json
 
 def park_list(request):

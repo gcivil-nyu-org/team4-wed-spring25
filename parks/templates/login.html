@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body {
+      background-image: url("{% static 'images/puppies.jpg' %}");
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container {
+      background: rgba(255,255,255,0.85);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 300px;
+      text-align: center;
+    }
+    .login-container h2 {
+      margin-bottom: 20px;
+    }
+    .login-container form div {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .login-container form label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .login-container form input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .login-container form button {
+      width: 100%;
+      padding: 10px;
+      background: #6D4C41;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form method="post" action="">
+      {% csrf_token %}
+      <div>
+        <label for="id_username">Username:</label>
+        <input type="text" name="username" id="id_username" required>
+      </div>
+      <div>
+        <label for="id_password">Password:</label>
+        <input type="password" name="password" id="id_password" required>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+</body>
+</html>

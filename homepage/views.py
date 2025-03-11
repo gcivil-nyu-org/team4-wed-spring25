@@ -16,3 +16,6 @@ def health_check(request):
 
 def hello_world(request):
     return HttpResponse("Hello World")
+
+def role_selection(request):
+    return render(request, 'role_selection.html')
