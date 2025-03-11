@@ -8,25 +8,26 @@ from django.conf import settings
 import folium
 import json
 
+
 def park_list(request):
     parks = DogRun.objects.all()  # Fetch all dog runs from the database
     return render(request, "parks/park_list.html", {"parks": parks})
+
 
 def map(request):
 
     NYC_LAT_AND_LONG = (40.730610, -73.935242)
     # Create map centered on NYC
-    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11) 
+    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
-    # Currently, this data is not in DB. 
+    # Currently, this data is not in DB.
     # just saved in file, so we hardcode to import it here
     coordinates = os.path.join(settings.BASE_DIR, "coordinates.json")
     with open(coordinates, "r") as file:
         coor_dict = json.load(file)
-    
 
     # Fetch all dog runs from the database
-    parks = DogRun.objects.all() 
+    parks = DogRun.objects.all()
 
     # Mark every park on the map
     for park in parks:
@@ -39,7 +40,7 @@ def map(request):
         ).add_to(m)
 
     # represent map as html
-    context = {'map': m._repr_html_()}
+    context = {"map": m._repr_html_()}
     return render(request, "parks/map.html", context)
 
 
@@ -50,17 +51,18 @@ import json
 import os
 from django.conf import settings
 
+
 def park_and_map(request):
     # Get filter values from GET request
-    filter_value = request.GET.get('filter', '')
-    accessible_value = request.GET.get('accessible', '')
+    filter_value = request.GET.get("filter", "")
+    accessible_value = request.GET.get("accessible", "")
 
     # Apply filters based on the selected values
-    parks = DogRun.objects.all().order_by('id')
+    parks = DogRun.objects.all().order_by("id")
 
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
-    
+
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
@@ -83,21 +85,22 @@ def park_and_map(request):
             ).add_to(m)
 
     # Render map as HTML
-    return render(request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()})
-
+    return render(
+        request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()}
+    )
 
 
 def park_detail(request, id):
     park = get_object_or_404(DogRun, id=id)  # Get the park by id
 
-    if request.method == 'POST' and request.FILES.get('image'):
+    if request.method == "POST" and request.FILES.get("image"):
 
         if park.image:
             if os.path.exists(park.image.path):
                 os.remove(park.image.path)  # Delete the existing image file
                 print(f"Deleted old image: {park.image.name}")
-        park.image = request.FILES['image']
+        park.image = request.FILES["image"]
         park.save()
-        return redirect('park_detail', id=park.id)
+        return redirect("park_detail", id=park.id)
 
-    return render(request, 'parks/park_detail.html', {'park': park})
+    return render(request, "parks/park_detail.html", {"park": park})
