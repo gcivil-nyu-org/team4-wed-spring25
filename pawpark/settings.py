@@ -87,8 +87,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("RDS_DB_NAME", "test_db"),
-        "USER": os.environ.get("RDS_USERNAME", "test_uname"),
-        "PASSWORD": os.environ.get("RDS_PASSWORD", "test_pw"),
+        "USER": os.environ.get("RDS_USERNAME", "postgres"),
+        "PASSWORD": os.environ.get("RDS_PASSWORD", ""),
         "HOST": os.environ.get("RDS_HOSTNAME", "localhost"),
         "PORT": os.environ.get("RDS_PORT", "5432"),
     }
