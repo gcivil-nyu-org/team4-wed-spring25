@@ -3,21 +3,28 @@ language: python
 dist: focal
 
 python:
-- '3.11'
+  - '3.11'
 
 services:
-- postgresql
+  - postgresql
 
 install:
-- pip install -r requirements.txt
+  - pip install -r requirements.txt
 
 before_script:
-- python3 manage.py makemigrations
-- python3 manage.py migrate parks --fake
-- python3 manage.py collectstatic --noinput
+  - psql -c "CREATE DATABASE test_db;" -U postgres
+  - python3 manage.py makemigrations
+  - python3 manage.py migrate parks --fake
+  - python3 manage.py collectstatic --noinput
 
 script:
-- echo "No tests yet. Build successful."
+  - echo "Run Scripts."
+  - black . --check
+  - flake8 .
+  - coverage run manage.py test
+
+after_success:
+  - coverage report
 
 deploy:
   - provider: elasticbeanstalk
