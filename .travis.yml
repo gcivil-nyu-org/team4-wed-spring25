@@ -25,7 +25,7 @@ script:
 
 after_success:
   - coverage report
-  - coveralls
+  - coveralls --service=travis-pro
 
 deploy:
   - provider: elasticbeanstalk
