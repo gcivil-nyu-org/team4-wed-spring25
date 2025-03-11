@@ -8,4 +8,6 @@ exclude =
     build,
     dist,
     migrations,
-    venv
+    venv,
+    .venv,
+    .env
