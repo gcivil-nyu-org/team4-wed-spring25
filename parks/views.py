@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
 from .models import DogRun
 import os
 from django.conf import settings
@@ -42,14 +41,6 @@ def map(request):
     # represent map as html
     context = {"map": m._repr_html_()}
     return render(request, "parks/map.html", context)
-
-
-from django.shortcuts import render
-from .models import DogRun
-import folium
-import json
-import os
-from django.conf import settings
 
 
 def park_and_map(request):
