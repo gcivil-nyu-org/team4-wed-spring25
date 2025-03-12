@@ -21,3 +21,7 @@ runs.json
 .DS_Store
 
 .coverage
+
+duplicate_test.py
+coordinates.json
+new_runs.json
