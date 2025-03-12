@@ -12,3 +12,4 @@ exclude =
     .venv,
     .env,
     eb-virt
+    duplicate_test.py

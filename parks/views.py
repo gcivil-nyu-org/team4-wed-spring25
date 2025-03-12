@@ -5,7 +5,10 @@ import os
 from django.conf import settings
 
 import folium
+from folium.plugins import MarkerCluster
 import json
+
+from .utilities import folium_cluster_styling
 
 
 def park_list(request):
@@ -19,9 +22,13 @@ def map(request):
     # Create map centered on NYC
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
+    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
+
+    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
+
     # Currently, this data is not in DB.
     # just saved in file, so we hardcode to import it here
-    coordinates = os.path.join(settings.BASE_DIR, "coordinates.json")
+    coordinates = os.path.join(settings.BASE_DIR, "new_coordinates.json")
     with open(coordinates, "r") as file:
         coor_dict = json.load(file)
 
@@ -31,12 +38,21 @@ def map(request):
     # Mark every park on the map
     for park in parks:
         park_name = park.name
+
+        # Some park names in the original dataset
+        # does not refer to 1 park, but an area
+        # of parks. For now just ignore them because there
+        # is no google_name for them yet
+        if park_name not in coor_dict:
+            continue
+
         coordinates = coor_dict[park_name]
 
         folium.Marker(
             location=coordinates,
-            popup=park_name,
-        ).add_to(m)
+            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
+            popup=folium.Popup(park_name, max_width=200),
+        ).add_to(marker_cluster)
 
     # represent map as html
     context = {"map": m._repr_html_()}
@@ -57,28 +73,43 @@ def park_and_map(request):
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
-    NYC_LAT_AND_LONG = (40.730610, -73.935242)
+    NYC_LAT_AND_LONG = (40.712775, -74.005973)
 
     # Create map centered on NYC
+    # f = folium.Figure(height="100")
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
-    coordinates = os.path.join(settings.BASE_DIR, "coordinates.json")
+    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
+    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
+
+    coordinates = os.path.join(settings.BASE_DIR, "new_coordinates.json")
     with open(coordinates, "r") as file:
         coor_dict = json.load(file)
 
     # Mark every park on the map
     for park in parks:
         park_name = park.name
+        if park_name not in coor_dict:
+            continue
+
         if park_name in coor_dict:
             folium.Marker(
                 location=coor_dict[park_name],
-                popup=park_name,
-            ).add_to(m)
+                icon=folium.Icon(icon="dog", prefix="fa", color="green"),
+                popup=folium.Popup(park_name, max_width=200),
+            ).add_to(marker_cluster)
+
+    m = m._repr_html_()
+    m = m.replace(
+        '<div style="width:100%;">'
+        + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
+        '<div style="width:100%; height:100%;">'
+        + '<div style="position:relative;width:100%;height:100%;>',
+        1,
+    )
 
     # Render map as HTML
-    return render(
-        request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()}
-    )
+    return render(request, "parks/combined_view.html", {"parks": parks, "map": m})
 
 
 def park_detail(request, id):
