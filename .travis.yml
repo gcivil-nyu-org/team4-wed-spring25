@@ -13,7 +13,7 @@ install:
 
 before_script:
   - psql -c "CREATE DATABASE test_db;" -U postgres
-  - python3 manage.py makemigrations
+  - python3 manage.py makemigrations  
   - python3 manage.py migrate parks --fake
   - python3 manage.py collectstatic --noinput
 

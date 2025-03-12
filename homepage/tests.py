@@ -1,11 +1,35 @@
-from django.test import TestCase  # noqa: F401  # Ignore "imported but unused" for now
+from django.test import TestCase, Client
+from django.urls import reverse
 
 
-# Create your tests here.
+class HealthCheckTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_health_check(self):
+        response = self.client.get(reverse("health_check"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
 
 
-# Dummy test case for now so Travis build passes
-class DummyTestCase(TestCase):
-    def test_dummy(self):
-        # Always passes
-        self.assertTrue(True)
+class TestDBConnectionTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_db_connection(self):
+        response = self.client.get(reverse("test_db_connection"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "success")
+        # else:
+        #     self.assertEqual(response.status_code, 500)
+        #     self.assertEqual(response.json()["status"], "error")
+
+
+class HelloWorldTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_hello_world(self):
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode(), "Hello World")
