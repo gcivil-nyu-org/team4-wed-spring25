@@ -1,17 +1,17 @@
 """
-    This script takes the dog run data set and runs the park name
-    through Google Maps Geocoding API to get the latitude and 
-    longitude information for the dog run.
+This script takes the dog run data set and runs the park name
+through Google Maps Geocoding API to get the latitude and
+longitude information for the dog run.
 
-    It puts it in a Python dict where the name is the key and the value
-    is a tuple of the coordinates, saves this to a coordinates.json
+It puts it in a Python dict where the name is the key and the value
+is a tuple of the coordinates, saves this to a coordinates.json
 """
 
 import googlemaps
 import json
-import time 
+import time
 
-API_KEY = "REMOVED_FOR_SAFETY" # running this script without key will not work
+API_KEY = "REMOVED_FOR_SAFETY"  # running this script without key will not work
 gmaps = googlemaps.Client(key=API_KEY)
 
 dog_runs_json = "runs.json"  # JSON file with dog run details
@@ -26,13 +26,15 @@ name_to_coordinates = {}
 for run in dog_runs:
     park_name = run["Name"]
 
-    result = gmaps.geocode(park_name, components={"locality": "New York", "country": "US"})
+    result = gmaps.geocode(
+        park_name, components={"locality": "New York", "country": "US"}
+    )
 
     if result:
         print(park_name)
         location = result[0]["geometry"]["location"]
         print(f"Latitude: {location['lat']}, Longitude: {location['lng']}")
-        name_to_coordinates[park_name] = (location['lat'], location['lng'])
+        name_to_coordinates[park_name] = (location["lat"], location["lng"])
     else:
         print("Not Found")
 

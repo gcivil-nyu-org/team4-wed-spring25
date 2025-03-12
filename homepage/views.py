@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render  # noqa: F401  # Ignore "imported but unused"
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.db import connection
+
 
 def test_db_connection(request):
     try:
@@ -11,8 +12,10 @@ def test_db_connection(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
+
 def health_check(request):
     return JsonResponse({"status": "ok"})
+
 
 def hello_world(request):
     return HttpResponse("Hello World")

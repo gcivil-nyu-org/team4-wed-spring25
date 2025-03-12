@@ -19,3 +19,5 @@ runs.json
 
 .python-version
 .DS_Store
+
+.coverage
