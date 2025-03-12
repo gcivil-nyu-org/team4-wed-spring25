@@ -21,7 +21,7 @@ before_script:
 script:
   - echo "Run Scripts."
   - black . --check
-  - flake8 .
+  - flake8 --exclude=eb-virt
   - coverage run --source='.' manage.py test
 
 after_success:
