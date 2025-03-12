@@ -2,7 +2,6 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .models import DogRun
-from parks.utilities import folium_cluster_styling
 
 
 class ParkModelTest(TestCase):
@@ -82,13 +81,14 @@ class CombinedViewTest(TestCase):
         response = self.client.get(reverse("park_and_map"))
         self.assertEqual(response.status_code, 200)
 
+
 class ParkDetailViewTest(TestCase):
     def test_park_detail_not_found(self):
-            """Test accessing a non-existent park should return 404."""
-            response = self.client.get(reverse("park_detail", args=[9999]))  # Non-existent ID
-            self.assertEqual(response.status_code, 404)
-    
-
+        """Test accessing a non-existent park should return 404."""
+        response = self.client.get(
+            reverse("park_detail", args=[9999])
+        )  # Non-existent ID
+        self.assertEqual(response.status_code, 404)
 
     def test_get_park_detail(self):
         """Set up a test park object."""
@@ -104,7 +104,6 @@ class ParkDetailViewTest(TestCase):
             notes="Test park notes",
             image=None,
         )
-
 
         self.park_detail_url = reverse("park_detail", args=[self.park.id])
         """Test retrieving the park detail page."""
