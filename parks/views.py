@@ -73,9 +73,10 @@ def park_and_map(request):
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
-    NYC_LAT_AND_LONG = (40.730610, -73.935242)
+    NYC_LAT_AND_LONG = (40.712775, -74.005973)
 
     # Create map centered on NYC
+    # f = folium.Figure(height="100")
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
     icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
@@ -98,10 +99,17 @@ def park_and_map(request):
                 popup=folium.Popup(park_name, max_width=200),
             ).add_to(marker_cluster)
 
-    # Render map as HTML
-    return render(
-        request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()}
+    m = m._repr_html_()
+    m = m.replace(
+        '<div style="width:100%;">'
+        + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
+        '<div style="width:100%; height:100%;">'
+        + '<div style="position:relative;width:100%;height:100%;>',
+        1,
     )
+
+    # Render map as HTML
+    return render(request, "parks/combined_view.html", {"parks": parks, "map": m})
 
 
 def park_detail(request, id):
