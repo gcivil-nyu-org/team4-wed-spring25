@@ -3,24 +3,25 @@ from django.urls import reverse
 
 from .models import DogRun
 
-# class ParkModelTest(TestCase):
-#     def setUp(self):
-#         self.client = Client()
-#         self.park = DogRun.objects.create(
-#             id="1",
-#             prop_id="1234",
-#             name="Central Park",
-#             address="New York, NY",
-#             dogruns_type="Small",
-#             accessible="Yes",
-#             notes="Test park notes",
-#             image=None,
-#         )
 
-#     def test_park_creation(self):
-#         self.assertEqual(self.park.name, "Central Park")
-#         self.assertEqual(self.park.location, "New York, NY")
-#         self.assertEqual(self.park.description, "A large public park.")
+class ParkModelTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.park = DogRun.objects.create(
+            id="1",
+            prop_id="1234",
+            name="Central Park",
+            address="New York, NY",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Test park notes",
+            image=None,
+        )
+
+    def test_park_creation(self):
+        self.assertEqual(self.park.name, "Central Park")
+        self.assertEqual(self.park.address, "New York, NY")
+        self.assertEqual(self.park.notes, "Test park notes")
 
 
 class ParkListViewTest(TestCase):
