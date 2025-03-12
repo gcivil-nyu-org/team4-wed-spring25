@@ -6,7 +6,7 @@
 def folium_cluster_styling(color):
     return f"""
         function(cluster) {{
-            var childCount = cluster.getChildCount(); 
+            var childCount = cluster.getChildCount();
             var c = ' marker-cluster-';
             var color = "{color}";
 
@@ -22,8 +22,8 @@ def folium_cluster_styling(color):
 
             return new L.DivIcon({{
                 html: '<div style="background-color:' + color + ';' +
-                            'font-weight: bold;' + 
-                            'text-shadow: -1px -1px 0 black, 1px -1px 0 black, ' + 
+                            'font-weight: bold;' +
+                            'text-shadow: -1px -1px 0 black, 1px -1px 0 black, ' +
                             '-1px 1px 0 black, 1px 1px 0 black;' +
                             'color: white;">' +
                             '<span>' + childCount + '</span></div>',

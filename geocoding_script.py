@@ -36,7 +36,7 @@ for run in dog_runs:
     park_name = run["Name"]
     google_name = run["Google_Name"]
 
-    if google_name == None or google_name == "":
+    if google_name is None or google_name == "":
         continued += 1
         cs.add(park_name)
         continue
