@@ -27,6 +27,6 @@ class HelloWorldTest(TestCase):
         self.client = Client()
 
     def test_hello_world(self):
-        response = self.client.get(reverse("hello_world"))
+        response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content.decode(), "Hello World")
