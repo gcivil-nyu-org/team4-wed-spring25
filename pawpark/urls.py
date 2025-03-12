@@ -18,12 +18,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from homepage.views import health_check
-from homepage.views import test_db_connection
+
+# from homepage.views import test_db_connection
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("parks/", include("parks.urls")),
     path("", include("homepage.urls")),
     path("health/", health_check),
-    path("dbtest/", test_db_connection),
+    # path("dbtest/", test_db_connection),
 ]
