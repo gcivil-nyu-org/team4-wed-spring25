@@ -3,8 +3,7 @@ from django.db import models
 
 class DogRun(models.Model):
     id = models.CharField(max_length=255)
-    # id = models.AutoField(primary_key=True)
-    prop_id = models.CharField(max_length=255)
+    prop_id = models.CharField(max_length=255, primary_key=True)
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     dogruns_type = models.CharField(max_length=100)  # Fix here
