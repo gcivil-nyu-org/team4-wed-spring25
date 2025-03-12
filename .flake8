@@ -1,0 +1,14 @@
+[flake8]
+# Match Black's default line length
+max-line-length = 88  
+exclude = 
+    .git,
+    __pycache__,
+    old,
+    build,
+    dist,
+    migrations,
+    venv,
+    .venv,
+    .env,
+    eb-virt

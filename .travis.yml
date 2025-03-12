@@ -1,0 +1,55 @@
+language: python
+
+dist: focal
+
+python:
+  - '3.11'
+
+services:
+  - postgresql
+
+install:
+  - pip install -r requirements.txt
+
+before_script:
+  - psql -c "CREATE DATABASE test_db;" -U postgres
+  - python3 manage.py makemigrations  
+  - python3 manage.py migrate parks --fake
+  - python3 manage.py collectstatic --noinput
+
+script:
+  - echo "Run Scripts."
+  - black . --check
+  - flake8 .
+  - coverage run manage.py test
+
+after_success:
+  - coverage report
+  - coveralls --service=travis-pro
+
+deploy:
+  - provider: elasticbeanstalk
+    bucket_name: elasticbeanstalk-us-east-1-783764589295
+    bucket_path: pawpark
+    access_key_id: $AWS_ACCESS_KEY_ID_DEV
+    secret_access_key: $AWS_SECRET_ACCESS_KEY_DEV
+    region: us-east-1
+    app: pawpark
+    env: pawpark-develop-env
+    on:
+      repo: gcivil-nyu-org/team4-wed-spring25
+      branch: develop
+
+  - provider: elasticbeanstalk
+    bucket_name: elasticbeanstalk-us-west-2-940482403872
+    region: us-west-2
+    bucket_path: pawpark-prod
+    access_key_id: $AWS_ACCESS_KEY_ID_PROD
+    secret_access_key: $AWS_SECRET_ACCESS_KEY_PROD
+    app: pawpark-prod
+    env: pawpark-prod-env
+    on:
+      repo: gcivil-nyu-org/team4-wed-spring25
+      branch: main
+    
+skip_cleanup: 'true'

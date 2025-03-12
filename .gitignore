@@ -1,8 +1,33 @@
 
+
 venv/
 __pycache__/
 
 .env
 
 .DS_Store
+
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+venv/
+eb-virt/
+.env
+
+db.sqlite3
+
+__pycache__/
+*.pyc
+*.pyo
+
+
+runs.json
+
+.python-version
+.DS_Store
+
+.coverage
 
