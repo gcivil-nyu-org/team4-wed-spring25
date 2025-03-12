@@ -46,13 +46,14 @@ from django.urls import reverse
 #         self.assertContains(response, "New York, NY")
 #         self.assertContains(response, "A large public park in New York City.")
 
-# class MapViewTest(TestCase):
-#     def setUp(self):
-#         self.client = Client()
 
-#     def test_map_view(self):
-#         response = self.client.get(reverse("map"))
-#         self.assertEqual(response.status_code, 200)
+class MapViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_map_view(self):
+        response = self.client.get(reverse("map"))
+        self.assertEqual(response.status_code, 200)
 
 
 class CombinedViewTest(TestCase):
