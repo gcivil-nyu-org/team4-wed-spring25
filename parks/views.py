@@ -81,8 +81,8 @@ def park_and_map(request):
     )
 
 
-def park_detail(request, id):
-    park = get_object_or_404(DogRun, id=id)  # Get the park by id
+def park_detail(request, prop_id):
+    park = get_object_or_404(DogRun, id=prop_id)  # Get the park by id
 
     if request.method == "POST" and request.FILES.get("image"):
 
