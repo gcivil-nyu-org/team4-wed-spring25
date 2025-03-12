@@ -21,11 +21,12 @@ class HealthCheckTest(TestCase):
 #         self.assertEqual(response.status_code, 200)
 #         self.assertEqual(response.json()["status"], "success")
 
-# class HelloWorldTest(TestCase):
-#     def setUp(self):
-#         self.client = Client()
 
-#     def test_hello_world(self):
-#         response = self.client.get(reverse("hello_world"))
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.content.decode(), "Hello World")
+class HelloWorldTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_hello_world(self):
+        response = self.client.get(reverse("hello_world"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode(), "Hello World")
