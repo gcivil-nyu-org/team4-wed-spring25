@@ -46,9 +46,7 @@ class ParkDetailViewTest(TestCase):
         )
 
     def test_park_detail_view(self):
-        response = self.client.get(
-            reverse("park_detail", args=[self.park.prop_id])
-        )  # ✅ Fix: Use prop_id
+        response = self.client.get(reverse("park_detail", args=[self.park.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Central Park")
 
