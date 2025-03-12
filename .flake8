@@ -10,4 +10,5 @@ exclude =
     migrations,
     venv,
     .venv,
-    .env
+    .env,
+    eb-virt
