@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.core.files.storage import FileSystemStorage
+from .models import DogRun, Review
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from .models import DogRun
+#from .models import DogRun
 import os
 from django.conf import settings
 
@@ -80,7 +82,7 @@ def park_and_map(request):
         request, "parks/combined_view.html", {"parks": parks, "map": m._repr_html_()}
     )
 
-
+"""
 def park_detail(request, id):
     park = get_object_or_404(DogRun, id=id)  # Get the park by id
 
@@ -95,3 +97,46 @@ def park_detail(request, id):
         return redirect("park_detail", id=park.id)
 
     return render(request, "parks/park_detail.html", {"park": park})
+"""
+
+
+def park_detail(request, id):
+    park = get_object_or_404(DogRun, id=id)  # get park info
+
+    if request.method == "POST":
+        # get review content
+        review_text = request.POST.get("text", "").strip()
+        rating_value = request.POST.get("rating", "").strip()
+
+        # make sure rating not empty，also legal rating numbers
+        if not rating_value.isdigit():
+            return render(
+                request,
+                "parks/park_detail.html",
+                {
+                    "park": park,
+                    "error_message": "Please select a valid rating!"
+                }
+            )
+
+        # transfer rating
+        rating = int(rating_value)
+        if rating < 1 or rating > 5:
+            return render(
+                request,
+                "parks/park_detail.html",
+                {
+                    "park": park,
+                    "error_message": "Rating must be between 1 and 5 stars!"
+                }
+            )
+
+        # create and store Review 
+        Review.objects.create(park=park, text=review_text, rating=rating)
+
+        return redirect("park_detail", id=park.id)  # refresh the page
+
+    # get all reviews
+    reviews = park.reviews.all()
+
+    return render(request, "parks/park_detail.html", {"park": park, "reviews": reviews})
