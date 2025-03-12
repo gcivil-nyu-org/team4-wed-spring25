@@ -9,7 +9,8 @@ services:
   - postgresql
 
 install:
-  - pip install -r requirements.txt
+- pip install -r requirements.txt
+- pip install coveralls
 
 before_script:
   - psql -c "CREATE DATABASE test_db;" -U postgres
@@ -21,7 +22,7 @@ script:
   - echo "Run Scripts."
   - black . --check
   - flake8 .
-  - coverage run manage.py test
+  - coverage run --source='.' manage.py test
 
 after_success:
   - coverage report

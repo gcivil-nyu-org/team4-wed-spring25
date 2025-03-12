@@ -1,11 +1,11 @@
-from django.test import TestCase  # noqa: F401  # Ignore "imported but unused" for now
+from django.test import TestCase
+from django.urls import reverse
 
+class HomepageViewTest(TestCase):
+    def test_homepage_status_code(self):
+        response = self.client.get(reverse('homepage'))
+        self.assertEqual(response.status_code, 200)
 
-# Create your tests here.
-
-
-# Dummy test case for now so Travis build passes
-class DummyTestCase(TestCase):
-    def test_dummy(self):
-        # Always passes
-        self.assertTrue(True)
+    def test_homepage_template(self):
+        response = self.client.get(reverse('homepage'))
+        self.assertTemplateUsed(response, 'homepage/index.html')
