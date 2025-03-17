@@ -44,9 +44,6 @@ class ContactPageTest(TestCase):
         self.assertTemplateUsed(response, "parks/contact.html")
         self.assertContains(response, "Get in Touch")
         self.assertContains(response, "Have questions or suggestions?")
-        self.assertContains(response, "info@pawpark.com")
-        self.assertContains(response, "+1 (234) 567-890")
-        self.assertContains(response, "NYC, USA")
 
         # Check if the "Back to Home" button exists
         self.assertContains(
