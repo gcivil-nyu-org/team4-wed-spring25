@@ -1,18 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from .models import DogRun
+from .models import DogRunNew
 import os
-from django.conf import settings
 
 import folium
 from folium.plugins import MarkerCluster
-import json
 
 from .utilities import folium_cluster_styling
 
 
 def park_list(request):
-    parks = DogRun.objects.all()  # Fetch all dog runs from the database
+    parks = DogRunNew.objects.all()  # Fetch all dog runs from the database
     return render(request, "parks/park_list.html", {"parks": parks})
 
 
@@ -30,30 +28,15 @@ def map(request):
 
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
-    # Currently, this data is not in DB.
-    # just saved in file, so we hardcode to import it here
-    coordinates = os.path.join(settings.BASE_DIR, "new_coordinates.json")
-    with open(coordinates, "r") as file:
-        coor_dict = json.load(file)
-
     # Fetch all dog runs from the database
-    parks = DogRun.objects.all()
+    parks = DogRunNew.objects.all()
 
     # Mark every park on the map
     for park in parks:
         park_name = park.name
 
-        # Some park names in the original dataset
-        # does not refer to 1 park, but an area
-        # of parks. For now just ignore them because there
-        # is no google_name for them yet
-        if park_name not in coor_dict:
-            continue
-
-        coordinates = coor_dict[park_name]
-
         folium.Marker(
-            location=coordinates,
+            location=(park.latitude, park.longitude),
             icon=folium.Icon(icon="dog", prefix="fa", color="green"),
             popup=folium.Popup(park_name, max_width=200),
         ).add_to(marker_cluster)
@@ -69,7 +52,7 @@ def park_and_map(request):
     accessible_value = request.GET.get("accessible", "")
 
     # Apply filters based on the selected values
-    parks = DogRun.objects.all().order_by("id")
+    parks = DogRunNew.objects.all().order_by("id")
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
 
@@ -85,22 +68,15 @@ def park_and_map(request):
     icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
-    coordinates = os.path.join(settings.BASE_DIR, "new_coordinates.json")
-    with open(coordinates, "r") as file:
-        coor_dict = json.load(file)
-
     # Mark every park on the map
     for park in parks:
         park_name = park.name
-        if park_name not in coor_dict:
-            continue
 
-        if park_name in coor_dict:
-            folium.Marker(
-                location=coor_dict[park_name],
-                icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-                popup=folium.Popup(park_name, max_width=200),
-            ).add_to(marker_cluster)
+        folium.Marker(
+            location=(park.latitude, park.longitude),
+            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
+            popup=folium.Popup(park_name, max_width=200),
+        ).add_to(marker_cluster)
 
     m = m._repr_html_()
     m = m.replace(
@@ -116,7 +92,7 @@ def park_and_map(request):
 
 
 def park_detail(request, id):
-    park = get_object_or_404(DogRun, id=id)  # Get the park by id
+    park = get_object_or_404(DogRunNew, id=id)  # Get the park by id
 
     if request.method == "POST" and request.FILES.get("image"):
 

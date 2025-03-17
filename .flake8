@@ -13,3 +13,4 @@ exclude =
     .env,
     eb-virt
     duplicate_test.py
+    geocoding_script_files
