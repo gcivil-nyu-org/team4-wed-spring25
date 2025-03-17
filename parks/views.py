@@ -16,6 +16,10 @@ def park_list(request):
     return render(request, "parks/park_list.html", {"parks": parks})
 
 
+def home_view(request):
+    return render(request, "parks/home.html")
+
+
 def map(request):
 
     NYC_LAT_AND_LONG = (40.730610, -73.935242)
@@ -126,3 +130,7 @@ def park_detail(request, id):
         return redirect("park_detail", id=park.id)
 
     return render(request, "parks/park_detail.html", {"park": park})
+
+
+def contact_view(request):
+    return render(request, "parks/contact.html")
