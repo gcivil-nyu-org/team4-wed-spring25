@@ -9,6 +9,23 @@ from folium.plugins import MarkerCluster
 
 from .utilities import folium_cluster_styling
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from .forms import RegisterForm
+from django.contrib.auth import login
+
+def register_view(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # Save user
+            login(request, user)  # Log in the user immediately
+            request.session.save()  # Ensure session is updated
+            return redirect("home")  # Redirect to homepage
+    else:
+        form = RegisterForm()
+    
+    return render(request, "parks/register.html", {"form": form})
 
 def park_list(request):
     parks = DogRunNew.objects.all()  # Fetch all dog runs from the database
