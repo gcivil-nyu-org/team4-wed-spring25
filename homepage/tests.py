@@ -29,7 +29,24 @@ class HelloWorldTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_hello_world(self):
+    def test_home_page(self):
         response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)  
+
+
+class ContactPageTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_contact_page(self):
+        response = self.client.get(reverse("contact"))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content.decode(), "Hello World")
+        self.assertTemplateUsed(response, "parks/contact.html")
+        self.assertContains(response, "Get in Touch")
+        self.assertContains(response, "Have questions or suggestions?")
+        self.assertContains(response, "info@pawpark.com")
+        self.assertContains(response, "+1 (234) 567-890")
+        self.assertContains(response, "NYC, USA")
+
+        # Check if the "Back to Home" button exists
+        self.assertContains(response, 'href="' + reverse("home") + '"', msg_prefix="Home button is missing")
