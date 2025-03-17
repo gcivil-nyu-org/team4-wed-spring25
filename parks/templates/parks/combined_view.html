@@ -17,12 +17,13 @@
             <div class="card p-3 shadow-sm">
                 <form class="row g-2">
                     <!-- Park Type -->
+                    <!-- Park Type -->
                     <div class="col-md-4">
                         <label for="filter" class="form-label fw-bold">Filter by Type:</label>
                         <select class="form-select" name="filter" id="filter">
-                            <option value="">All Types</option>
-                            <option value="Off-Leash">Off-Leash</option>
-                            <option value="Run">Run</option>
+                            <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
+                            <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
+                            <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
                         </select>
                     </div>
 
@@ -30,9 +31,9 @@
                     <div class="col-md-4">
                         <label for="accessible" class="form-label fw-bold">Accessibility:</label>
                         <select class="form-select" name="accessible" id="accessible">
-                            <option value="">All</option>
-                            <option value="Y">Yes</option>
-                            <option value="N">No</option>
+                            <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
+                            <option value="Y" {% if request.GET.accessible == "Y" %}selected{% endif %}>Yes</option>
+                            <option value="N" {% if request.GET.accessible == "N" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
