@@ -1,251 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>PAWPARK - NYC Dog Parks</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "base.html" %}
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 0;
-        }
+{% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
-        /* Heading Section */
-        .heading-container {
-            background-color: #6D4C41;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
+{% block content %}
+<!-- Hero Section -->
+<div class="hero text-center py-2">
+    <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
+    <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
+</div>
 
-        /* Filter Section */
-        .filter-container {
-            width: 100%;
-            background-color: #6D4C41;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        .filter-container form {
-            display: inline-block;
-        }
-
-        .filter-container select {
-            padding: 10px;
-            font-size: 14px;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .filter-container button {
-            padding: 10px;
-            margin-left: 10px;
-            font-size: 14px;
-            border: none;
-            background-color: #fff;
-            color: #6D4C41;
-            border-radius: 4px;
-        }
-
-        .container {
-            display: flex;
-            width: 100%;
-            max-height: 100%;
-            flex-grow: 1;
-        }
-
-        .park-list {
-            width: 30%;
-            background: white;
-            padding: 15px;
-            border-right: 2px solid #d7ccc8;
-            display: flex;
-            flex-direction: column;
-            /* overflow-y: auto; */
-            max-height: 100%;
-        }
-
-        .park-list h2 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: #6D4C41;
-        }
-
-        .list-container {
-            flex-grow: 0;
-            overflow-y: auto;
-            max-height: 100%;
-        }
-
-        .park-item:hover {
-            background-color: #f1f1f1;
-            cursor: pointer;
-        }
-
-        .park-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between; /* Ensures proper spacing */
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-            position: relative; /* Needed for absolute positioning */
-            width: 100%;
-        }
-
-        .park-item img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid #6D4C41;
-            margin-right: 15px;
-        }
-
-        .park-info h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #6D4C41;
-            flex-grow: 1;
-        }
-
-        .park-info p {
-            margin: 2px 0;
-            font-size: 14px;
-            color: #555;
-            flex-grow: 1;
-        }
-
-        .map-container {
-            flex: 1;
-            height: 100vh;
-        }
-
-        .view-details-container {
-            align-self: flex-start;
-            margin-left: auto;
-        }
-
-        .view-details-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        .view-details-link:hover {
-            background-color: #0056b3;
-        }
-
-        .map-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- Heading Section -->
-    <div class="heading-container">
-        NYC PawPark
-    </div>
-
-    <!-- Filter Section at the top -->
-    <div class="filter-container">
-        <form method="GET" action="{% url 'park_and_map' %}">
-            <label for="filter">Filter by Park Type:</label>
-            <select name="filter" id="filter">
-                <option value="">Select</option>
-                <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
-                <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
-            </select>
-
-            <label for="accessible">Filter by Accessibility:</label>
-            <select name="accessible" id="accessible">
-                <option value="">Select</option>
-                <option value="Y" {% if request.GET.accessible == "Y" %}selected{% endif %}>Yes</option>
-                <option value="N" {% if request.GET.accessible == "N" %}selected{% endif %}>No</option>
-            </select>
-
-            <button type="submit">Apply Filter</button>
-        </form>
-    </div>
-
-    <div class="container">
-        <!-- Left: Dog Parks List -->
-        <div class="park-list">
-            <h2>Dog Parks in NYC</h2>
-            <div class="list-container">
-                {% for park in parks %}
-                <div class="park-item" data-park-id="{{ park.id }}">
-                    {% if park.image %}
-                        <img src="/parks{{ park.image.url }}" alt="{{ park.name }} Image">
-                    {% else %}
-                        <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" alt="Dog Park Image">
-                    {% endif %}
-                    <div class="park-info">
-                        <h3>{{ park.name }}</h3>
-                        <p>{{ park.address }}</p>
-                        <p>{{ park.dogruns_type }}</p> <!-- Show the park type -->
-                        <p>Accessible: {{ park.accessible }}</p> <!-- Show accessibility -->
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-3 shadow-sm">
+                <form class="row g-2">
+                    <!-- Park Type -->
+                    <div class="col-md-5">
+                        <label for="filter" class="form-label fw-bold">Filter by Type:</label>
+                        <select class="form-select" name="filter" id="filter">
+                            <option value="">All Types</option>
+                            <option value="Off-Leash">Off-Leash</option>
+                            <option value="Run">Run</option>
+                        </select>
                     </div>
-                        <a href="{% url 'park_detail' park.id %}" class="view-details-link">View Details</a>
-                </div>                
-                {% endfor %}
+
+                    <!-- Accessibility -->
+                    <div class="col-md-5">
+                        <label for="accessible" class="form-label fw-bold">Accessibility:</label>
+                        <select class="form-select" name="accessible" id="accessible">
+                            <option value="">All</option>
+                            <option value="Y">Yes</option>
+                            <option value="N">No</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Apply</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Right: Full-Screen Map -->
-        <div class="map-container">
-            {{ map|safe }}
+
+<!-- Parks List + Map -->
+<div class="row flex-grow-1 g-0">
+    <!-- Parks List (30% Width) -->
+    <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
+        <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">Parks</h3>
+        {% for park in parks %}
+        <div class="card mb-2" style="padding: 5px;">
+            <img src="{% if park.image %}/parks{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
+                 class="card-img-top" 
+                 alt="{{ park.name }}" 
+                 style="height: 70px; object-fit: cover;">
+            <div class="card-body p-1">
+                <h6 class="card-title text-center" style="font-size: 0.95rem;">{{ park.name }}</h6>
+                <p class="card-text text-center" style="font-size: 0.8rem; margin-bottom: 2px;">
+                    <strong>Type:</strong> {{ park.dogruns_type }} <br>
+                    <strong>Accessible:</strong> {{ park.accessible }}
+                </p>
+                <div class="text-center">
+                    <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- NYC Map (70% Width, Full Height) -->
+    <div class="col-md-9 d-flex flex-column">
+        <div class="map-container flex-grow-1 w-100" style="height: 100%;">
+            {% autoescape off %}
+                {{ map|safe }}
+            {% endautoescape %}
         </div>
     </div>
-    
+</div>
 
-    <script>
-        // Store markers using the park ID
-
-        const markers = JSON.parse(document.getElementById("markers").textContent);
-
-        // Add hover event listeners for each park item
-        document.querySelectorAll('.park-item').forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                const parkId = item.getAttribute('data-park-id');
-                const marker = markers[parkId];  // Access the marker from the marker_dict
-
-                if (marker) {
-                    // Change marker color to highlight
-                    marker.setIcon(L.icon({iconUrl: 'path_to_your_highlighted_icon.png', iconSize: [25, 41], iconAnchor: [12, 41]}));
-                    // Optionally, zoom and center the map on the marker
-                    map.setView(marker.getLatLng(), 15);  // Adjust zoom level as needed
-                }
-            });
-
-            item.addEventListener('mouseleave', function() {
-                const parkId = item.getAttribute('data-park-id');
-                const marker = markers[parkId];
-
-                if (marker) {
-                    // Reset marker icon to the default one
-                    marker.setIcon(L.icon({iconUrl: 'path_to_your_default_icon.png', iconSize: [25, 41], iconAnchor: [12, 41]}));
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+{% endblock %}
