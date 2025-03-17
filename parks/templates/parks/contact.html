@@ -1,10 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Contact - PAWPARK{% endblock %}
+{% block title %}Contact Us - PAWPARK{% endblock %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <h1>Contact Us</h1>
-    <p>Email: info@pawpark.com</p>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-5 fw-bold text-brown">Get in Touch</h1>
+        <p class="lead text-muted">Have questions or suggestions? We'd love to hear from you!</p>
+    </div>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm">
+                <h4 class="text-center">Contact Information</h4>
+                <p class="text-center text-muted">Reach out to us anytime.</p>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Email:</strong> <a href="mailto:info@pawpark.com" class="text-decoration-none">info@pawpark.com</a>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Phone:</strong> <a href="tel:+1234567890" class="text-decoration-none">+1 (234) 567-890</a>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Location:</strong> NYC, USA
+                    </li>
+                </ul>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'home' %}" class="btn btn-primary px-4">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
