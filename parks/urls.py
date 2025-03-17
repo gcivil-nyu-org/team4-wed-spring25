@@ -8,6 +8,9 @@ urlpatterns = [
     path("map/", views.map, name="map"),
     path("combined/", views.park_and_map, name="park_and_map"),
     path("park/<int:id>/", views.park_detail, name="park_detail"),
+    path("home/", views.home_view, name="home"),
+    path("contact/", views.contact_view, name="contact"),
+    path("", views.home_view, name="home"),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

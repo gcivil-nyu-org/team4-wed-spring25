@@ -16,6 +16,10 @@ def park_list(request):
     return render(request, "parks/park_list.html", {"parks": parks})
 
 
+def home_view(request):
+    return render(request, "parks/home.html")
+
+
 def map(request):
 
     NYC_LAT_AND_LONG = (40.730610, -73.935242)
@@ -66,7 +70,6 @@ def park_and_map(request):
 
     # Apply filters based on the selected values
     parks = DogRun.objects.all().order_by("id")
-
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
 
@@ -126,3 +129,7 @@ def park_detail(request, id):
         return redirect("park_detail", id=park.id)
 
     return render(request, "parks/park_detail.html", {"park": park})
+
+
+def contact_view(request):
+    return render(request, "parks/contact.html")
