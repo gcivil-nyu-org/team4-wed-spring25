@@ -70,7 +70,6 @@ def park_and_map(request):
 
     # Apply filters based on the selected values
     parks = DogRun.objects.all().order_by("id")
-
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
 

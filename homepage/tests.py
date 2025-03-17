@@ -31,7 +31,7 @@ class HelloWorldTest(TestCase):
 
     def test_home_page(self):
         response = self.client.get(reverse("home"))
-        self.assertEqual(response.status_code, 200)  
+        self.assertEqual(response.status_code, 200)
 
 
 class ContactPageTest(TestCase):
@@ -49,4 +49,8 @@ class ContactPageTest(TestCase):
         self.assertContains(response, "NYC, USA")
 
         # Check if the "Back to Home" button exists
-        self.assertContains(response, 'href="' + reverse("home") + '"', msg_prefix="Home button is missing")
+        self.assertContains(
+            response,
+            'href="' + reverse("home") + '"',
+            msg_prefix="Home button is missing",
+        )

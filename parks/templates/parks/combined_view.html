@@ -47,19 +47,20 @@
 
     <!-- Parks List + Map -->
     <div class="row g-0">
-        <!-- Parks List (30% Width) -->
         <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
-            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">Parks</h3>
+            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">
+                Parks ({{ parks|length }})
+            </h3>
             {% for park in parks %}
             <div class="card mb-2 p-2 d-flex flex-row align-items-center">
                 <!-- Park Image (Left) -->
                 <div class="me-3">
                     <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
-                         class="rounded-circle" 
-                         alt="{{ park.name }}" 
-                         style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;">
+                        class="rounded-circle" 
+                        alt="{{ park.name }}" 
+                        style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;">
                 </div>
-                
+
                 <!-- Park Details (Middle) -->
                 <div class="flex-grow-1">
                     <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name }}</h6>
@@ -72,10 +73,9 @@
                     <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
                 </div>
             </div>
-            
-            
             {% endfor %}
         </div>
+
 
         <!-- NYC Map (70% Width, Full Height) -->
         <div class="col-md-9 d-flex flex-column">
