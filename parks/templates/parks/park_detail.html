@@ -10,7 +10,7 @@
     <!-- Park Image -->
     <div class="text-center mt-3">
         {% if park.image %}
-            <img src="/parks{{ park.image.url }}" alt="{{ park.name }} Image" class="img-fluid rounded shadow">
+            <img src="{{ park.image.url }}" alt="{{ park.name }} Image" class="img-fluid rounded shadow">
         {% else %}
             <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
                  alt="Dog Park Image" class="img-fluid rounded shadow">

@@ -52,7 +52,7 @@
         <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">Parks</h3>
         {% for park in parks %}
         <div class="card mb-2" style="padding: 5px;">
-            <img src="{% if park.image %}/parks{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
+            <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
                  class="card-img-top" 
                  alt="{{ park.name }}" 
                  style="height: 70px; object-fit: cover;">
