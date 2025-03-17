@@ -9,13 +9,15 @@
     <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
 </div>
 
-<div class="container mt-3">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+<!-- Full-width container for layout consistency -->
+<div class="container-fluid mt-3">
+    <!-- Filter Section (Full Width) -->
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-10">
             <div class="card p-3 shadow-sm">
                 <form class="row g-2">
                     <!-- Park Type -->
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label for="filter" class="form-label fw-bold">Filter by Type:</label>
                         <select class="form-select" name="filter" id="filter">
                             <option value="">All Types</option>
@@ -25,7 +27,7 @@
                     </div>
 
                     <!-- Accessibility -->
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label for="accessible" class="form-label fw-bold">Accessibility:</label>
                         <select class="form-select" name="accessible" id="accessible">
                             <option value="">All</option>
@@ -35,47 +37,46 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Apply</button>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
 
-
-<!-- Parks List + Map -->
-<div class="row flex-grow-1 g-0">
-    <!-- Parks List (30% Width) -->
-    <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
-        <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">Parks</h3>
-        {% for park in parks %}
-        <div class="card mb-2" style="padding: 5px;">
-            <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
-                 class="card-img-top" 
-                 alt="{{ park.name }}" 
-                 style="height: 70px; object-fit: cover;">
-            <div class="card-body p-1">
-                <h6 class="card-title text-center" style="font-size: 0.95rem;">{{ park.name }}</h6>
-                <p class="card-text text-center" style="font-size: 0.8rem; margin-bottom: 2px;">
-                    <strong>Type:</strong> {{ park.dogruns_type }} <br>
-                    <strong>Accessible:</strong> {{ park.accessible }}
-                </p>
-                <div class="text-center">
-                    <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+    <!-- Parks List + Map -->
+    <div class="row g-0">
+        <!-- Parks List (30% Width) -->
+        <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
+            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">Parks</h3>
+            {% for park in parks %}
+            <div class="card mb-2" style="padding: 5px;">
+                <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
+                     class="card-img-top" 
+                     alt="{{ park.name }}" 
+                     style="height: 70px; object-fit: cover;">
+                <div class="card-body p-1">
+                    <h6 class="card-title text-center" style="font-size: 0.95rem;">{{ park.name }}</h6>
+                    <p class="card-text text-center" style="font-size: 0.8rem; margin-bottom: 2px;">
+                        <strong>Type:</strong> {{ park.dogruns_type }} <br>
+                        <strong>Accessible:</strong> {{ park.accessible }}
+                    </p>
+                    <div class="text-center">
+                        <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- NYC Map (70% Width, Full Height) -->
-    <div class="col-md-9 d-flex flex-column">
-        <div class="map-container flex-grow-1 w-100" style="height: 100%;">
-            {% autoescape off %}
-                {{ map|safe }}
-            {% endautoescape %}
+        <!-- NYC Map (70% Width, Full Height) -->
+        <div class="col-md-9 d-flex flex-column">
+            <div class="map-container flex-grow-1 w-100" style="height: 100%;">
+                {% autoescape off %}
+                    {{ map|safe }}
+                {% endautoescape %}
+            </div>
         </div>
     </div>
 </div>
