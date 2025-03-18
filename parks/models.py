@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class DogRunNew(models.Model):
     id = models.CharField(max_length=255, primary_key=True)
     prop_id = models.CharField(max_length=255)
@@ -22,9 +23,12 @@ class DogRunNew(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+
 class Review(models.Model):
-    park = models.ForeignKey(DogRunNew, on_delete=models.CASCADE, related_name="reviews")
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="reviews"
+    )
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)

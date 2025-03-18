@@ -118,7 +118,11 @@ def park_detail(request, id):
                 return render(
                     request,
                     "parks/park_detail.html",
-                    {"park": park, "reviews": reviews, "error_message": "Please select a valid rating!"},
+                    {
+                        "park": park,
+                        "reviews": reviews,
+                        "error_message": "Please select a valid rating!",
+                    },
                 )
 
             rating = int(rating_value)
@@ -126,7 +130,11 @@ def park_detail(request, id):
                 return render(
                     request,
                     "parks/park_detail.html",
-                    {"park": park, "reviews": reviews, "error_message": "Rating must be between 1 and 5 stars!"},
+                    {
+                        "park": park,
+                        "reviews": reviews,
+                        "error_message": "Rating must be between 1 and 5 stars!",
+                    },
                 )
 
             Review.objects.create(park=park, text=review_text, rating=rating)
