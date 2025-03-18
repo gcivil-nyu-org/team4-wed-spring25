@@ -1,13 +1,13 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from .models import DogRun
+from .models import DogRunNew
 
 
 class ParkModelTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.park = DogRun.objects.create(
+        self.park = DogRunNew.objects.create(
             id="1",
             prop_id="1234",
             name="Central Park",
@@ -16,6 +16,26 @@ class ParkModelTest(TestCase):
             accessible="Yes",
             notes="Test park notes",
             image=None,
+            google_name="Central Park",
+            borough="M",
+            zip_code="United States",
+            formatted_address="Central Pk N, New York, NY, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            additional={
+                "geometry": {
+                    "bounds": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                    "location": {"lat": 40.7987768, "lng": -73.9537196},
+                    "location_type": "GEOMETRIC_CENTER",
+                    "viewport": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                }
+            },
         )
 
     def test_park_creation(self):
@@ -27,7 +47,7 @@ class ParkModelTest(TestCase):
 class ParkListViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.park = DogRun.objects.create(
+        self.park = DogRunNew.objects.create(
             id="1",
             prop_id="1234",
             name="Central Park",
@@ -36,6 +56,26 @@ class ParkListViewTest(TestCase):
             accessible="Yes",
             notes="Test park notes",
             image=None,
+            google_name="Central Park",
+            borough="M",
+            zip_code="United States",
+            formatted_address="Central Pk N, New York, NY, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            additional={
+                "geometry": {
+                    "bounds": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                    "location": {"lat": 40.7987768, "lng": -73.9537196},
+                    "location_type": "GEOMETRIC_CENTER",
+                    "viewport": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                }
+            },
         )
 
     def test_park_list_view(self):
@@ -47,7 +87,7 @@ class ParkListViewTest(TestCase):
 # class ParkDetailViewTest(TestCase):
 #     def setUp(self):
 #         self.client = Client()
-#         self.park = DogRun.objects.create(
+#         self.park = DogRunNew.objects.create(
 #             id="1",
 #             prop_id="1234",
 #             name="Central Park",
@@ -94,7 +134,7 @@ class ParkDetailViewTest(TestCase):
         """Set up a test park object."""
         self.client = Client()
 
-        self.park = DogRun.objects.create(
+        self.park = DogRunNew.objects.create(
             id="1",
             prop_id="1234",
             name="Central Park",
@@ -103,6 +143,26 @@ class ParkDetailViewTest(TestCase):
             accessible="Yes",
             notes="Test park notes",
             image=None,
+            google_name="Central Park",
+            borough="M",
+            zip_code="United States",
+            formatted_address="Central Pk N, New York, NY, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            additional={
+                "geometry": {
+                    "bounds": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                    "location": {"lat": 40.7987768, "lng": -73.9537196},
+                    "location_type": "GEOMETRIC_CENTER",
+                    "viewport": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                }
+            },
         )
 
         self.park_detail_url = reverse("park_detail", args=[self.park.id])

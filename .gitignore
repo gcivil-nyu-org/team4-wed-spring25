@@ -22,6 +22,4 @@ runs.json
 
 .coverage
 
-duplicate_test.py
-coordinates.json
-new_runs.json
+geocoding_script_files/*
