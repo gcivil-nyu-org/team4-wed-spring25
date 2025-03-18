@@ -158,7 +158,7 @@ class ParkDetailViewTest(TestCase):
         )
 
     def test_get_park_detail(self):
-        #Test retrieving the park detail page.
+        # Test retrieving the park detail page.
         response = self.client.get(reverse("park_detail", args=[self.park.id]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "parks/park_detail.html")
