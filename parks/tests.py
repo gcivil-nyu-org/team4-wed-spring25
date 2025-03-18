@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import DogRun, DogRunNew
+from .models import DogRunNew
 
 
 class LoginTests(TestCase):
@@ -130,7 +130,6 @@ class ParkListViewTest(TestCase):
         self.assertContains(response, "Central Park")
 
 
-
 # class ParkDetailViewTest(TestCase):
 #     def setUp(self):
 #         self.client = Client()
@@ -173,7 +172,7 @@ class ParkDetailViewTest(TestCase):
     def setUp(self):
         """Set up the test client and create a test park."""
         self.client = Client()
-        
+
         self.park = DogRunNew.objects.create(
             id="1",
             prop_id="1234",
