@@ -10,10 +10,8 @@ import json
 
 from .utilities import folium_cluster_styling
 
-from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import RegisterForm
-from django.contrib.auth import login
 
 
 def register_view(request):
