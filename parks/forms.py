@@ -3,9 +3,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 ROLE_CHOICES = [
-    ('user', 'User'),
-    ('admin', 'Admin'),
+    ("user", "User"),
+    ("admin", "Admin"),
 ]
+
 
 class RegisterForm(UserCreationForm):
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
