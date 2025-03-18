@@ -1,72 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-<<<<<<< HEAD
-=======
-from .models import DogRun
-from django.contrib.auth.models import User
-
-
-class LoginTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(
-            username="testuser", password="StrongPass123"
-        )
-
-    def test_login_page_loads(self):
-        """Ensure the login page loads properly."""
-        response = self.client.get(
-            reverse("login")
-        )  # Ensure this matches your URL name
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "parks/login.html")
-
-    def test_valid_login(self):
-        """Ensure a valid user can log in."""
-        response = self.client.post(
-            reverse("login"), {"username": "testuser", "password": "StrongPass123"}
-        )
-        self.assertEqual(response.status_code, 302)
-
-
-class AuthTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-
-    def test_register_page_loads(self):
-        """Ensure the registration page loads properly."""
-        response = self.client.get(
-            reverse("register")
-        )  # Ensure this matches your URL name
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "parks/register.html")
-
-    def test_user_registration(self):
-        """Ensure a new user can register successfully."""
-        response = self.client.post(
-            reverse("register"),
-            {
-                "username": "testuser",
-                "password1": "StrongPass123",
-                "password2": "StrongPass123",
-                "role": "user",  # Make sure this field is required in the form
-            },
-        )
-
-        # Print response content for debugging
-        print(f"Response status: {response.status_code}")
-        print(f"Response content: {response.content.decode()}")
-
-        # Check if the response is a redirect (302)
-        self.assertEqual(
-            response.status_code, 302, f"Response text: {response.content.decode()}"
-        )
-
-        # Ensure the user was actually created in the database
-        self.assertTrue(User.objects.filter(username="testuser").exists())
->>>>>>> 54a3d6a (Fix black formatting issues)
 
 from .models import DogRunNew
+
 
 class ParkModelTest(TestCase):
     def setUp(self):
