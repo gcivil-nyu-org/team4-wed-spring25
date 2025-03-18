@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to PAWPARK{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4 fw-bold text-brown">Welcome to PawPark!</h1>
+    <p class="lead text-muted">Find the best dog parks in NYC for your furry friend.</p>
+
+    <div class="mt-4">
+        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-primary px-4">Explore Parks</a>
+        <a href="{% url 'contact' %}" class="btn btn-lg btn-outline-secondary px-4">Contact Us</a>
+    </div>
+</div>
+{% endblock %}

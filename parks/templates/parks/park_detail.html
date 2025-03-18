@@ -1,128 +1,134 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ park.name }} - Park Details</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; text-align: center; padding: 20px; }
-        .heading-container { background-color: #6D4C41; color: white; padding: 20px; font-size: 36px; font-weight: bold; width: 100%; }
-        .image-container { width: 80%; height: 400px; margin: auto; overflow: hidden; border-radius: 10px; }
-        .image-container img { width: 100%; height: 100%; object-fit: cover; }
-        .uploaded-image { width: 300px; height: 300px; object-fit: cover; margin-top: 15px; display: block; border-radius: 8px; border: 2px solid #6D4C41; }
-        table { width: 80%; margin: 20px auto; border-collapse: collapse; background-color: white; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-radius: 8px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #6D4C41; color: white; }
-        td { background-color: #f9f9f9; }
-        form { width: 80%; background-color: white; padding: 20px; margin: 40px auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); text-align: left; }
-        label { font-size: 16px; margin-bottom: 8px; display: block; }
-        textarea, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; resize: vertical; }
-        button { padding: 10px 20px; background-color: #6D4C41; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; display: block; }
-        button:hover { background-color: #5D4037; }
-        .stars { display: inline-block; font-size: 30px; cursor: pointer; margin-top: 10px; }
-        .star { color: #ccc; transition: color 0.2s ease-in-out; }
-        .star:hover, .star.selected { color: #ffcc00; }
-        .reviews { margin: 20px auto; width: 80%; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); text-align: left;}  
-        .review { border-bottom: 1px solid #ddd; padding: 10px 0; }
-    </style>
-</head>
-<body>
-	<div class="heading-container">NYC PawPark</div>
+{% extends "base.html" %}
 
-	<div class="image-container">
-		{% if park.image %}
-			<img src="{{ park.image.url }}" alt="{{ park.name }} Image">
-		{% else %}
-			<img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" alt="Dog Park Image">
-		{% endif %}
-	</div>
-	
-	<h1>{{ park.name }}</h1>
-	
-	<table>
-		<tr><th>ID</th><td>{{ park.id }}</td></tr>
-		<tr><th>Property ID</th><td>{{ park.prop_id }}</td></tr>
-		<tr><th>Name</th><td>{{ park.name }}</td></tr>
-		<tr><th>Address</th><td>{{ park.address }}</td></tr>
-		<tr><th>Dog Runs</th><td>{{ park.dogruns_type }}</td></tr>
-		<tr><th>Handicap-Accessible</th><td>{{ park.accessible }}</td></tr>
-		<tr><th>Notes</th><td>{{ park.notes }}</td></tr>
-	</table>
-	
-	<h2>Upload a Picture & Leave a Review</h2>
-
-	<!-- review list -->
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="image" accept="image/*">
-
-    <h2>Leave a Review</h2>
-    <label for="text">Your Review:</label>
-    <textarea name="text" id="text" rows="4" required></textarea>
-
-    <label for="rating">Rating:</label>
-    <!-- stars -->
-    <div class="stars" id="rating">
-        <span class="star" data-value="1">&#9733;</span>
-        <span class="star" data-value="2">&#9733;</span>
-        <span class="star" data-value="3">&#9733;</span>
-        <span class="star" data-value="4">&#9733;</span>
-        <span class="star" data-value="5">&#9733;</span>
+{% block content %}
+<div class="container my-4">
+    <!-- Park Heading -->
+    <div class="text-center bg-brown text-white py-3 rounded">
+        <h1>{{ park.name }}</h1>
     </div>
 
-    <!-- hidden input to restore marks -->
-    <input type="hidden" name="rating" id="star-rating" required>
+    <!-- Park Image -->
+    <div class="text-center mt-3">
+        {% if park.image %}
+            <img src="{{ park.image.url }}" alt="{{ park.name }} Image" class="img-fluid rounded shadow">
+        {% else %}
+            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
+                 alt="Dog Park Image" class="img-fluid rounded shadow">
+        {% endif %}
+    </div>
 
-    <!--  make sure Submit button inside the form  -->
-    <button type="submit">Submit Review</button>
-</form>
+    <!-- Park Details Table -->
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered">
+            <tr><th>ID</th><td>{{ park.id }}</td></tr>
+            <tr><th>Property ID</th><td>{{ park.prop_id }}</td></tr>
+            <tr><th>Address</th><td>{{ park.address }}</td></tr>
+            <tr><th>Dog Runs Type</th><td>{{ park.dogruns_type }}</td></tr>
+            <tr><th>Accessible</th><td>{{ park.accessible }}</td></tr>
+            <tr><th>Notes</th><td>{{ park.notes }}</td></tr>
+        </table>
+    </div>
 
+    <!-- Upload Image Form -->
+    <div class="card mt-5">
+        <div class="card-header bg-brown text-white">
+            <h4>Upload a Picture</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'park_detail' park.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="upload_image">
+                <div class="mb-3">
+                    <label class="form-label">Upload an Image:</label>
+                    <input type="file" name="image" accept="image/*" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-brown">Upload Image</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Review Form -->
+    <div class="card mt-4">
+        <div class="card-header bg-brown text-white">
+            <h4>Leave a Review</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'park_detail' park.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="submit_review">
+                
+                <div class="mb-3">
+                    <label class="form-label">Your Review:</label>
+                    <textarea name="text" class="form-control" rows="4" required></textarea>
+                </div>
+
+                <!-- Star Rating System -->
+                <label class="form-label">Rating:</label>
+                <div class="stars mb-3">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <input type="hidden" name="rating" id="star-rating" required>
+
+                <button type="submit" class="btn btn-brown">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Display Recent Reviews -->
+    <div class="card mt-4">
+        <div class="card-header bg-brown text-white">
+            <h4>Recent Reviews</h4>
+        </div>
+        <div class="card-body">
+            {% for review in reviews %}
+                <div class="review border-bottom py-2">
+                    <p><strong>Rating:</strong> {{ review.rating }} ★</p>
+                    <p>{{ review.text }}</p>
+                </div>
+            {% empty %}
+                <p class="text-muted">No reviews yet. Be the first to leave one!</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-3">
+        <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
+    </div>
+</div>
+
+<!-- JavaScript for Star Rating -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const stars = document.querySelectorAll(".star");
-        const ratingInput = document.getElementById("star-rating");
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('star-rating');
 
         stars.forEach(star => {
-            star.addEventListener("click", function () {
-                let rating = this.getAttribute("data-value");
+            star.addEventListener('click', function () {
+                const ratingValue = this.getAttribute('data-value');
+                ratingInput.value = ratingValue;
 
-                // set hidden input value
-                ratingInput.value = rating;
-
-                // remove
-                stars.forEach(s => s.classList.remove("selected"));
-
-                // "select the star and stars before it"
-                this.classList.add("selected");
-                let prevStar = this.previousElementSibling;
-                while (prevStar) {
-                    prevStar.classList.add("selected");
-                    prevStar = prevStar.previousElementSibling;
+                stars.forEach(s => s.classList.remove('selected'));
+                for (let i = 0; i < ratingValue; i++) {
+                    stars[i].classList.add('selected');
                 }
             });
-        });
-
-        // check if u gave stars before submitting
-        document.querySelector("form").addEventListener("submit", function (event) {
-            if (!ratingInput.value) {
-                alert("Please select a rating before submitting.");
-                event.preventDefault(); // prevent
-            }
         });
     });
 </script>
 
-
-	<!-- show all the reviews -->
-	<div class="reviews">
-		<h2>Recent Reviews</h2>
-		{% for review in reviews %}
-			<div class="review">
-				<p><strong>Rating:</strong> {{ review.rating }} ★</p>
-				<p>{{ review.text }}</p>
-			</div>
-		{% endfor %}
-	</div>
-</body>
-</html>
+<!-- Custom Styles -->
+<style>
+    .bg-brown { background-color: #6D4C41; }
+    .btn-brown { background-color: #6D4C41; color: white; }
+    .btn-brown:hover { background-color: #5D4037; }
+    .stars { display: flex; justify-content: center; font-size: 30px; cursor: pointer; }
+    .star { color: #ccc; transition: color 0.2s ease-in-out; }
+    .star.selected { color: #ffcc00; }
+    .review { text-align: left; }
+</style>
+{% endblock %}

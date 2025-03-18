@@ -21,3 +21,5 @@ runs.json
 .DS_Store
 
 .coverage
+
+geocoding_script_files/*
