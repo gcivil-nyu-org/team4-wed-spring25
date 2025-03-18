@@ -21,7 +21,9 @@ class ParkModelTest(TestCase):
             formatted_address="Central Pk N, New York, NY, USA",
             latitude=40.7987768,
             longitude=-73.9537196,
-            additional={"geometry": {"location": {"lat": 40.7987768, "lng": -73.9537196}}},
+            additional={
+                "geometry": {"location": {"lat": 40.7987768, "lng": -73.9537196}}
+            },
         )
 
     def test_park_creation(self):
@@ -41,7 +43,9 @@ class ReviewModelTest(TestCase):
             accessible="No",
             notes="Another test park",
         )
-        self.review = Review.objects.create(park=self.park, text="Great park!", rating=5)
+        self.review = Review.objects.create(
+            park=self.park, text="Great park!", rating=5
+        )
 
     def test_review_creation(self):
         self.assertEqual(self.review.text, "Great park!")
@@ -55,8 +59,12 @@ class ReviewModelTest(TestCase):
 class ParkListViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.park1 = DogRunNew.objects.create(id="1", name="Central Park", address="NYC", dogruns_type="Small")
-        self.park2 = DogRunNew.objects.create(id="2", name="Brooklyn Park", address="Brooklyn", dogruns_type="Large")
+        self.park1 = DogRunNew.objects.create(
+            id="1", name="Central Park", address="NYC", dogruns_type="Small"
+        )
+        self.park2 = DogRunNew.objects.create(
+            id="2", name="Brooklyn Park", address="Brooklyn", dogruns_type="Large"
+        )
 
     def test_park_list_view(self):
         response = self.client.get(reverse("park_list"))
@@ -87,35 +95,40 @@ class ParkDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_submit_invalid_rating(self):
-        #Test submitting an invalid rating (>5) to ensure an error message appears
+        # Test submitting an invalid rating (>5) to ensure an error message appears
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
-            {"form_type": "submit_review", "text": "Invalid rating test", "rating": "10"},
-    )
+            {
+                "form_type": "submit_review",
+                "text": "Invalid rating test",
+                "rating": "10",
+            },
+        )
         self.assertEqual(response.status_code, 200)  # Page should reload with an error
         self.assertContains(response, "Rating must be between 1 and 5 stars!")
 
     def test_submit_review(self):
-        #Test submitting a review should correctly redirect
+        # Test submitting a review should correctly redirect
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
             {"form_type": "submit_review", "text": "Awesome park!", "rating": "5"},
-    )
-        self.assertEqual(response.status_code, 302) 
+        )
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(Review.objects.count(), 1)
 
     def test_upload_image(self):
-    #Test uploading an image should correctly redirect
-        image = SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg")
+        # Test uploading an image should correctly redirect
+        image = SimpleUploadedFile(
+            "test.jpg", b"file_content", content_type="image/jpeg"
+        )
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
             {"form_type": "upload_image", "image": image},
             format="multipart",
-    )
-        self.assertEqual(response.status_code, 302)  
+        )
+        self.assertEqual(response.status_code, 302)
         self.park.refresh_from_db()
         self.assertIsNotNone(self.park.image)
-
 
 
 class MapViewTest(TestCase):

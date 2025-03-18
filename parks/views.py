@@ -107,7 +107,9 @@ def park_detail(request, id):
 
             park.image = request.FILES["image"]
             park.save()
-            return redirect("park_detail", id=park.id)  # ✅ Ensure redirection after image upload
+            return redirect(
+                "park_detail", id=park.id
+            )  # ✅ Ensure redirection after image upload
 
         # Handle review submission separately
         elif form_type == "submit_review":
@@ -138,7 +140,9 @@ def park_detail(request, id):
                 )
 
             Review.objects.create(park=park, text=review_text, rating=rating)
-            return redirect("park_detail", id=park.id)  # ✅ Ensure redirection after review submission
+            return redirect(
+                "park_detail", id=park.id
+            )  # ✅ Ensure redirection after review submission
 
     return render(request, "parks/park_detail.html", {"park": park, "reviews": reviews})
 
