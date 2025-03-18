@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.core.files.storage import FileSystemStorage
+
+# from django.core.files.storage import FileSystemStorage
 from .models import DogRunNew, Review
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
 import os
