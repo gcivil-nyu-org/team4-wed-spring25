@@ -1,7 +1,53 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-
+from django.contrib.auth.models import User
 from .models import DogRunNew
+
+
+class LoginTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            username="testuser", password="StrongPass123"
+        )
+
+    def test_login_page_loads(self):
+        """Ensure the login page loads properly."""
+        response = self.client.get(reverse("login"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "parks/login.html")
+
+    def test_valid_login(self):
+        """Ensure a valid user can log in."""
+        response = self.client.post(
+            reverse("login"), {"username": "testuser", "password": "StrongPass123"}
+        )
+        self.assertEqual(response.status_code, 302)
+
+
+class AuthTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_register_page_loads(self):
+        """Ensure the registration page loads properly."""
+        response = self.client.get(reverse("register"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "parks/register.html")
+
+    def test_user_registration(self):
+        """Ensure a new user can register successfully."""
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "testuser",
+                "password1": "StrongPass123",
+                "password2": "StrongPass123",
+                "role": "user",  # Ensure this field is required
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(username="testuser").exists())
 
 
 class ParkModelTest(TestCase):
@@ -123,15 +169,8 @@ class CombinedViewTest(TestCase):
 
 
 class ParkDetailViewTest(TestCase):
-    def test_park_detail_not_found(self):
-        """Test accessing a non-existent park should return 404."""
-        response = self.client.get(
-            reverse("park_detail", args=[9999])
-        )  # Non-existent ID
-        self.assertEqual(response.status_code, 404)
-
-    def test_get_park_detail(self):
-        """Set up a test park object."""
+    def setUp(self):
+        """Set up the test client and create a test park."""
         self.client = Client()
 
         self.park = DogRunNew.objects.create(
@@ -165,9 +204,16 @@ class ParkDetailViewTest(TestCase):
             },
         )
 
-        self.park_detail_url = reverse("park_detail", args=[self.park.id])
+    def test_park_detail_not_found(self):
+        """Test accessing a non-existent park should return 404."""
+        response = self.client.get(
+            reverse("park_detail", args=[9999])
+        )  # Non-existent ID
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_park_detail(self):
         """Test retrieving the park detail page."""
-        response = self.client.get(self.park_detail_url)
+        response = self.client.get(reverse("park_detail", args=[self.park.id]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "parks/park_detail.html")
         self.assertContains(response, self.park.name)
