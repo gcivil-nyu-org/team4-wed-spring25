@@ -102,7 +102,7 @@ def park_and_map(request):
     m = m.replace(
         '<div style="width:100%;">'
         + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
-        '<div style="width:100%; height:100%;">'
+        '<div style="width:100%; height:100vh;">'
         + '<div style="position:relative;width:100%;height:100%;>',
         1,
     )
