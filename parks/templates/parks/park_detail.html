@@ -47,36 +47,40 @@
         </div>
     </div>
 
-    <!-- Review Form -->
-    <div class="card mt-4">
-        <div class="card-header bg-brown text-white">
-            <h4>Leave a Review</h4>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{% url 'park_detail' park.id %}">
-                {% csrf_token %}
-                <input type="hidden" name="form_type" value="submit_review">
-                
-                <div class="mb-3">
-                    <label class="form-label">Your Review:</label>
-                    <textarea name="text" class="form-control" rows="4" required></textarea>
-                </div>
-
-                <!-- Star Rating System -->
-                <label class="form-label">Rating:</label>
-                <div class="stars mb-3">
-                    <span class="star" data-value="1">&#9733;</span>
-                    <span class="star" data-value="2">&#9733;</span>
-                    <span class="star" data-value="3">&#9733;</span>
-                    <span class="star" data-value="4">&#9733;</span>
-                    <span class="star" data-value="5">&#9733;</span>
-                </div>
-                <input type="hidden" name="rating" id="star-rating" required>
-
-                <button type="submit" class="btn btn-brown">Submit Review</button>
-            </form>
-        </div>
+<!-- Review Form -->
+<div class="card mt-4">
+    <div class="card-header bg-brown text-white">
+        <h4>Leave a Review</h4>
     </div>
+    <div class="card-body">
+        {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
+        <form method="POST" action="{% url 'park_detail' park.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="submit_review">
+            
+            <div class="mb-3">
+                <label class="form-label">Your Review:</label>
+                <textarea name="text" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <!-- Star Rating System -->
+            <label class="form-label">Rating:</label>
+            <div class="stars mb-3">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+            </div>
+            <input type="hidden" name="rating" id="star-rating" required>
+
+            <button type="submit" class="btn btn-brown">Submit Review</button>
+        </form>
+    </div>
+</div>
+
 
     <!-- Display Recent Reviews -->
     <div class="card mt-4">

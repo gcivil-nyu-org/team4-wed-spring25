@@ -104,11 +104,10 @@ def park_detail(request, id):
         if form_type == "upload_image" and request.FILES.get("image"):
             if park.image and os.path.exists(park.image.path):
                 os.remove(park.image.path)  # Delete the old image
-                print(f"Deleted old image: {park.image.name}")
 
             park.image = request.FILES["image"]
             park.save()
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", id=park.id)  # ✅ Ensure redirection after image upload
 
         # Handle review submission separately
         elif form_type == "submit_review":
@@ -133,13 +132,13 @@ def park_detail(request, id):
                     "parks/park_detail.html",
                     {
                         "park": park,
-                        "reviews": reviews,
+                        "reviews": park.reviews.all(),
                         "error_message": "Rating must be between 1 and 5 stars!",
                     },
                 )
 
             Review.objects.create(park=park, text=review_text, rating=rating)
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", id=park.id)  # ✅ Ensure redirection after review submission
 
     return render(request, "parks/park_detail.html", {"park": park, "reviews": reviews})
 
