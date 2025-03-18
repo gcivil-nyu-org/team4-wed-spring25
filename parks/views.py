@@ -15,6 +15,7 @@ from django.contrib.auth import login
 from .forms import RegisterForm
 from django.contrib.auth import login
 
+
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -25,8 +26,9 @@ def register_view(request):
             return redirect("home")  # Redirect to homepage
     else:
         form = RegisterForm()
-    
+
     return render(request, "parks/register.html", {"form": form})
+
 
 def park_list(request):
     parks = DogRun.objects.all()  # Fetch all dog runs from the database
