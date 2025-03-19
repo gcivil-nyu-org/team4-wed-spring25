@@ -10,8 +10,6 @@ from .utilities import folium_cluster_styling
 from django.contrib.auth import login
 from .forms import RegisterForm
 
-import hashlib
-
 
 def register_view(request):
     if request.method == "POST":
@@ -122,6 +120,7 @@ def park_detail(request, id):
             ParkImage.objects.create(park=park, image=image)
         return redirect("park_detail", id=park.id)
     return render(request, "parks/park_detail.html", {"park": park, "images": images})
+
 
 def contact_view(request):
     return render(request, "parks/contact.html")
