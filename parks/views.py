@@ -1,8 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-
-# from django.core.files.storage import FileSystemStorage
-from .models import DogRunNew, Review
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
+from .models import DogRunNew, Review
 import os
 
 import folium
@@ -38,43 +36,59 @@ def home_view(request):
 
 
 def map(request):
+
     NYC_LAT_AND_LONG = (40.730610, -73.935242)
+    # Create map centered on NYC
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
     icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
+    
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
+    # Fetch all dog runs from the database
     parks = DogRunNew.objects.all()
 
+    # Mark every park on the map
     for park in parks:
         park_name = park.name
+
         folium.Marker(
             location=(park.latitude, park.longitude),
             icon=folium.Icon(icon="dog", prefix="fa", color="green"),
             popup=folium.Popup(park_name, max_width=200),
         ).add_to(marker_cluster)
 
-    return render(request, "parks/map.html", {"map": m._repr_html_()})
+    # represent map as html
+    context = {"map": m._repr_html_()}
+    return render(request, "parks/map.html", context)
 
 
 def park_and_map(request):
+    # Get filter values from GET request
     filter_value = request.GET.get("filter", "")
     accessible_value = request.GET.get("accessible", "")
 
+    # Apply filters based on the selected values
     parks = DogRunNew.objects.all().order_by("id")
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
+
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
     NYC_LAT_AND_LONG = (40.712775, -74.005973)
+
+    # Create map centered on NYC
+    # f = folium.Figure(height="100")
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
     icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
+    # Mark every park on the map
     for park in parks:
         park_name = park.name
+
         folium.Marker(
             location=(park.latitude, park.longitude),
             icon=folium.Icon(icon="dog", prefix="fa", color="green"),
@@ -90,6 +104,7 @@ def park_and_map(request):
         1,
     )
 
+    # Render map as HTML
     return render(request, "parks/combined_view.html", {"parks": parks, "map": m})
 
 
@@ -109,7 +124,7 @@ def park_detail(request, id):
             park.save()
             return redirect(
                 "park_detail", id=park.id
-            )  # ✅ Ensure redirection after image upload
+            )  # Ensure redirection after image upload
 
         # Handle review submission separately
         elif form_type == "submit_review":
@@ -142,7 +157,7 @@ def park_detail(request, id):
             Review.objects.create(park=park, text=review_text, rating=rating)
             return redirect(
                 "park_detail", id=park.id
-            )  # ✅ Ensure redirection after review submission
+            )  # Ensure redirection after review submission
 
     return render(request, "parks/park_detail.html", {"park": park, "reviews": reviews})
 
