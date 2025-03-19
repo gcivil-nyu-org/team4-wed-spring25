@@ -32,8 +32,8 @@
                         <label for="accessible" class="form-label fw-bold">Accessibility:</label>
                         <select class="form-select" name="accessible" id="accessible">
                             <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                            <option value="Y" {% if request.GET.accessible == "Y" %}selected{% endif %}>Yes</option>
-                            <option value="N" {% if request.GET.accessible == "N" %}selected{% endif %}>No</option>
+                            <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
+                            <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
