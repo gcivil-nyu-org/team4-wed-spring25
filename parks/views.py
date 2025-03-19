@@ -82,8 +82,11 @@ def park_and_map(request):
     # f = folium.Figure(height="100")
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
-    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
-    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
+    icon_create_function = folium_cluster_styling("rgba(0, 128, 0, 0.7)")
+    marker_cluster = MarkerCluster(
+        icon_create_function=icon_create_function,
+        # maxClusterRadius=10,
+    ).add_to(m)
 
     # Mark every park on the map
     for park in parks:
@@ -99,7 +102,7 @@ def park_and_map(request):
     m = m.replace(
         '<div style="width:100%;">'
         + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
-        '<div style="width:100%; height:100%;">'
+        '<div style="width:100%; height:100vh;">'
         + '<div style="position:relative;width:100%;height:100%;>',
         1,
     )
