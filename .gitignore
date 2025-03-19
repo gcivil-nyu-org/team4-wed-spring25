@@ -13,6 +13,7 @@ db.sqlite3
 __pycache__/
 *.pyc
 *.pyo
+env/
 
 
 runs.json
@@ -22,6 +23,4 @@ runs.json
 
 .coverage
 
-duplicate_test.py
-coordinates.json
-new_runs.json
+geocoding_script_files/*
