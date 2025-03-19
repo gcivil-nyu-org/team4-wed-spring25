@@ -13,6 +13,7 @@ db.sqlite3
 __pycache__/
 *.pyc
 *.pyo
+env/
 
 
 runs.json
@@ -21,3 +22,5 @@ runs.json
 .DS_Store
 
 .coverage
+
+geocoding_script_files/*

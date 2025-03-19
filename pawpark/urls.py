@@ -23,7 +23,7 @@ from homepage.views import health_check, test_db_connection
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("parks/", include("parks.urls")),
+    path("", include("parks.urls")),
     path("", include("homepage.urls")),
     path("health_check/", health_check),
     path("dbtest/", test_db_connection),
