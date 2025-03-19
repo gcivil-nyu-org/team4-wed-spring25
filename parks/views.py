@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
 from .models import DogRunNew, Review, ParkImage
-import os
+
 import folium
 from folium.plugins import MarkerCluster
 
