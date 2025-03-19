@@ -32,8 +32,8 @@
                         <label for="accessible" class="form-label fw-bold">Accessibility:</label>
                         <select class="form-select" name="accessible" id="accessible">
                             <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                            <option value="Y" {% if request.GET.accessible == "Y" %}selected{% endif %}>Yes</option>
-                            <option value="N" {% if request.GET.accessible == "N" %}selected{% endif %}>No</option>
+                            <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
+                            <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
@@ -57,9 +57,9 @@
                 <!-- Park Image (Left) -->
                 <div class="me-3">
                     <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
-                        class="rounded-circle" 
-                        alt="{{ park.name }}" 
-                        style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;">
+                    class="rounded-circle" 
+                    alt="{{ park.name }}" 
+                    style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;">
                 </div>
 
                 <!-- Park Details (Middle) -->

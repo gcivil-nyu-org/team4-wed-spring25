@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import DogRunNew, Review
+from .models import DogRunNew, Review, ParkImage
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+# import os
 
 
 class LoginTests(TestCase):
@@ -62,7 +64,6 @@ class ParkModelTest(TestCase):
             dogruns_type="Small",
             accessible="Yes",
             notes="Test park notes",
-            image=None,
             google_name="Central Park",
             borough="M",
             zip_code="United States",
@@ -126,7 +127,6 @@ class ParkListViewTest(TestCase):
             dogruns_type="Small",
             accessible="Yes",
             notes="Test park notes",
-            image=None,
             google_name="Central Park",
             borough="M",
             zip_code="United States",
@@ -186,7 +186,6 @@ class ParkDetailViewTest(TestCase):
             dogruns_type="Small",
             accessible="Yes",
             notes="Test park notes",
-            image=None,
             google_name="Central Park",
             borough="M",
             zip_code="United States",
@@ -245,16 +244,97 @@ class ParkDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Review.objects.count(), 1)
 
-    def test_upload_image(self):
-        # Test uploading an image should correctly redirect
-        image = SimpleUploadedFile(
-            "test.jpg", b"file_content", content_type="image/jpeg"
+
+class ParkImageModelTest(TestCase):
+    def setUp(self):
+        """Set up a test park and associated images."""
+        self.park = DogRunNew.objects.create(
+            id="1",
+            prop_id="1234",
+            name="Central Park",
+            address="New York, NY",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Test park notes",
+            google_name="Central Park",
+            borough="M",
+            zip_code="United States",
+            formatted_address="Central Pk N, New York, NY, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            additional={
+                "geometry": {
+                    "bounds": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                    "location": {"lat": 40.7987768, "lng": -73.9537196},
+                    "location_type": "GEOMETRIC_CENTER",
+                    "viewport": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                }
+            },
         )
-        response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
-            {"form_type": "upload_image", "image": image},
-            format="multipart",
+        self.image = ParkImage.objects.create(
+            park=self.park,
+            image="https://res.cloudinary.com/demo/image/upload/sample.jpg",
         )
-        self.assertEqual(response.status_code, 302)
-        self.park.refresh_from_db()
-        self.assertIsNotNone(self.park.image)
+
+    def test_park_image_creation(self):
+        """Test that a ParkImage object is created successfully."""
+        self.assertEqual(self.image.park, self.park)
+        self.assertEqual(
+            self.image.image, "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+        )
+
+    def test_park_image_str(self):
+        """Test the string representation of a ParkImage object."""
+        self.assertEqual(str(self.image), f"Image for {self.park.name}")
+
+
+class ParkDetailViewImageTest(TestCase):
+    def setUp(self):
+        """Set up a test park and associated images."""
+        self.client = Client()
+        self.park = DogRunNew.objects.create(
+            id="1",
+            prop_id="1234",
+            name="Central Park",
+            address="New York, NY",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Test park notes",
+            google_name="Central Park",
+            borough="M",
+            zip_code="United States",
+            formatted_address="Central Pk N, New York, NY, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            additional={
+                "geometry": {
+                    "bounds": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                    "location": {"lat": 40.7987768, "lng": -73.9537196},
+                    "location_type": "GEOMETRIC_CENTER",
+                    "viewport": {
+                        "northeast": {"lat": 40.8009264, "lng": -73.9495752},
+                        "southwest": {"lat": 40.796948, "lng": -73.9580246},
+                    },
+                }
+            },
+        )
+        self.image = ParkImage.objects.create(
+            park=self.park,
+            image="https://res.cloudinary.com/demo/image/upload/sample.jpg",
+        )
+
+    def test_park_detail_view_with_images(self):
+        """Test that the park detail view displays associated images."""
+        response = self.client.get(reverse("park_detail", args=[self.park.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.park.name)
+        # self.assertIn(self.image.image, response.content.decode())

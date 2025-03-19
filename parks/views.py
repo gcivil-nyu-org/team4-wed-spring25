@@ -1,8 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from .models import DogRunNew, Review
+from .models import DogRunNew, Review, ParkImage
 import os
-
 import folium
 from folium.plugins import MarkerCluster
 
@@ -68,8 +67,9 @@ def park_and_map(request):
     filter_value = request.GET.get("filter", "")
     accessible_value = request.GET.get("accessible", "")
 
-    # Apply filters based on the selected values
+    # Fetch all dog runs from the database
     parks = DogRunNew.objects.all().order_by("id")
+
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
 
@@ -82,8 +82,11 @@ def park_and_map(request):
     # f = folium.Figure(height="100")
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
-    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
-    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
+    icon_create_function = folium_cluster_styling("rgba(0, 128, 0, 0.7)")
+    marker_cluster = MarkerCluster(
+        icon_create_function=icon_create_function,
+        # maxClusterRadius=10,
+    ).add_to(m)
 
     # Mark every park on the map
     for park in parks:
@@ -99,7 +102,7 @@ def park_and_map(request):
     m = m.replace(
         '<div style="width:100%;">'
         + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
-        '<div style="width:100%; height:100%;">'
+        '<div style="width:100%; height:100vh;">'
         + '<div style="position:relative;width:100%;height:100%;>',
         1,
     )
@@ -109,22 +112,20 @@ def park_and_map(request):
 
 
 def park_detail(request, id):
-    park = get_object_or_404(DogRunNew, id=id)
-    reviews = park.reviews.all()
+    park = get_object_or_404(DogRunNew, id=id)  # Get the park by id
+    images = ParkImage.objects.filter(
+        park=park
+    )  # Retrieve all images related to this park
+    reviews = park.reviews.all()  # Retrieve all reviews related to this park
 
     if request.method == "POST":
-        form_type = request.POST.get("form_type")
+        form_type = request.POST.get("form_type")  # Determine which form is submitted
 
-        # Handle image upload separately
-        if form_type == "upload_image" and request.FILES.get("image"):
-            if park.image and os.path.exists(park.image.path):
-                os.remove(park.image.path)  # Delete the old image
-
-            park.image = request.FILES["image"]
-            park.save()
-            return redirect(
-                "park_detail", id=park.id
-            )  # Ensure redirection after image upload
+        # Handle multiple image uploads
+        if form_type == "upload_image" and request.FILES.getlist("images"):
+            for image in request.FILES.getlist("images"):
+                ParkImage.objects.create(park=park, image=image)
+            return redirect("park_detail", id=park.id)  # Redirect after upload
 
         # Handle review submission separately
         elif form_type == "submit_review":
@@ -137,6 +138,7 @@ def park_detail(request, id):
                     "parks/park_detail.html",
                     {
                         "park": park,
+                        "images": images,
                         "reviews": reviews,
                         "error_message": "Please select a valid rating!",
                     },
@@ -149,7 +151,8 @@ def park_detail(request, id):
                     "parks/park_detail.html",
                     {
                         "park": park,
-                        "reviews": park.reviews.all(),
+                        "images": images,
+                        "reviews": reviews,
                         "error_message": "Rating must be between 1 and 5 stars!",
                     },
                 )
@@ -157,9 +160,13 @@ def park_detail(request, id):
             Review.objects.create(park=park, text=review_text, rating=rating)
             return redirect(
                 "park_detail", id=park.id
-            )  # Ensure redirection after review submission
+            )  # Redirect after review submission
 
-    return render(request, "parks/park_detail.html", {"park": park, "reviews": reviews})
+    return render(
+        request,
+        "parks/park_detail.html",
+        {"park": park, "images": images, "reviews": reviews},
+    )
 
 
 def contact_view(request):

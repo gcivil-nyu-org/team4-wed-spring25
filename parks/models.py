@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 class DogRun(models.Model):
@@ -26,7 +27,6 @@ class DogRunNew(models.Model):
     dogruns_type = models.CharField(max_length=100)
     accessible = models.CharField(max_length=50)
     notes = models.TextField(max_length=255)
-    image = models.ImageField(upload_to="dogruns/", null=True, blank=True)
     google_name = models.TextField(null=True, blank=True)
     borough = models.TextField(null=True, blank=True)
     zip_code = models.TextField(null=True, blank=True)
@@ -56,3 +56,17 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.park.name} ({self.rating} stars)"
+
+
+class ParkImage(models.Model):
+    park = models.ForeignKey(
+        DogRunNew,
+        on_delete=models.CASCADE,
+        related_name="images",
+        to_field="id",
+        db_column="park_id",
+    )
+    image = CloudinaryField("image")
+
+    def __str__(self):
+        return f"Image for {self.park.name}"
