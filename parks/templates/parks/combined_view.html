@@ -53,7 +53,7 @@
                 Parks ({{ parks|length }})
             </h3>
             {% for park in parks %}
-            <div class="card mb-2 p-2 d-flex flex-row align-items-center">
+            <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
                 <!-- Park Image (Left) -->
                 <div class="me-3">
                     <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
@@ -81,12 +81,281 @@
         <!-- NYC Map (70% Width, Full Height) -->
         <div class="col-md-9 d-flex flex-column">
             <div class="map-container flex-grow-1 w-100" style="height: 100%;">
-                {% autoescape off %}
+                <!-- {% autoescape off %}
                     {{ map|safe }}
-                {% endautoescape %}
+                {% endautoescape %} -->
+                <div id="map"></div>
+
             </div>
         </div>
     </div>
 </div>
+
+
+
+<script>
+    // Parks in JSON; accessible in JS
+    const parks = JSON.parse('{{ parks_json|escapejs }}');
+
+    // maps id -> park object
+    const parkIdToPark = {}
+
+
+    const baseIcon = L.divIcon({
+        html: `
+            <svg width="34" height="42" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad1" cx="50%" cy="28%" r="50%">
+                        <stop offset="0%" style="stop-color:#7ecb72; stop-opacity:1" />  
+                        <stop offset="100%" style="stop-color:#619d48; stop-opacity:1" />  
+                    </radialGradient>
+                </defs>
+                
+                <path d="M17 42C17 42 4 22 4 13C4 6 10.5 1 17 1C23.5 1 30 6 30 13C30 22 17 42 17 42Z" 
+                    fill="url(#grad1)" stroke="#5c9242" stroke-width="1.5"/>
+                
+                <text x="50%" y="32%" dominant-baseline="middle" text-anchor="middle" font-family="FontAwesome" font-size="14" fill="white">&#xf6d3;</text>
+            </svg>
+        `,
+        className: '',
+        iconSize: [34, 42],  
+        iconAnchor: [17, 42]
+    });
+
+    const highlightedIcon = L.divIcon({
+        html: `
+            <svg width="38" height="50" viewBox="0 0 38 50" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad2" cx="50%" cy="25%" r="60%">
+                        <stop offset="0%" style="stop-color:#9b6f5a; stop-opacity:1" />  
+                        <stop offset="70%" style="stop-color:#7d5545; stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#5a3c32; stop-opacity:1" />
+                    </radialGradient>
+
+                    <radialGradient id="highlightOverlay" cx="50%" cy="30%" r="40%">
+                        <stop offset="0%" style="stop-color:rgba(255,255,255,0.7); stop-opacity:1" />  
+                        <stop offset="100%" style="stop-color:rgba(255,255,255,0); stop-opacity:0" />  
+                    </radialGradient>
+                </defs>
+                
+                <!-- More prominent 3D effect with extra highlights -->
+                <path d="M19 50C19 50 5 26 5 14C5 6 11.5 1 19 1C26.5 1 33 6 33 14C33 26 19 50 19 50Z" 
+                    fill="url(#grad2)" stroke="#5a3c32" stroke-width="1.8"/>
+
+                <!-- Additional highlight overlay -->
+                <path d="M19 13C25 13 29 17 29 22C29 27 23 30 19 30C15 30 9 27 9 22C9 17 13 13 19 13Z"
+                    fill="url(#highlightOverlay)" opacity="0.5"/>
+
+                <!-- FontAwesome Dog Icon -->
+                <text x="50%" y="32%" dominant-baseline="middle" text-anchor="middle" font-family="FontAwesome" font-size="16" fill="white">&#xf6d3;</text>
+            </svg>
+        `,
+        className: '',
+        iconSize: [38, 50],  
+        iconAnchor: [19, 50]
+    });
+
+    const basePopupOffsetY = -30;
+    const highlightPopupOffsetY = -40;
+
+    // Maps park.id -> specific markers 
+    // Used to link park from list to marker on map
+    const markers = {};  // Store markers by park ID
+
+    const NYC_LAT_AND_LONG = [40.712775, -74.005973];
+
+
+    // Stores id of last park clicked in list
+    // Used to determine if map should reset
+    let lastClickedParkId = -1;
+    
+    // Used to determine if marker should reset to default
+    let highlightedFromClick = false;
+
+    let flyToTimeout = null;
+
+
+
+    // Create a map
+    var map = L.map('map', {
+        center: NYC_LAT_AND_LONG,
+        zoom: 11
+    })
+
+    // Tile the map
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+
+    // Place markers on map
+    parks.forEach(park => {
+        let marker = L.marker(
+            [park.latitude, park.longitude],
+            { 
+                icon: baseIcon,
+                riseOnHover: true,
+            }
+        ).addTo(map).bindPopup(park.name, {
+            autoPan: false,
+            offset: L.point(0, basePopupOffsetY)
+        });
+
+        // Maps park id to the corresponding marker
+        markers[park.id] = marker;
+
+        // Also map park id to the park info object
+        parkIdToPark[park.id] = park;
+
+        // Set listener for marker click
+        marker.on("click", function (e) {
+            console.log("Marker clicked:", park.name);
+
+            if (park.id != lastClickedParkId) {
+                // Reset last clicked marker
+                if (markers[lastClickedParkId])
+                    resetMarker(markers[lastClickedParkId]);
+
+                // highlight this marker
+                highlightMarker(marker);
+                lastClickedParkId = park.id;
+            }
+        });
+    });
+
+    map.on('click', (e) => {
+        if (markers[lastClickedParkId])
+            resetMarker(markers[lastClickedParkId]);
+    })
+
+
+    
+
+
+
+    function highlightMarker(marker) {
+        marker.setIcon(highlightedIcon); // Change marker color and size
+        marker.getPopup().options.offset = L.point(0, highlightPopupOffsetY); // Move popup to match increased marker
+        marker.setZIndexOffset(250); // Bring forward
+        marker.openPopup(); // Open popup 
+    }
+
+    function resetMarker(marker) {
+        marker.setIcon(baseIcon); // Revert marker to original
+        marker.setZIndexOffset(0); // Revert to default Z pos
+        marker.closePopup(); 
+        marker.getPopup().options.offset = L.point(0, basePopupOffsetY);
+        lastClickedParkId = -1;
+    }
+
+
+    function safeFlyTo(targetLatLng) {
+        let currentCenter = map.getCenter();
+        let currentZoom = map.getZoom();
+
+        let latDiff = Math.abs(currentCenter.lat - targetLatLng[0]);
+        let lngDiff = Math.abs(currentCenter.lng - targetLatLng[1]);
+
+        // Only fly if the center or zoom is actually different
+        if (latDiff > 0.001 || lngDiff > 0.001 || currentZoom !== 11) {
+            map.flyTo(targetLatLng, 11, {
+                animate: true,
+                duration: 0.5
+            });
+        }
+    }
+
+
+    // Hovering on a park in the list highlights the park marker
+    // on the map
+    document.addEventListener("DOMContentLoaded", function () {
+        let parkCards = document.querySelectorAll(".park-card");
+
+        parkCards.forEach((card) => {
+
+            // When mouse hovers over park card, it highlights the marker on the map
+            card.addEventListener("mouseenter", function () {
+                let parkId = card.id.replace("park-", ""); // Extract park ID
+                let marker = markers[parkId]; // Find corresponding marker
+
+                let park = parkIdToPark[parkId];
+                
+                // If this park is not the last clicked park
+                if (marker && parkId != lastClickedParkId) {
+                        
+                    // Reset last clicked marker
+                    if (markers[lastClickedParkId]) {
+                        resetTimeout = setTimeout(() => {
+                            resetMarker(markers[lastClickedParkId]);
+
+                            // highlight this marker
+                            highlightMarker(marker);
+        
+                            // set highlight from click to false
+                            highlightedFromClick = false;
+                        }, 200);
+                    }
+                    else {
+                        // highlight this marker
+                        highlightMarker(marker);
+                        // set highlight from click to false
+                        highlightedFromClick = false;
+                    }
+
+     
+                    // reset map view
+                    // Delay the map reset action by 500ms
+                    // in case accidental entering of card
+                    flyToTimeout = setTimeout(() => {
+                        safeFlyTo(NYC_LAT_AND_LONG);
+                    }, 150); 
+                }
+            });
+            
+            // Resets to default when mouse no longer hovers on the card
+            card.addEventListener("mouseleave", function () {
+                let parkId = card.id.replace("park-", "");
+                let marker = markers[parkId];
+
+                // Only reset marker if it is highlighter from hover
+                if (marker && !highlightedFromClick) {
+                    resetMarker(marker);
+                }
+
+                // Cancel flyTo if user moves out before delay ends
+                clearTimeout(flyToTimeout);
+                clearTimeout(resetTimeout);
+            });
+
+
+            // Center and zoom on the marker when a park card is clicked            
+            card.addEventListener("click", function () {
+                let parkId = card.id.replace("park-", ""); // Extract park ID
+                let marker = markers[parkId]; // Find corresponding marker
+
+                let park = parkIdToPark[parkId];
+
+                if (marker) {
+                    // Center the map on this marker
+                    // and zoom closer
+                    map.flyTo([park.latitude, park.longitude], 14, {
+                        animate: true,
+                        duration: 0.5 
+                    });
+
+                    highlightMarker(marker);
+
+                    highlightedFromClick = true;
+                    popupOpenedFromClick = true;
+
+                    lastClickedParkId = parkId;
+                }
+            });
+
+        });
+    });
+
+</script>
 
 {% endblock %}

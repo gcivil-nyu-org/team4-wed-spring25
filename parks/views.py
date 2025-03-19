@@ -10,6 +10,7 @@ from .utilities import folium_cluster_styling
 
 from django.contrib.auth import login
 from .forms import RegisterForm
+import json
 
 
 def register_view(request):
@@ -76,6 +77,8 @@ def park_and_map(request):
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
+    parks_json = json.dumps(list(parks.values()))
+
     NYC_LAT_AND_LONG = (40.712775, -74.005973)
 
     # Create map centered on NYC
@@ -89,14 +92,14 @@ def park_and_map(request):
     ).add_to(m)
 
     # Mark every park on the map
-    for park in parks:
-        park_name = park.name
+    # for park in parks:
+    #     park_name = park.name
 
-        folium.Marker(
-            location=(park.latitude, park.longitude),
-            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park_name, max_width=200),
-        ).add_to(marker_cluster)
+    #     folium.Marker(
+    #         location=(park.latitude, park.longitude),
+    #         icon=folium.Icon(icon="dog", prefix="fa", color="green"),
+    #         popup=folium.Popup(park_name, max_width=200),
+    #     ).add_to(marker_cluster)
 
     m = m._repr_html_()
     m = m.replace(
@@ -108,7 +111,7 @@ def park_and_map(request):
     )
 
     # Render map as HTML
-    return render(request, "parks/combined_view.html", {"parks": parks, "map": m})
+    return render(request, "parks/combined_view.html", {"parks": parks, "map": m, "parks_json": parks_json})
 
 
 def park_detail(request, id):
