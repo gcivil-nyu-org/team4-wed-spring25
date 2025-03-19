@@ -258,5 +258,3 @@ class ParkDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.park.refresh_from_db()
         self.assertIsNotNone(self.park.image)
-
-

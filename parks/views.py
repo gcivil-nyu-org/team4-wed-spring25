@@ -42,7 +42,7 @@ def map(request):
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
     icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
-    
+
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
     # Fetch all dog runs from the database

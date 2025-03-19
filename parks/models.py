@@ -16,7 +16,7 @@ class DogRun(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class DogRunNew(models.Model):
     id = models.CharField(max_length=255, primary_key=True)
