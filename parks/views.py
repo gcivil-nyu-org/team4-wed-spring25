@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from .models import DogRunNew
-import os
+from .models import DogRunNew, ParkImage
 
 import folium
 from folium.plugins import MarkerCluster
@@ -68,8 +67,9 @@ def park_and_map(request):
     filter_value = request.GET.get("filter", "")
     accessible_value = request.GET.get("accessible", "")
 
-    # Apply filters based on the selected values
+    # Fetch all dog runs from the database
     parks = DogRunNew.objects.all().order_by("id")
+
     if filter_value:
         parks = parks.filter(dogruns_type__icontains=filter_value)
 
@@ -110,18 +110,13 @@ def park_and_map(request):
 
 def park_detail(request, id):
     park = get_object_or_404(DogRunNew, id=id)  # Get the park by id
+    images = ParkImage.objects.filter(park=park)
 
-    if request.method == "POST" and request.FILES.get("image"):
-
-        if park.image:
-            if os.path.exists(park.image.path):
-                os.remove(park.image.path)  # Delete the existing image file
-                print(f"Deleted old image: {park.image.name}")
-        park.image = request.FILES["image"]
-        park.save()
+    if request.method == "POST" and request.FILES.get("images"):
+        for image in request.FILES.getlist("images"):
+            ParkImage.objects.create(park=park, image=image)
         return redirect("park_detail", id=park.id)
-
-    return render(request, "parks/park_detail.html", {"park": park})
+    return render(request, "parks/park_detail.html", {"park": park, "images": images})
 
 
 def contact_view(request):
