@@ -92,14 +92,15 @@ def park_and_map(request):
     ).add_to(m)
 
     # Mark every park on the map
-    # for park in parks:
-    #     park_name = park.name
+    for park in parks:
+        park_name = park.name
+        break
 
-    #     folium.Marker(
-    #         location=(park.latitude, park.longitude),
-    #         icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-    #         popup=folium.Popup(park_name, max_width=200),
-    #     ).add_to(marker_cluster)
+        folium.Marker(
+            location=(park.latitude, park.longitude),
+            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
+            popup=folium.Popup(park_name, max_width=200),
+        ).add_to(marker_cluster)
 
     m = m._repr_html_()
     m = m.replace(
@@ -111,7 +112,11 @@ def park_and_map(request):
     )
 
     # Render map as HTML
-    return render(request, "parks/combined_view.html", {"parks": parks, "map": m, "parks_json": parks_json})
+    return render(
+        request,
+        "parks/combined_view.html",
+        {"parks": parks, "map": m, "parks_json": parks_json},
+    )
 
 
 def park_detail(request, id):
