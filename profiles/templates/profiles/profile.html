@@ -1,10 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}User Profile - PAWPARK{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">User Profile</h1>
+
+    <div class="card mx-auto mb-4" style="max-width: 500px;">
+        <div class="card-body text-center">
+            {% if user_profile.profile_picture %}
+                <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3" width="120">
+            {% else %}
+                <img src="/media/profiles/default_profile.png" alt="Default Profile Picture" class="rounded-circle mb-3">
+            {% endif %}
+
+            <h3>{{ user_profile.user.username }}</h3>
+            <p><strong>Email:</strong> {{ user_profile.user.email }}</p>
+            <p><strong>Joined:</strong> {{ user_profile.user.date_joined|date:"Y-m-d" }}</p>
+            <p><strong>Location:</strong> {{ user_profile.location|default:"Not provided" }}</p>
+            <p><strong>Phone:</strong> {{ user_profile.phone_number|default:"Not provided" }}</p>
+            <p><strong>Website:</strong> <a href="{{ user_profile.website }}" target="_blank">{{ user_profile.website }}</a></p>
+            <p><strong>Bio:</strong> {{ user_profile.bio|default:"No bio available" }}</p>
+            <p><strong>Signature:</strong> "{{ user_profile.signature|default:"Live, Love, Bark!" }}"</p>
+
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+        </div>
+    </div>
+
+    <h2 class="text-center mb-3">Pets</h2>
+    <div class="row justify-content-center">
+    {% for pet in pets %}
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <a href="{% url 'pet_detail' pet.id %}" style="text-decoration: none; color: inherit;">
+                    {% if pet.pet_picture %}
+                        <img src="{{ pet.pet_picture.url }}" class="card-img-top" alt="{{ pet.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Default Pet Picture">
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h4 class="card-title">{{ pet.name }}</h4>
+                        <p><strong>Breed:</strong> {{ pet.breed }}</p>
+                        <p><strong>Age:</strong> {{ pet.age }}</p>
+                        <p><strong>Personality:</strong> {{ pet.personality|default:"Friendly" }}</p>
+                        <p><strong>Favorite Food:</strong> {{ pet.favorite_food|default:"Not provided" }}</p>
+                    </div>
+                </a>
+                <div class="card-body text-center">
+                    <a href="{% url 'edit_pet' pet.id %}" class="btn btn-secondary">Edit</a>
+                    <a href="{% url 'delete_pet' pet.id %}" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-center">No pets added yet.</p>
+    {% endfor %}
+</div>
+
+
+    <div class="text-center mt-4">
+        <a href="{% url 'add_pet' %}" class="btn btn-success">Add a New Pet</a>
+    </div>
+</div>
+{% endblock %}

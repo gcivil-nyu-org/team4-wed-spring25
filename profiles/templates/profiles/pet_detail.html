@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}{{ pet.name }} - Pet Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">{{ pet.name }}</h1>
+    <div class="card mx-auto mb-4" style="max-width: 500px;">
+        <div class="card-body text-center">
+            {% if pet.pet_picture %}
+                <img src="{{ pet.pet_picture.url }}" class="rounded-circle mb-3">
+            {% else %}
+                <img src="https://via.placeholder.com/120" class="rounded-circle mb-3">
+            {% endif %}
+            <p><strong>Breed:</strong> {{ pet.breed }}</p>
+            <p><strong>Age:</strong> {{ pet.age }}</p>
+            <p><strong>Personality:</strong> {{ pet.personality|default:"Friendly" }}</p>
+            <p><strong>Favorite Food:</strong> {{ pet.favorite_food|default:"Not provided" }}</p>
+            <a href="{% url 'edit_pet' pet.id %}" class="btn btn-secondary">Edit</a>
+            <a href="{% url 'delete_pet' pet.id %}" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
