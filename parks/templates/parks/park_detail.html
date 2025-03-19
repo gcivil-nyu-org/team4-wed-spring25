@@ -54,44 +54,76 @@
         </table>
     </div>
 
-    <!-- Review Section -->
+    <!-- Upload Image Form -->
     <div class="card mt-5">
         <div class="card-header bg-brown text-white">
-            <h4>Upload a Picture & Leave a Review</h4>
+            <h4>Upload a Picture</h4>
         </div>
         <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" action="{% url 'park_detail' park.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
-
-                <!-- Image Upload -->
+                <input type="hidden" name="form_type" value="upload_image">
                 <div class="mb-3">
                     <label class="form-label">Upload Images:</label>
                     <input type="file" name="images" accept="image/*" class="form-control" multiple>
                 </div>
-
                 <!-- Image Preview Area -->
                 <div id="imagePreview" class="d-flex flex-wrap gap-2"></div>
-
-                <!-- Review Input -->
-                <div class="mb-3">
-                    <label class="form-label">Your Review:</label>
-                    <textarea name="text" class="form-control" rows="4" required></textarea>
-                </div>
-
-                <!-- Star Rating System -->
-                <label class="form-label">Rating:</label>
-                <div class="stars mb-3">
-                    <span class="star" data-value="1">&#9733;</span>
-                    <span class="star" data-value="2">&#9733;</span>
-                    <span class="star" data-value="3">&#9733;</span>
-                    <span class="star" data-value="4">&#9733;</span>
-                    <span class="star" data-value="5">&#9733;</span>
-                </div>
-                <input type="hidden" name="rating" id="star-rating" required>
-
                 <!-- Submit Button -->
-                <button type="submit" class="btn btn-brown">Submit Review</button>
+                <button type="submit" class="btn btn-brown">Submit Images</button>
             </form>
+        </div>
+    </div>
+
+<!-- Review Form -->
+<div class="card mt-4">
+    <div class="card-header bg-brown text-white">
+        <h4>Leave a Review</h4>
+    </div>
+    <div class="card-body">
+        {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
+        <form method="POST" action="{% url 'park_detail' park.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="submit_review">
+            
+            <div class="mb-3">
+                <label class="form-label">Your Review:</label>
+                <textarea name="text" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <!-- Star Rating System -->
+            <label class="form-label">Rating:</label>
+            <div class="stars mb-3">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+            </div>
+            <input type="hidden" name="rating" id="star-rating" required>
+
+            <button type="submit" class="btn btn-brown">Submit Review</button>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Display Recent Reviews -->
+    <div class="card mt-4">
+        <div class="card-header bg-brown text-white">
+            <h4>Recent Reviews</h4>
+        </div>
+        <div class="card-body">
+            {% for review in reviews %}
+                <div class="review border-bottom py-2">
+                    <p><strong>Rating:</strong> {{ review.rating }} ★</p>
+                    <p>{{ review.text }}</p>
+                </div>
+            {% empty %}
+                <p class="text-muted">No reviews yet. Be the first to leave one!</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -129,5 +161,6 @@
     .stars { display: flex; justify-content: center; font-size: 30px; cursor: pointer; }
     .star { color: #ccc; transition: color 0.2s ease-in-out; }
     .star.selected { color: #ffcc00; }
+    .review { text-align: left; }
 </style>
 {% endblock %}

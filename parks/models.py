@@ -42,6 +42,22 @@ class DogRunNew(models.Model):
         return self.name
 
 
+class Review(models.Model):
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="reviews"
+    )
+    text = models.TextField()
+    rating = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "park_reviews"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Review for {self.park.name} ({self.rating} stars)"
+
+
 class ParkImage(models.Model):
     park = models.ForeignKey(
         DogRunNew,
