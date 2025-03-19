@@ -9,11 +9,36 @@
 
     <!-- Park Image -->
     <div class="text-center mt-3">
-        {% if park.image %}
-            <img src="{{ park.image.url }}" alt="{{ park.name }} Image" class="img-fluid rounded shadow">
+        {% if images %}
+        <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+            <div class="carousel-indicators">
+                {% for img in images %}
+                <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                        class="{% if forloop.first %}active{% endif %}" aria-label="Slide {{ forloop.counter }}">
+                </button>
+                {% endfor %}
+            </div>
+            <div class="carousel-inner">
+                {% for img in images %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img data-src="{{ img.image.url }}" class="d-block w-100 lazyload" alt="Park Image"
+                         style="height: 400px; object-fit: cover; border-radius: 10px;" loading="lazy">
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+        
         {% else %}
             <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
-                 alt="Dog Park Image" class="img-fluid rounded shadow">
+                 alt="Dog Park Image" class="img-fluid rounded shadow" loading="lazy">
         {% endif %}
     </div>
 
@@ -40,9 +65,12 @@
 
                 <!-- Image Upload -->
                 <div class="mb-3">
-                    <label class="form-label">Upload an Image:</label>
-                    <input type="file" name="image" accept="image/*" class="form-control">
+                    <label class="form-label">Upload Images:</label>
+                    <input type="file" name="images" accept="image/*" class="form-control" multiple>
                 </div>
+
+                <!-- Image Preview Area -->
+                <div id="imagePreview" class="d-flex flex-wrap gap-2"></div>
 
                 <!-- Review Input -->
                 <div class="mb-3">
