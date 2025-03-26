@@ -56,5 +56,6 @@ deploy:
     on:
       repo: gcivil-nyu-org/team4-wed-spring25
       branch: main
+      condition: "$TRAVIS_EVENT_TYPE = push"
     
 skip_cleanup: 'true'
