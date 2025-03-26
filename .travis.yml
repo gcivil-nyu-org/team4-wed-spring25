@@ -45,7 +45,8 @@ deploy:
       repo: gcivil-nyu-org/team4-wed-spring25
       branch: develop
 
-  - provider: elasticbeanstalk
+  - if: type != cron
+    provider: elasticbeanstalk
     bucket_name: elasticbeanstalk-us-west-2-940482403872
     region: us-west-2
     bucket_path: pawpark-prod
@@ -56,6 +57,5 @@ deploy:
     on:
       repo: gcivil-nyu-org/team4-wed-spring25
       branch: main
-      condition: "$TRAVIS_EVENT_TYPE = push"
     
 skip_cleanup: 'true'
