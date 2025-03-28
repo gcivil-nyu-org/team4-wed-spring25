@@ -25,3 +25,5 @@ runs.json
 
 geocoding_script_files/*
 
+Makefile
+activate.sh
