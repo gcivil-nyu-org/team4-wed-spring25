@@ -8,6 +8,10 @@ python:
 services:
   - postgresql
 
+before_install:
+  - gem update --system
+  - gem install bundler
+
 install:
   - pip install -r requirements.txt
 
@@ -39,6 +43,7 @@ deploy:
     on:
       repo: gcivil-nyu-org/team4-wed-spring25
       branch: develop
+    skip_cleanup: 'true'
 
   - provider: elasticbeanstalk
     bucket_name: elasticbeanstalk-us-west-2-940482403872
@@ -51,5 +56,6 @@ deploy:
     on:
       repo: gcivil-nyu-org/team4-wed-spring25
       branch: main
-    
-skip_cleanup: 'true'
+      condition: $TRAVIS_EVENT_TYPE != cron
+    skip_cleanup: 'true'  
+
