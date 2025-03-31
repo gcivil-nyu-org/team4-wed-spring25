@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import DogRunNew, ParkImage
+from .models import DogRunNew, Review, ParkImage
 
 
 # import os
@@ -90,6 +90,30 @@ class ParkModelTest(TestCase):
         self.assertEqual(self.park.name, "Central Park")
         self.assertEqual(self.park.address, "New York, NY")
         self.assertEqual(self.park.notes, "Test park notes")
+
+
+class ReviewModelTest(TestCase):
+    def setUp(self):
+        self.park = DogRunNew.objects.create(
+            id="2",
+            prop_id="5678",
+            name="Brooklyn Park",
+            address="Brooklyn, NY",
+            dogruns_type="Large",
+            accessible="No",
+            notes="Another test park",
+        )
+        self.review = Review.objects.create(
+            park=self.park, text="Great park!", rating=5
+        )
+
+    def test_review_creation(self):
+        self.assertEqual(self.review.text, "Great park!")
+        self.assertEqual(self.review.rating, 5)
+        self.assertEqual(self.review.park.name, "Brooklyn Park")
+
+    def test_review_str_method(self):
+        self.assertEqual(str(self.review), "Review for Brooklyn Park (5 stars)")
 
 
 class ParkListViewTest(TestCase):
@@ -197,6 +221,28 @@ class ParkDetailViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "parks/park_detail.html")
         self.assertContains(response, self.park.name)
+
+    def test_submit_invalid_rating(self):
+        # Test submitting an invalid rating (>5) to ensure an error message appears
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.id]),
+            {
+                "form_type": "submit_review",
+                "text": "Invalid rating test",
+                "rating": "10",
+            },
+        )
+        self.assertEqual(response.status_code, 200)  # Page should reload with an error
+        self.assertContains(response, "Rating must be between 1 and 5 stars!")
+
+    def test_submit_review(self):
+        # Test submitting a review should correctly redirect
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.id]),
+            {"form_type": "submit_review", "text": "Awesome park!", "rating": "5"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Review.objects.count(), 1)
 
 
 class ParkImageModelTest(TestCase):

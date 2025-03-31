@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from .models import DogRunNew, ParkImage
+from .models import DogRunNew, Review, ParkImage
 
 import folium
 from folium.plugins import MarkerCluster
@@ -9,6 +9,7 @@ from .utilities import folium_cluster_styling
 
 from django.contrib.auth import login
 from .forms import RegisterForm
+import json
 
 
 def register_view(request):
@@ -76,6 +77,8 @@ def park_and_map(request):
     if accessible_value:
         parks = parks.filter(accessible=accessible_value)
 
+    parks_json = json.dumps(list(parks.values()))
+
     NYC_LAT_AND_LONG = (40.712775, -74.005973)
 
     # Create map centered on NYC
@@ -91,6 +94,7 @@ def park_and_map(request):
     # Mark every park on the map
     for park in parks:
         park_name = park.name
+        break
 
         folium.Marker(
             location=(park.latitude, park.longitude),
@@ -108,18 +112,69 @@ def park_and_map(request):
     )
 
     # Render map as HTML
-    return render(request, "parks/combined_view.html", {"parks": parks, "map": m})
+    return render(
+        request,
+        "parks/combined_view.html",
+        {"parks": parks, "map": m, "parks_json": parks_json},
+    )
 
 
 def park_detail(request, id):
     park = get_object_or_404(DogRunNew, id=id)  # Get the park by id
-    images = ParkImage.objects.filter(park=park)
+    images = ParkImage.objects.filter(
+        park=park
+    )  # Retrieve all images related to this park
+    reviews = park.reviews.all()  # Retrieve all reviews related to this park
 
-    if request.method == "POST" and request.FILES.get("images"):
-        for image in request.FILES.getlist("images"):
-            ParkImage.objects.create(park=park, image=image)
-        return redirect("park_detail", id=park.id)
-    return render(request, "parks/park_detail.html", {"park": park, "images": images})
+    if request.method == "POST":
+        form_type = request.POST.get("form_type")  # Determine which form is submitted
+
+        # Handle multiple image uploads
+        if form_type == "upload_image" and request.FILES.getlist("images"):
+            for image in request.FILES.getlist("images"):
+                ParkImage.objects.create(park=park, image=image)
+            return redirect("park_detail", id=park.id)  # Redirect after upload
+
+        # Handle review submission separately
+        elif form_type == "submit_review":
+            review_text = request.POST.get("text", "").strip()
+            rating_value = request.POST.get("rating", "").strip()
+
+            if not rating_value.isdigit():
+                return render(
+                    request,
+                    "parks/park_detail.html",
+                    {
+                        "park": park,
+                        "images": images,
+                        "reviews": reviews,
+                        "error_message": "Please select a valid rating!",
+                    },
+                )
+
+            rating = int(rating_value)
+            if rating < 1 or rating > 5:
+                return render(
+                    request,
+                    "parks/park_detail.html",
+                    {
+                        "park": park,
+                        "images": images,
+                        "reviews": reviews,
+                        "error_message": "Rating must be between 1 and 5 stars!",
+                    },
+                )
+
+            Review.objects.create(park=park, text=review_text, rating=rating)
+            return redirect(
+                "park_detail", id=park.id
+            )  # Redirect after review submission
+
+    return render(
+        request,
+        "parks/park_detail.html",
+        {"park": park, "images": images, "reviews": reviews},
+    )
 
 
 def contact_view(request):
