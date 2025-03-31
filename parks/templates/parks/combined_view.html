@@ -64,13 +64,13 @@
 
                 <!-- Park Details (Middle) -->
                 <div class="flex-grow-1">
-                    <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name }}</h6>
+                    <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
                     <p class="mb-0" style="font-size: 0.9rem;">
                         <strong>Type:</strong> {{ park.dogruns_type }} <br>
                         <strong>Accessible:</strong> {{ park.accessible }}
                     </p>
                 </div>
-                <div>
+                <div id="details-button">
                     <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
                 </div>
             </div>
@@ -116,7 +116,7 @@
         `,
         className: '',
         iconSize: [34, 42],  
-        iconAnchor: [17, 42]
+        iconAnchor: [17, 42],
     });
 
     const highlightedIcon = L.divIcon({
@@ -135,11 +135,9 @@
                     </radialGradient>
                 </defs>
                 
-                <!-- More prominent 3D effect with extra highlights -->
                 <path d="M19 50C19 50 5 26 5 14C5 6 11.5 1 19 1C26.5 1 33 6 33 14C33 26 19 50 19 50Z" 
                     fill="url(#grad2)" stroke="#5a3c32" stroke-width="1.8"/>
 
-                <!-- Additional highlight overlay -->
                 <path d="M19 13C25 13 29 17 29 22C29 27 23 30 19 30C15 30 9 27 9 22C9 17 13 13 19 13Z"
                     fill="url(#highlightOverlay)" opacity="0.5"/>
 
@@ -149,7 +147,8 @@
         `,
         className: '',
         iconSize: [38, 50],  
-        iconAnchor: [19, 50]
+        iconAnchor: [19, 53],
+        popupAnchor: [0, -13] // Move popup up to match increased size of icon
     });
 
     const basePopupOffsetY = -30;
@@ -162,12 +161,20 @@
     const NYC_LAT_AND_LONG = [40.712775, -74.005973];
 
 
-    // Stores id of last park clicked in list
-    // Used to determine if map should reset
-    let lastClickedParkId = -1;
+    /*
+        Stores the marker object that was last clicked
+        Used to differentiate between whether the marker
+        is highlighted from click or from hover on the park
+        list        
+    */
+    let lastClickedMarker = null;
     
+    // Boolean: whether the current highlighted marker is highlighted from click
+    // (marker OR card) or from hover on the card in park list
     // Used to determine if marker should reset to default
-    let highlightedFromClick = false;
+    let markerHighlightedFromClick = false;
+
+    let lastClickedParkCard = null;
 
     let flyToTimeout = null;
     let resetTimeout = null;
@@ -179,11 +186,11 @@
             var childCount = cluster.getChildCount();
             var size;
 
-            if (childCount < 10) {
+            if (childCount < 5) {
                 size = 30;
-            } else if (childCount < 25) {
+            } else if (childCount < 10) {
                 size = 40;
-            } else if (childCount < 50) {
+            } else if (childCount < 25) {
                 size = 55;
             } else {
                 size = 70;
@@ -235,27 +242,39 @@
     }
 
 
+    const nycBounds = L.latLngBounds([
+        [40.4774, -74.2591],  // Southwest
+        [40.9176, -73.7004]   // Northeast
+    ]);
 
-    // Create a map
-    var map = L.map('map', {
+    const paddedBounds = nycBounds.pad(0.3);  // padding
+
+    const map = L.map('map', {
         center: NYC_LAT_AND_LONG,
-        zoom: 11
-    })
+        zoom: 11,
+        minZoom: 10,
+        maxBounds: paddedBounds,
+        maxBoundsViscosity: 1.0
+    });
+
+    map.fitBounds(nycBounds);
 
     // Tile the map
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        minZoom: 10,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-
+    // Create the clusters
     var markerCluster = L.markerClusterGroup({
         iconCreateFunction: clusterStyling("rgba(0, 128, 0, 0.7)"),
+        maxClusterRadius: 50,
     });
 
 
-    // Place markers on map
+    // Place markers for each park on map
     parks.forEach(park => {
+        // marker creation
         let marker = L.marker(
             [park.latitude, park.longitude],
             { 
@@ -265,7 +284,7 @@
         ).bindPopup(park.name, {
             autoPan: false,
             offset: L.point(0, basePopupOffsetY)
-        });
+        }).openPopup();//.addTo(map);
 
         // Add to cluster
         markerCluster.addLayer(marker);
@@ -277,65 +296,92 @@
         // Also map park id to the park info object
         parkIdToPark[park.id] = park;
 
-        // Set listener for marker click
+
         marker.on("click", function (e) {
-
-            if (park.id != lastClickedParkId) {
-                // Reset last clicked marker
-                if (markers[lastClickedParkId])
-                    resetMarker(markers[lastClickedParkId]);
-
-                // highlight this marker
-                highlightMarker(marker);
-                lastClickedParkId = park.id;
+            // If this clicked marker not the last clicked marker,
+            // reset last clicked marker, highlight this marker
+            if (marker != lastClickedMarker) {
+                
+                resetMarker(lastClickedMarker);
+                
+                highlightMarker(marker, true);
+                lastClickedMarker = marker;
             } else {
+                // Same marker as last clicked, just reset
                 resetMarker(marker);
             }
         });
     });
 
     map.on('click', (e) => {
-        if (markers[lastClickedParkId])
-            resetMarker(markers[lastClickedParkId]);
+        resetMarker(lastClickedMarker);
     })
 
     // Add cluster to map
-    map.addLayer(markerCluster);    
+    map.addLayer(markerCluster);
 
 
 
-    function highlightMarker(marker) {
-        marker.setIcon(highlightedIcon); // Change marker color and size
-        marker.getPopup().options.offset = L.point(0, highlightPopupOffsetY); // Move popup to match increased marker
-        marker.setZIndexOffset(250); // Bring forward
-        
-        setTimeout(() => {
-            marker.openPopup(); // Open popup 
-        }, 1300);
+    function highlightMarker(marker, click) {
+        if (!marker)
+            return;
 
         let cluster = markerCluster.getVisibleParent(marker);
 
-        if (cluster) {
+        marker.setIcon(highlightedIcon); // Change marker color and size
+        // marker.getPopup().options.offset = L.point(0, highlightPopupOffsetY); // Move popup to match increased marker
+        marker.setZIndexOffset(250); // Bring forward        
+
+        // if marker is in a cluster
+        if (cluster && cluster._icon && cluster !== marker) {
+            // If a marker is in a cluster, the marker is not on map
+            // so popup does not work. Delay marker popup to run 
+            // after zoomed in from cluster and marker appears
+            setTimeout(() => {
+                marker.openPopup(); // Open popup 
+            }, 600);
+
+
             let outerCircle = cluster._icon.children[0].children[0];
             let innerCircle = cluster._icon.children[0].children[1];
-
+    
             outerCircle.style.backgroundColor = "rgba(109, 76, 65, 0.7)";
-            innerCircle.style.backgroundColor = "rgba(109, 76, 65, 1)";
+            innerCircle.style.backgroundColor = "rgba(109, 76, 65, 1)";   
 
-            
+        } 
+
+        // Clicked marker persistence 
+        if (click) {
+            // Remove from clustering group and add marker individually
+            // so it does not recluster from zoom out
+            markerCluster.removeLayer(marker);
+            marker.addTo(map);
         }
+
+        marker.openPopup();
+
+        markerHighlightedFromClick = click;
     }
 
     function resetMarker(marker) {
+        if (!marker) 
+            return;
+
         marker.setIcon(baseIcon); // Revert marker to original
         marker.setZIndexOffset(0); // Revert to default Z pos
         marker.closePopup(); 
-        marker.getPopup().options.offset = L.point(0, basePopupOffsetY);
-        lastClickedParkId = -1;
+        // marker.getPopup().options.offset = L.point(0, basePopupOffsetY);
+        lastClickedMarker = null;
+
+        if (markerHighlightedFromClick) {
+            // Add marker back to clustering layer; remove persistence
+            map.removeLayer(marker);
+            markerCluster.addLayer(marker);
+        }
 
         let cluster = markerCluster.getVisibleParent(marker);
 
-        if (cluster) {
+        if (cluster && cluster._icon && cluster !== marker) {
             let outerCircle = cluster._icon.children[0].children[0];
             let innerCircle = cluster._icon.children[0].children[1];
 
@@ -361,58 +407,40 @@
         }
     }
 
-    // Check whether marks is in a cluster
+    // Check whether marker is in a cluster
     function findClusterForMarker(marker) {
         let clusterLayer = markerCluster.getVisibleParent(marker);
         return clusterLayer !== marker ? clusterLayer : null;
     }
 
 
-    // Hovering on a park in the list highlights the park marker
-    // on the map
+    // Event listeners for park cards
     document.addEventListener("DOMContentLoaded", function () {
         let parkCards = document.querySelectorAll(".park-card");
 
         parkCards.forEach((card) => {
 
-            // When mouse hovers over park card, it highlights the marker on the map
+            // Mouse hovers over park card, highlights the marker on the map
             card.addEventListener("mouseenter", function () {
                 let parkId = card.id.replace("park-", ""); // Extract park ID
                 let marker = markers[parkId]; // Find corresponding marker
 
+                // get park object
                 let park = parkIdToPark[parkId];
                 
                 // If this park is not the last clicked park
-                if (marker && parkId != lastClickedParkId) {
+                if (marker && marker != lastClickedMarker) {
 
-                        
-                    // Reset last clicked marker
-                    if (markers[lastClickedParkId]) {
-                        resetTimeout = setTimeout(() => {
-                            
-                            resetMarker(markers[lastClickedParkId]);
+                    resetMarker(lastClickedMarker);
 
-                            // highlight this marker
-                            highlightMarker(marker);
-        
-                            // set highlight from click to false
-                            highlightedFromClick = false;
-                        }, 200);
-                    }
-                    else {
-                        // highlight this marker
-                        highlightMarker(marker);
-                        // set highlight from click to false
-                        highlightedFromClick = false;
-                    }
+                    highlightMarker(marker, false);
 
-     
                     // reset map view
-                    // Delay the map reset action by 500ms
+                    // Delay the map reset action by 200ms
                     // in case accidental entering of card
-                    flyToTimeout = setTimeout(() => {
-                        safeFlyTo(NYC_LAT_AND_LONG, 11);
-                    }, 150); 
+                    // flyToTimeout = setTimeout(() => {
+                    //     safeFlyTo(NYC_LAT_AND_LONG, 11);
+                    // }, 200); 
                 }
             });
             
@@ -422,13 +450,13 @@
                 let marker = markers[parkId];
 
                 // Only reset marker if it is highlighted from hover
-                if (marker && !highlightedFromClick) {
+                if (marker && !markerHighlightedFromClick) {
                     resetMarker(marker);
                 }
 
                 // Cancel flyTo if user moves out before delay ends
                 clearTimeout(flyToTimeout);
-                clearTimeout(resetTimeout);
+                // clearTimeout(resetTimeout);
             });
 
 
@@ -438,24 +466,52 @@
                 let marker = markers[parkId]; // Find corresponding marker
 
                 let park = parkIdToPark[parkId];
-                console.log(markerCluster.getVisibleParent(marker));
-
+                // console.log(lastClickedParkCard);
                 if (marker) {
-                    // Center the map on this marker
-                    // and zoom closer
-                    safeFlyTo([park.latitude, park.longitude], 15);
+                    
+                    if (card !== lastClickedParkCard) {
+                        console.log(lastClickedParkCard);
+                        console.log(lastClickedParkCard + ' here');
+                        // Center the map on this marker
+                        // and zoom closer
+                        safeFlyTo([park.latitude, park.longitude], 15);
+    
+                        highlightMarker(marker, true);
+    
+                        lastClickedMarker = marker;
+                        lastClickedParkCard = card;
 
-                    highlightMarker(marker);
-
-                    highlightedFromClick = true;
-                    popupOpenedFromClick = true;
-
-                    lastClickedParkId = parkId;
+                    } else {
+                        safeFlyTo(NYC_LAT_AND_LONG, 11);
+                        resetMarker(marker);
+                        lastClickedParkCard = null;
+                    }
                 }
+                // console.log(lastClickedParkCard);
+
             });
 
         });
+
+
+        // Prevent map centering when details button is clicked on the card
+        document.querySelectorAll('#details-button').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation(); 
+            });
+        });
     });
+
+    /*
+        Problems:
+
+        - When marker in cluster and click card still in smaller cluster
+         Click again no zoom. After first click then move off card then move in again
+         activates reset map
+         Pelham Bay Park
+
+        - Maybe only render parks in the list that are visible in the map
+    */
 
 </script>
 
