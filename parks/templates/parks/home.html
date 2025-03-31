@@ -3,13 +3,30 @@
 {% block title %}Welcome to PAWPARK{% endblock %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <h1 class="display-4 fw-bold text-brown">Welcome to PawPark!</h1>
-    <p class="lead text-muted">Find the best dog parks in NYC for your furry friend.</p>
+<!-- Hero Section -->
+<div class="hero">
+    <h1>Welcome to PawPark!</h1>
+    <p>Find the best dog parks in NYC for your furry friend.</p>
+</div>
 
-    <div class="mt-4">
-        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-primary px-4">Explore Parks</a>
-        <a href="{% url 'contact' %}" class="btn btn-lg btn-outline-secondary px-4">Contact Us</a>
+<!-- Search and Actions Section -->
+<div class="container text-center section">
+
+    <!-- Search Bar -->
+    <form method="get" action="{% url 'park_and_map' %}" class="search-group mt-4">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" name="query" class="form-control border-start-0" placeholder="Search by name, Google name, or ZIP code" aria-label="Search">
+            <!-- Hidden search button for cleaner design -->
+            <button class="btn btn-primary visually-hidden" type="submit">Search</button>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-center flex-wrap gap-3 mt-5">
+        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-primary px-4">Explore All Parks</a>
+        <a href="{% url 'contact' %}" class="btn btn-lg btn-primary px-4">Contact Us</a>
     </div>
 </div>
 {% endblock %}
