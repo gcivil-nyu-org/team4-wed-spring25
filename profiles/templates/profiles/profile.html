@@ -9,7 +9,7 @@
     <div class="card mx-auto mb-4" style="max-width: 500px;">
         <div class="card-body text-center">
             {% if user_profile.profile_picture %}
-                <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3" width="120">
+                <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle mb-3" width="200">
             {% else %}
                 <img src="/media/profiles/default_profile.png" alt="Default Profile Picture" class="rounded-circle mb-3">
             {% endif %}

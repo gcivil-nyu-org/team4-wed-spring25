@@ -14,7 +14,7 @@ class UserProfile(models.Model):
         return self.user.username
 
 class PetProfile(models.Model):
-    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE,related_name='pets')
     name = models.CharField(max_length=100)
     breed = models.CharField(max_length=100, blank=True, null=True)
     age = models.IntegerField(null=True, blank=True)
