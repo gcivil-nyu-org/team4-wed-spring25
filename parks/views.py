@@ -70,12 +70,15 @@ def park_and_map(request):
 
     # Fetch all dog runs from the database
     parks = DogRunNew.objects.all().order_by("id")
+    parks = DogRunNew.objects.all().order_by("id").prefetch_related("images")
 
     if filter_value:
-        parks = parks.filter(dogruns_type__icontains=filter_value)
+        parks = parks.filter(dogruns_type__icontains=filter_value).prefetch_related(
+            "images"
+        )
 
     if accessible_value:
-        parks = parks.filter(accessible=accessible_value)
+        parks = parks.filter(accessible=accessible_value).prefetch_related("images")
 
     # Serialize parks object into json string
     # Passed to front end to render parks with LeafletJS
