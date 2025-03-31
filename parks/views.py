@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
+from django.db.models import OuterRef, Subquery, CharField
+from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage
 
 import folium
@@ -68,17 +70,29 @@ def park_and_map(request):
     filter_value = request.GET.get("filter", "")
     accessible_value = request.GET.get("accessible", "")
 
+    thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
+
     # Fetch all dog runs from the database
-    parks = DogRunNew.objects.all().order_by("id")
-    parks = DogRunNew.objects.all().order_by("id").prefetch_related("images")
+    parks = (
+        DogRunNew.objects.all()
+        .order_by("id")
+        .prefetch_related("images")
+        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+    )
 
     if filter_value:
-        parks = parks.filter(dogruns_type__icontains=filter_value).prefetch_related(
-            "images"
+        parks = (
+            parks.filter(dogruns_type__icontains=filter_value)
+            .prefetch_related("images")
+            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
         )
 
     if accessible_value:
-        parks = parks.filter(accessible=accessible_value).prefetch_related("images")
+        parks = (
+            parks.filter(accessible=accessible_value)
+            .prefetch_related("images")
+            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        )
 
     # Serialize parks object into json string
     # Passed to front end to render parks with LeafletJS

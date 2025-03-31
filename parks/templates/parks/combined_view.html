@@ -100,6 +100,15 @@
 
 
 <script>
+
+    const boroughCharToBorough = {
+        "M": "Manhattan",
+        "B": "Brooklyn",
+        "Q": "Queens",
+        "X": "Bronx",
+        "R": "Staten Island"
+    }
+
     // Parks in JSON; accessible in JS
     const parks = JSON.parse('{{ parks_json|escapejs }}');
 
@@ -256,7 +265,7 @@
         [40.9176, -73.7004]   // Northeast
     ]);
 
-    const paddedBounds = nycBounds.pad(0.3);  // padding
+    const paddedBounds = nycBounds.pad(0.5);  // padding
 
     const map = L.map('map', {
         center: NYC_LAT_AND_LONG,
@@ -283,14 +292,33 @@
 
     // Place markers for each park on map
     parks.forEach(park => {
+        console.log(park)
+        console.log(park.thumbnail_url)
+
+        const popupContent = `
+        <div style="min-width:200px;" class="row gap-2">
+            <div style="align-content: center"> 
+                <img src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}" ?  alt="${park.name}" style="width:100%; height:auto;">
+            </div>
+            <div> 
+                <h4><a href="/park/${park.id}/">${park.name}</a></h4>
+                <p><strong>Type:</strong> ${park.dogruns_type}</p>
+                <p><strong>Accessible:</strong> ${park.accessible}</p>
+                <p><strong>Address:</strong> ${park.formatted_address}</p>
+                <p><strong>Borough:</strong> ${boroughCharToBorough[park.borough]}</p>
+                <p><strong>Zip Code:</strong> ${park.zip_code}</p>
+            </div>
+        </div>`;
+
         // marker creation
         let marker = L.marker(
             [park.latitude, park.longitude],
             { 
                 icon: baseIcon,
                 riseOnHover: true,
+                title: park.name
             }
-        ).bindPopup(park.name, {
+        ).bindPopup(popupContent, {
             autoPan: false,
             offset: L.point(0, basePopupOffsetY)
         }).openPopup();//.addTo(map);
