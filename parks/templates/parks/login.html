@@ -1,12 +1,50 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Login</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Login</button>
-    </form>
-    <p>Don't have an account? <a href="{% url 'register' %}">Sign up here</a></p>
+<style>
+  @keyframes fadeInDown {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in-down {
+    animation: fadeInDown 1s ease forwards;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-6px); }
+  }
+  .bounce {
+    animation: bounce 1.5s infinite;
+  }
+</style>
+
+<div class="container-fluid" 
+     style="min-height:100vh; 
+            background:url('{% static "parks/images/doggy-bg2.png" %}') center center / cover no-repeat;">
+  <div class="row justify-content-center align-items-center" style="min-height:100vh;">
+    <div class="col-md-4 fade-in-down">
+      <div class="card shadow p-4" style="background-color: rgba(255,255,255,0.9); border-radius:10px;">
+        <h2 class="text-center mb-2">
+          <i class="fa-solid fa-paw bounce me-2"></i>
+          Welcome Back!
+        </h2>
+        <p class="text-center mb-4" style="font-size:1.05rem;">
+          Ready for a new adventure with your furry friend?
+        </p>
+        <form method="POST">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-success w-100 mt-2">Login</button>
+        </form>
+        <p class="mt-3 text-center">
+          Don’t have an account?
+          <a href="{% url 'register' %}">Sign up now</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
