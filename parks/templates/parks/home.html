@@ -4,29 +4,56 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero">
+<div class="hero text-center">
     <h1>Welcome to PawPark!</h1>
     <p>Find the best dog parks in NYC for your furry friend.</p>
 </div>
 
-<!-- Search and Actions Section -->
-<div class="container text-center section">
+<!-- Unified Search Panel -->
+<div class="container section mt-5">
+    <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
 
-    <!-- Search Bar -->
-    <form method="get" action="{% url 'park_and_map' %}" class="search-group mt-4">
-        <div class="input-group input-group-lg">
-            <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-search"></i>
-            </span>
-            <input type="text" name="query" class="form-control border-start-0" placeholder="Search by name, Google name, or ZIP code" aria-label="Search">
-            <!-- Hidden search button for cleaner design -->
-            <button class="btn btn-primary visually-hidden" type="submit">Search</button>
+        <!-- Search Field -->
+        <div class="col-md-4">
+            <label for="query" class="form-label fw-bold">Search</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="query" id="query" class="form-control" placeholder="ZIP, park name, etc." value="{{ request.GET.query }}">
+            </div>
+        </div>
+
+        <!-- Park Type Filter -->
+        <div class="col-md-3">
+            <label for="filter" class="form-label fw-bold">Type</label>
+            <select class="form-select" name="filter" id="filter">
+                <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
+                <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
+                <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
+            </select>
+        </div>
+
+        <!-- Accessibility Filter -->
+        <div class="col-md-3">
+            <label for="accessible" class="form-label fw-bold">Accessibility</label>
+            <select class="form-select" name="accessible" id="accessible">
+                <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
+                <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
+                <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <!-- Search Button -->
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
         </div>
     </form>
 
+    <!-- Additional Actions -->
     <div class="d-flex justify-content-center flex-wrap gap-3 mt-5">
-        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-primary px-4">Explore All Parks</a>
-        <a href="{% url 'contact' %}" class="btn btn-lg btn-primary px-4">Contact Us</a>
+        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-outline-primary px-4">Explore All Parks</a>
     </div>
 </div>
+
 {% endblock %}

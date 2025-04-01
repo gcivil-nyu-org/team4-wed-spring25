@@ -13,7 +13,6 @@ import json
 from django.db.models import Q  # Import Q for complex queries
 
 
-
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -34,9 +33,9 @@ def park_list(request):
 
     if query:
         parks = parks.filter(
-            Q(name__icontains=query) |
-            Q(google_name__icontains=query) |
-            Q(zip_code__icontains=query)
+            Q(name__icontains=query)
+            | Q(google_name__icontains=query)
+            | Q(zip_code__icontains=query)
         )
 
     return render(request, "parks/park_list.html", {"parks": parks, "query": query})
@@ -76,52 +75,64 @@ def map(request):
 
 def park_and_map(request):
     # Get filter values from GET request
-    filter_value = request.GET.get("filter", "")
-    accessible_value = request.GET.get("accessible", "")
-    query = request.GET.get("query", "")
+    query = request.GET.get("query", "").strip()
+    filter_value = request.GET.get("filter", "").strip()
+    accessible_value = request.GET.get("accessible", "").strip()
 
-    # Fetch all dog runs from the database
+    # Start with all parks
     parks = DogRunNew.objects.all().order_by("id")
 
+    # Search by ZIP, name, or Google name
     if query:
         parks = parks.filter(
-            Q(name__icontains=query) |
-            Q(google_name__icontains=query) |
-            Q(zip_code__icontains=query)
+            Q(name__icontains=query)
+            | Q(google_name__icontains=query)
+            | Q(zip_code__icontains=query)
         )
 
+    # Filter by park type (e.g., "Off-Leash")
     if filter_value:
-        parks = parks.filter(dogruns_type__icontains=filter_value)
+        parks = parks.filter(dogruns_type__iexact=filter_value)
 
-    if accessible_value:
-        parks = parks.filter(accessible__iexact=accessible_value)
+    # Filter by accessibility only if explicitly set to "True" or "False"
+    if accessible_value == "True":
+        parks = parks.filter(accessible=True)
+    elif accessible_value == "False":
+        parks = parks.filter(accessible=False)
 
+    # Convert parks to JSON (for JS use)
     parks_json = json.dumps(list(parks.values()))
 
+    # NYC coordinates
     NYC_LAT_AND_LONG = (40.712775, -74.005973)
 
-    # Create map centered on NYC
+    # Create map
     m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
 
+    # Add marker cluster
     icon_create_function = folium_cluster_styling("rgba(0, 128, 0, 0.7)")
     marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
 
     # Mark every filtered park on the map
     for park in parks:
-        park_name = park.name
-        break
-
         folium.Marker(
             location=(park.latitude, park.longitude),
             icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park_name, max_width=200),
+            popup=folium.Popup(park.name, max_width=200),
         ).add_to(marker_cluster)
 
-    # Render map as HTML
+    # Render the template
     return render(
         request,
         "parks/combined_view.html",
-        {"parks": parks, "map": m, "parks_json": parks_json},
+        {
+            "parks": parks,
+            "map": m,
+            "parks_json": parks_json,
+            "query": query,
+            "selected_type": filter_value,
+            "selected_accessible": accessible_value,
+        },
     )
 
 
