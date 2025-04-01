@@ -1,12 +1,33 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>Register</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+<!-- Full-height background container -->
+<div class="container-fluid"
+     style="min-height: 100vh; 
+            background: url('{% static "parks/images/doggy-bg2.png" %}') center center no-repeat; 
+            background-size: cover;">
+  
+  <!-- Center contents both vertically and horizontally -->
+  <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-5">
+      <!-- Semi-transparent card -->
+      <div class="card shadow p-4" style="background-color: rgba(255, 255, 255, 0.8); border:none;">
+        <h2 class="text-center mb-3">Join the PawPark Community!</h2>
+        <p class="text-center mb-4" style="font-size: 1.1rem;">
+          Find the best dog parks, connect with fellow dog lovers, and let your pup play to their heart’s content!
+        </p>
+        <form method="POST">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary w-100 mt-2">Sign Up</button>
+        </form>
+        <p class="mt-3 text-center">
+          Already have an account?
+          <a href="{% url 'login' %}">Login here</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
