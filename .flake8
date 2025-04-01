@@ -11,6 +11,8 @@ exclude =
     venv,
     .venv,
     .env,
-    eb-virt
-    duplicate_test.py
-    geocoding_script_files
+    eb-virt,
+    duplicate_test.py,
+    geocoding_script_files,
+    Makefile,
+    activate.sh,
