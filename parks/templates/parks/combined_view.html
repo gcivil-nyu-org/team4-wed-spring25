@@ -78,9 +78,16 @@
                     <!-- Park Details (Middle) -->
                     <div class="flex-grow-1">
                         <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
-                        <p class="mb-0" style="font-size: 0.9rem;">
+                        <p class="park-card-details mb-0" style="font-size: 0.9rem;">
                             <strong>Type:</strong> {{ park.dogruns_type }} <br>
-                            <strong>Accessible:</strong> {{ park.accessible }}
+                            <strong>Accessible:</strong> 
+                            <span>
+                                {% if park.accessible == 'True' %}
+                                    <span id="yes-span">Yes</span>
+                                {% else %}
+                                    <span id="no-span">No</span>
+                                {% endif %}
+                            </span><br>
                         </p>
                     </div>
                     <div id="details-button">
@@ -297,28 +304,6 @@
 
     // Place markers for each park on map
     parks.forEach(park => {
-        console.log(park)
-        console.log(park.thumbnail_url)
-
-        // const popupContent = `
-        //     <div style="min-width:200px; max-height: 200px" class="row gap-2">
-        //         <div style="align-content: center"> 
-        //             <img 
-        //                 src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"  
-        //                 alt="${park.name}" 
-        //                 style="width:; max-height:120px; object-fit:cover; border-radius: 4px; margin-bottom: 8px;"
-        //             >
-        //         </div>
-        //         <div> 
-        //             <h4><a href="/park/${park.id}/">${park.name}</a></h4>
-        //             <p><strong>Type:</strong> ${park.dogruns_type}</p>
-        //             <p><strong>Accessible:</strong> ${park.accessible}</p>
-        //             <p><strong>Address:</strong> ${park.formatted_address}</p>
-        //             <p><strong>Borough:</strong> ${boroughCharToBorough[park.borough]}</p>
-        //             <p><strong>Zip Code:</strong> ${park.zip_code}</p>
-        //         </div>
-        //     </div>`;
-
             const popupContent = `
                 <div style="
                     width: 300px;
@@ -347,36 +332,38 @@
 
 
                     <!-- Details Container-->
-                    <div style="padding: 10px;">
+                    <a href="/park/${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
+                        <div style="padding: 10px;">
 
-                        <!-- Park Name with link to park page-->
-                        <h6 style="
-                            margin: 0 0 4px 0;
-                            font-size: 1rem;
-                            font-weight: 600;
-                            color: #333;
-                        ">
-                            <a href="/park/${park.id}/" style="text-decoration: none; color: #333; transition: color 0.2s ease-in-out;">
-                                ${park.name}
-                            </a>
-                        </h6>
+                            <!-- Park Name with link to park page-->
+                            <h6 style="
+                                margin: 0 0 15px 0;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                color: #333;
+                            ">
+                                <div>
+                                    ${park.name}
+                                </div>
+                            </h6>
 
-                        <!-- Details -->
-                        <p style="
-                            margin: 0;
-                            font-size: 0.85rem;
-                            color: #555;
-                        ">
-                            <strong>Type:</strong> ${park.dogruns_type}<br>
-                            <strong>Accessible:</strong>
-                            <span style="color: ${park.accessible=='True' ? 'green' : '#c11212'};">
-                                ${park.accessible=='True' ? 'Yes' : 'No'}
-                            </span><br>
-                            <strong>Address:</strong> ${park.formatted_address}<br>
-                            <strong>Borough:</strong> ${boroughCharToBorough[park.borough]}<br>
-                            <strong>Zip Code:</strong> ${park.zip_code}
-                        </p>
-                    </div>
+                            <!-- Details -->
+                            <p style="
+                                margin: 0;
+                                font-size: 0.85rem;
+                                color: #555;
+                            ">
+                                <strong>Type:</strong> ${park.dogruns_type}<br>
+                                <strong>Accessible:</strong>
+                                <span style="color: ${park.accessible=='True' ? 'green' : '#c11212'};">
+                                    ${park.accessible=='True' ? 'Yes' : 'No'}
+                                </span><br>
+                                <strong>Address:</strong> ${park.formatted_address}<br>
+                                <strong>Borough:</strong> ${boroughCharToBorough[park.borough]}<br>
+                                <strong>Zip Code:</strong> ${park.zip_code}
+                            </p>
+                        </div>
+                    </a>
                 </div>
             `;
 
