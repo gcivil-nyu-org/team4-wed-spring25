@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
+from django.db.models import OuterRef, Subquery, CharField
+from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage
+from django.forms.models import model_to_dict
 
 import folium
 from folium.plugins import MarkerCluster
@@ -79,8 +82,15 @@ def park_and_map(request):
     filter_value = request.GET.get("filter", "").strip()
     accessible_value = request.GET.get("accessible", "").strip()
 
-    # Start with all parks
-    parks = DogRunNew.objects.all().order_by("id")
+    thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
+
+    # Fetch all dog runs from the database
+    parks = (
+        DogRunNew.objects.all()
+        .order_by("id")
+        .prefetch_related("images")
+        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+    )
 
     # Search by ZIP, name, or Google name
     if query:
@@ -187,10 +197,12 @@ def park_detail(request, id):
                 "park_detail", id=park.id
             )  # Redirect after review submission
 
+    park_json = json.dumps(model_to_dict(park))
+
     return render(
         request,
         "parks/park_detail.html",
-        {"park": park, "images": images, "reviews": reviews},
+        {"park": park, "images": images, "reviews": reviews, "park_json": park_json},
     )
 
 
