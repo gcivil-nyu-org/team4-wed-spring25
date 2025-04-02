@@ -44,6 +44,19 @@
             </select>
         </div>
 
+        <!-- Borough Filter -->
+        <div class="col-md-3">
+            <label for="borough" class="form-label fw-bold">Borough</label>
+            <select class="form-select" name="borough" id="borough">
+                <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
+                <option value="M" {% if selected_borough == "M" %}selected{% endif %}>Manhattan</option>
+                <option value="B" {% if selected_borough == "B" %}selected{% endif %}>Brooklyn</option>
+                <option value="Q" {% if selected_borough == "Q" %}selected{% endif %}>Queens</option>
+                <option value="X" {% if selected_borough == "X" %}selected{% endif %}>Bronx</option>
+                <option value="R" {% if selected_borough == "R" %}selected{% endif %}>Staten Island</option>
+            </select>
+        </div>
+
         <!-- Search Button -->
         <div class="col-md-2">
             <button type="submit" class="btn btn-primary w-100">Search</button>

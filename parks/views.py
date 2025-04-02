@@ -81,6 +81,7 @@ def park_and_map(request):
     query = request.GET.get("query", "").strip()
     filter_value = request.GET.get("filter", "").strip()
     accessible_value = request.GET.get("accessible", "").strip()
+    borough_value = request.GET.get("borough", "").strip().upper()
 
     thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
 
@@ -110,26 +111,10 @@ def park_and_map(request):
     elif accessible_value == "False":
         parks = parks.filter(accessible=False)
 
+    if borough_value:
+        parks = parks.filter(borough=borough_value)
     # Convert parks to JSON (for JS use)
     parks_json = json.dumps(list(parks.values()))
-
-    # NYC coordinates
-    NYC_LAT_AND_LONG = (40.712775, -74.005973)
-
-    # Create map
-    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
-
-    # Add marker cluster
-    icon_create_function = folium_cluster_styling("rgba(0, 128, 0, 0.7)")
-    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
-
-    # Mark every filtered park on the map
-    for park in parks:
-        folium.Marker(
-            location=(park.latitude, park.longitude),
-            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park.name, max_width=200),
-        ).add_to(marker_cluster)
 
     # Render the template
     return render(
@@ -137,11 +122,11 @@ def park_and_map(request):
         "parks/combined_view.html",
         {
             "parks": parks,
-            "map": m,
             "parks_json": parks_json,
             "query": query,
             "selected_type": filter_value,
             "selected_accessible": accessible_value,
+            "selected_borough": borough_value,
         },
     )
 
