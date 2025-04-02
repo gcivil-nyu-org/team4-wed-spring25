@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
+from django.db.models import OuterRef, Subquery, CharField
+from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage
+from django.forms.models import model_to_dict
 
 import folium
 from folium.plugins import MarkerCluster
@@ -68,54 +71,39 @@ def park_and_map(request):
     filter_value = request.GET.get("filter", "")
     accessible_value = request.GET.get("accessible", "")
 
+    thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
+
     # Fetch all dog runs from the database
-    parks = DogRunNew.objects.all().order_by("id")
+    parks = (
+        DogRunNew.objects.all()
+        .order_by("id")
+        .prefetch_related("images")
+        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+    )
 
     if filter_value:
-        parks = parks.filter(dogruns_type__icontains=filter_value)
+        parks = (
+            parks.filter(dogruns_type__icontains=filter_value)
+            .prefetch_related("images")
+            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        )
 
     if accessible_value:
-        parks = parks.filter(accessible=accessible_value)
+        parks = (
+            parks.filter(accessible=accessible_value)
+            .prefetch_related("images")
+            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        )
 
+    # Serialize parks object into json string
+    # Passed to front end to render parks with LeafletJS
     parks_json = json.dumps(list(parks.values()))
-
-    NYC_LAT_AND_LONG = (40.712775, -74.005973)
-
-    # Create map centered on NYC
-    # f = folium.Figure(height="100")
-    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
-
-    icon_create_function = folium_cluster_styling("rgba(0, 128, 0, 0.7)")
-    marker_cluster = MarkerCluster(
-        icon_create_function=icon_create_function,
-        # maxClusterRadius=10,
-    ).add_to(m)
-
-    # Mark every park on the map
-    for park in parks:
-        park_name = park.name
-        break
-
-        folium.Marker(
-            location=(park.latitude, park.longitude),
-            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park_name, max_width=200),
-        ).add_to(marker_cluster)
-
-    m = m._repr_html_()
-    m = m.replace(
-        '<div style="width:100%;">'
-        + '<div style="position:relative;width:100%;height:0;padding-bottom:60%;">',
-        '<div style="width:100%; height:100vh;">'
-        + '<div style="position:relative;width:100%;height:100%;>',
-        1,
-    )
 
     # Render map as HTML
     return render(
         request,
         "parks/combined_view.html",
-        {"parks": parks, "map": m, "parks_json": parks_json},
+        {"parks": parks, "parks_json": parks_json},
     )
 
 
@@ -170,10 +158,12 @@ def park_detail(request, id):
                 "park_detail", id=park.id
             )  # Redirect after review submission
 
+    park_json = json.dumps(model_to_dict(park))
+
     return render(
         request,
         "parks/park_detail.html",
-        {"park": park, "images": images, "reviews": reviews},
+        {"park": park, "images": images, "reviews": reviews, "park_json": park_json},
     )
 
 
