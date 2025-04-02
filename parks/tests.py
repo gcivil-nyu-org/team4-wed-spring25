@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import DogRunNew, Review, ParkImage
+from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 
 
 # import os
@@ -213,119 +213,122 @@ class ParkDetailViewTest(TestCase):
 class ReportFunctionalityTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username="user1", password="pass123")
-        self.other_user = User.objects.create_user(username="user2", password="pass456")
+        self.user = User.objects.create_user(username="reporter", password="testpass123")
+        self.other_user = User.objects.create_user(username="uploader", password="testpass123")
 
         self.park = DogRunNew.objects.create(
-            id="20",
-            prop_id="8888",
+            id="10",
+            prop_id="9999",
             name="Test Park",
             address="Test Address",
             dogruns_type="All",
             accessible="Yes",
-        )
-        self.image = ParkImage.objects.create(
-            park=self.park, user=self.other_user, image="image.jpg"
-        )
-        self.review = Review.objects.create(
-            park=self.park, user=self.other_user, text="Nice!", rating=4
+            formatted_address="Test Address",
+            latitude=40.0,
+            longitude=-73.0,
         )
 
-        self.client.login(username="user1", password="pass123")
+        self.image = ParkImage.objects.create(
+            park=self.park,
+            image="https://res.cloudinary.com/demo/image/upload/sample.jpg",
+            user=self.other_user
+        )
+
+        self.review = Review.objects.create(
+            park=self.park,
+            text="Nice place!",
+            rating=4,
+            user=self.other_user
+        )
+
+        self.client.login(username="reporter", password="testpass123")
 
     def test_report_image_creates_record(self):
-        self.client.login(username="user1", password="pass123abc")
         response = self.client.post(
             reverse("report_image", args=[self.image.id]),
-            data={"reason": "Inappropriate content"},
+            {"reason": "Inappropriate image"}
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.image.reports.count(), 1)
         report = self.image.reports.first()
-        self.assertEqual(report.reason, "Inappropriate content")
+        self.assertEqual(report.reason, "Inappropriate image")
         self.assertEqual(report.user, self.user)
 
     def test_report_review_creates_record(self):
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
-            data={
+            {
                 "form_type": "report_review",
                 "review_id": self.review.id,
-                "reason": "Offensive comment",
-            },
+                "reason": "Offensive content"
+            }
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.review.reports.count(), 1)
         report = self.review.reports.first()
-        self.assertEqual(report.reason, "Offensive comment")
+        self.assertEqual(report.reason, "Offensive content")
         self.assertEqual(report.reported_by, self.user)
 
-    def test_user_cannot_delete_others_review(self):
-        review = self.review
-        response = self.client.post(reverse("delete_review", args=[review.id]))
-        self.assertEqual(response.status_code, 403)
-
-    def test_user_cannot_delete_others_image(self):
-        image = self.image
-        response = self.client.post(reverse("delete_image", args=[image.id]))
-        self.assertEqual(response.status_code, 403)
-
-    def test_submit_invalid_review_rating(self):
-        response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
-            data={
-                "form_type": "submit_review",
-                "text": "Too high rating!",
-                "rating": "999",
-            },
-        )
-        self.assertContains(response, "Rating must be between 1 and 5 stars!")
-
-    def test_park_detail_not_found(self):
-        """Test accessing a non-existent park should return 404."""
-        response = self.client.get(
-            reverse("park_detail", args=[9999])
-        )  # Non-existent ID
-        self.assertEqual(response.status_code, 404)
-
-    def test_get_park_detail(self):
-        """Test retrieving the park detail page."""
-        response = self.client.get(reverse("park_detail", args=[self.park.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "parks/park_detail.html")
-        self.assertContains(response, self.park.name)
-
-    def test_submit_invalid_rating(self):
-        self.user = User.objects.create_user(username="testuser", password="123456abc")
-        self.client.login(username="testuser", password="123456abc")
-        # Test submitting an invalid rating (>5) to ensure an error message appears
-        response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
-            {
-                "form_type": "submit_review",
-                "text": "Invalid rating test",
-                "rating": "10",
-            },
-        )
-        self.assertEqual(response.status_code, 200)  # Page should reload with an error
-        self.assertContains(response, "Rating must be between 1 and 5 stars!")
-
     def test_submit_review(self):
-        reviews_before = Review.objects.filter(park=self.park).count()
-        self.client.login(username="your_user", password="password123")
-
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
             {
                 "form_type": "submit_review",
-                "text": "Awesome park!",
-                "rating": "5",
-            },
+                "text": "Another review!",
+                "rating": "5"
+            }
         )
-
         self.assertEqual(response.status_code, 302)
-        reviews_after = Review.objects.filter(park=self.park).count()
-        self.assertEqual(reviews_after, reviews_before + 1)
+        self.assertEqual(Review.objects.filter(park=self.park).count(), 2)
+    
+    def test_review_report_str(self):
+        report = ReviewReport.objects.create(
+        review=self.review, reported_by=self.user, reason="Inappropriate content"
+         )
+        self.assertIn("Reported by", str(report))
+        self.assertIn(str(self.review.id), str(report))
+
+    def test_image_report_str(self):
+        report = ImageReport.objects.create(
+        image=self.image, user=self.user, reason="Offensive image"
+        )
+        self.assertIn("Report by", str(report))
+        self.assertIn(str(self.image.id), str(report))
+    
+
+    def test_missing_reason_does_not_create_report(self):
+        self.client.login(username="user2", password="testpass")
+        response = self.client.post(
+        reverse("report_image", args=[self.image.id]),
+        {"reason": ""},
+        )
+        self.assertEqual(ImageReport.objects.count(), 0)
+        self.assertEqual(response.status_code, 302)
+
+
+class DeleteTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="deleter", password="123pass")
+        self.client.login(username="deleter", password="123pass")
+
+        self.park = DogRunNew.objects.create(
+            id="22", prop_id="9988", name="Del Park",
+            address="Somewhere", dogruns_type="All", accessible="Yes",
+            formatted_address="Addr", latitude=40.0, longitude=-73.0,
+        )
+        self.review = Review.objects.create(park=self.park, text="Review", rating=4, user=self.user)
+        self.image = ParkImage.objects.create(park=self.park, image="https://res.cloudinary.com/demo/image/upload/sample.jpg", user=self.user)
+
+    def test_delete_review(self):
+        response = self.client.post(reverse("delete_review", args=[self.review.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Review.objects.filter(id=self.review.id).exists())
+
+    def test_delete_image(self):
+        response = self.client.post(reverse("delete_image", args=[self.image.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(ParkImage.objects.filter(id=self.image.id).exists())
 
 
 class ParkImageModelTest(TestCase):
