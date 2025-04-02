@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from homepage.views import health_check, test_db_connection
+from django.conf import settings
+from django.conf.urls.static import static
 
 # from homepage.views import test_db_connection
 
@@ -27,4 +29,8 @@ urlpatterns = [
     path("", include("homepage.urls")),
     path("health_check/", health_check),
     path("dbtest/", test_db_connection),
+    path("profiles/", include("profiles.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

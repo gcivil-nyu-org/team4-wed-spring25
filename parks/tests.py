@@ -165,12 +165,48 @@ class MapViewTest(TestCase):
 
 
 class CombinedViewTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-
     def test_combined_view(self):
         response = self.client.get(reverse("park_and_map"))
         self.assertEqual(response.status_code, 200)
+
+    def setUp(self):
+        self.client = Client()
+        # One park in Manhattan
+        self.park_manhattan = DogRunNew.objects.create(
+            id="1",
+            prop_id="1234",
+            name="Central Park",
+            address="New York, NY",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Manhattan park",
+            google_name="Central Park",
+            borough="M",
+            zip_code="10024",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+        )
+        # One park in Brooklyn
+        self.park_brooklyn = DogRunNew.objects.create(
+            id="2",
+            prop_id="5678",
+            name="Brooklyn Bridge Park",
+            address="Brooklyn, NY",
+            dogruns_type="Large",
+            accessible="Yes",
+            notes="Brooklyn park",
+            google_name="Brooklyn Bridge Park",
+            borough="B",
+            zip_code="11201",
+            latitude=40.700292,
+            longitude=-73.996123,
+        )
+
+    def test_combined_view_filters_by_borough(self):
+        response = self.client.get(reverse("park_and_map"), {"borough": "M"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Central Park")
+        self.assertNotContains(response, "Brooklyn Bridge Park")
 
 
 class ParkDetailViewTest(TestCase):

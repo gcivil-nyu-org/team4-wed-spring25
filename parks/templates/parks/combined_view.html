@@ -4,42 +4,69 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero text-center py-2">
-    <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
-    <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
+<div class="hero text-center">
+    <div class="m-2">
+        <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
+        <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
+    </div>
 </div>
 
 <!-- Full-width container for layout consistency -->
-<div class="container-fluid mt-3">
+<div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
-    <div class="row justify-content-center mb-3">
+    <div id="map-filter-menu" class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card p-3 shadow-sm">
-                <form class="row g-2">
-                    <!-- Park Type -->
-                    <!-- Park Type -->
+            <div class="container section my-4">
+                <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
+            
+                    <!-- Search Field -->
                     <div class="col-md-4">
-                        <label for="filter" class="form-label fw-bold">Filter by Type:</label>
+                        <label for="query" class="form-label fw-bold">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="query" id="query" class="form-control" placeholder="ZIP, park name, etc."
+                                   value="{{ query }}">
+                        </div>
+                    </div>
+            
+                    <!-- Park Type Filter -->
+                    <div class="col-md-3">
+                        <label for="filter" class="form-label fw-bold">Type</label>
                         <select class="form-select" name="filter" id="filter">
-                            <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
-                            <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
-                            <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
+                            <option value="" {% if selected_type == "" %}selected{% endif %}>All Types</option>
+                            <option value="Off-Leash" {% if selected_type == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
+                            <option value="Run" {% if selected_type == "Run" %}selected{% endif %}>Run</option>
                         </select>
                     </div>
-
-                    <!-- Accessibility -->
-                    <div class="col-md-4">
-                        <label for="accessible" class="form-label fw-bold">Accessibility:</label>
+            
+                    <!-- Accessibility Filter -->
+                    <div class="col-md-3">
+                        <label for="accessible" class="form-label fw-bold">Accessibility</label>
                         <select class="form-select" name="accessible" id="accessible">
-                            <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                            <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
-                            <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
+                            <option value="" {% if selected_accessible == "" %}selected{% endif %}>All</option>
+                            <option value="True" {% if selected_accessible == "True" %}selected{% endif %}>Yes</option>
+                            <option value="False" {% if selected_accessible == "False" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <!-- Borough Filter -->
+                    <div class="col-md-3">
+                        <label for="borough" class="form-label fw-bold">Borough</label>
+                        <select class="form-select" name="borough" id="borough">
+                            <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
+                            <option value="M" {% if selected_borough == "M" %}selected{% endif %}>Manhattan</option>
+                            <option value="B" {% if selected_borough == "B" %}selected{% endif %}>Brooklyn</option>
+                            <option value="Q" {% if selected_borough == "Q" %}selected{% endif %}>Queens</option>
+                            <option value="X" {% if selected_borough == "X" %}selected{% endif %}>Bronx</option>
+                            <option value="R" {% if selected_borough == "R" %}selected{% endif %}>Staten Island</option>
+                        </select>
+                    </div>
+            
+                    <!-- Search Button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
                     </div>
                 </form>
             </div>
@@ -47,45 +74,61 @@
     </div>
 
     <!-- Parks List + Map -->
-    <div class="row g-0">
-        <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
-            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">
+    <div id="parklist-map-container">
+        <div class="left-panel col-md-3">
+            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin: 0">
                 Parks ({{ parks|length }})
             </h3>
-            {% for park in parks %}
-            <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
-                <!-- Park Image (Left) -->
-                <div class="me-3">
-                    <img src="{% if park.image %}{{ park.image.url }}{% else %}https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp{% endif %}" 
-                    class="rounded-circle" 
-                    alt="{{ park.name }}" 
-                    style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;">
+            <!-- <div id="parklist-container" class="d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;"> -->
+            <div id="parklist-container">
+                {% for park in parks %}
+                <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
+                    <!-- Park Image (Left) -->
+                    <div class="me-3">
+                        {% if park.images.all %}
+                            <img src="{{ park.images.first.image.url }}" 
+                                class="rounded-circle" 
+                                alt="{{ park.name }} image" 
+                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            >
+                        {% else %}
+                            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
+                                class="rounded-circle" 
+                                alt="{{ park.name }}" 
+                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            >
+                        {% endif %}
+                    </div>
+    
+                    <!-- Park Details (Middle) -->
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
+                        <p class="park-card-details mb-0" style="font-size: 0.9rem;">
+                            <strong>Type:</strong> {{ park.dogruns_type }} <br>
+                            <strong>Accessible:</strong> 
+                            <span>
+                                {% if park.accessible == 'True' %}
+                                    <span id="yes-span">Yes</span>
+                                {% else %}
+                                    <span id="no-span">No</span>
+                                {% endif %}
+                            </span><br>
+                        </p>
+                    </div>
+                    <div id="details-button">
+                        <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                    </div>
                 </div>
-
-                <!-- Park Details (Middle) -->
-                <div class="flex-grow-1">
-                    <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name }}</h6>
-                    <p class="mb-0" style="font-size: 0.9rem;">
-                        <strong>Type:</strong> {{ park.dogruns_type }} <br>
-                        <strong>Accessible:</strong> {{ park.accessible }}
-                    </p>
-                </div>
-                <div>
-                    <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
 
 
         <!-- NYC Map (70% Width, Full Height) -->
         <div class="col-md-9 d-flex flex-column">
             <div class="map-container flex-grow-1 w-100" style="height: 100%;">
-                <!-- {% autoescape off %}
-                    {{ map|safe }}
-                {% endautoescape %} -->
+                <!-- id map used in JS for Leaflet -->
                 <div id="map"></div>
-
             </div>
         </div>
     </div>
@@ -94,6 +137,15 @@
 
 
 <script>
+
+    const boroughCharToBorough = {
+        "M": "Manhattan",
+        "B": "Brooklyn",
+        "Q": "Queens",
+        "X": "Bronx",
+        "R": "Staten Island"
+    }
+
     // Parks in JSON; accessible in JS
     const parks = JSON.parse('{{ parks_json|escapejs }}');
 
@@ -119,7 +171,7 @@
         `,
         className: '',
         iconSize: [34, 42],  
-        iconAnchor: [17, 42]
+        iconAnchor: [17, 42],
     });
 
     const highlightedIcon = L.divIcon({
@@ -138,11 +190,9 @@
                     </radialGradient>
                 </defs>
                 
-                <!-- More prominent 3D effect with extra highlights -->
                 <path d="M19 50C19 50 5 26 5 14C5 6 11.5 1 19 1C26.5 1 33 6 33 14C33 26 19 50 19 50Z" 
                     fill="url(#grad2)" stroke="#5a3c32" stroke-width="1.8"/>
 
-                <!-- Additional highlight overlay -->
                 <path d="M19 13C25 13 29 17 29 22C29 27 23 30 19 30C15 30 9 27 9 22C9 17 13 13 19 13Z"
                     fill="url(#highlightOverlay)" opacity="0.5"/>
 
@@ -152,7 +202,8 @@
         `,
         className: '',
         iconSize: [38, 50],  
-        iconAnchor: [19, 50]
+        iconAnchor: [19, 53],
+        popupAnchor: [0, -13] // Move popup up to match increased size of icon
     });
 
     const basePopupOffsetY = -30;
@@ -165,12 +216,20 @@
     const NYC_LAT_AND_LONG = [40.712775, -74.005973];
 
 
-    // Stores id of last park clicked in list
-    // Used to determine if map should reset
-    let lastClickedParkId = -1;
+    /*
+        Stores the marker object that was last clicked
+        Used to differentiate between whether the marker
+        is highlighted from click or from hover on the park
+        list        
+    */
+    let lastClickedMarker = null;
     
+    // Boolean: whether the current highlighted marker is highlighted from click
+    // (marker OR card) or from hover on the card in park list
     // Used to determine if marker should reset to default
-    let highlightedFromClick = false;
+    let markerHighlightedFromClick = false;
+
+    let lastClickedParkCard = null;
 
     let flyToTimeout = null;
     let resetTimeout = null;
@@ -182,11 +241,11 @@
             var childCount = cluster.getChildCount();
             var size;
 
-            if (childCount < 10) {
+            if (childCount < 5) {
                 size = 30;
-            } else if (childCount < 25) {
+            } else if (childCount < 10) {
                 size = 40;
-            } else if (childCount < 50) {
+            } else if (childCount < 25) {
                 size = 55;
             } else {
                 size = 70;
@@ -238,37 +297,113 @@
     }
 
 
+    const nycBounds = L.latLngBounds([
+        [40.4774, -74.2591],  // Southwest
+        [40.9176, -73.7004]   // Northeast
+    ]);
 
-    // Create a map
-    var map = L.map('map', {
+    const paddedBounds = nycBounds.pad(0.5);  // padding
+
+    const map = L.map('map', {
         center: NYC_LAT_AND_LONG,
-        zoom: 11
-    })
+        zoom: 11,
+        minZoom: 10,
+        maxBounds: paddedBounds,
+        maxBoundsViscosity: 1.0
+    });
+
+    map.fitBounds(nycBounds);
 
     // Tile the map
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        minZoom: 10,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-
+    // Create the clusters
     var markerCluster = L.markerClusterGroup({
         iconCreateFunction: clusterStyling("rgba(0, 128, 0, 0.7)"),
+        maxClusterRadius: 50,
     });
 
 
-    // Place markers on map
+    // Place markers for each park on map
     parks.forEach(park => {
+            const popupContent = `
+                <div style="
+                    width: 300px;
+                    font-family: Arial, sans-serif;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    background-color: white;
+                    ">
+                    <!-- Image -->
+                    <div
+                        style="width: 100%;
+                        overflow: hidden;
+                        aspect-ratio: 2 / 1;
+                    ">
+                        <img 
+                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
+                            alt="${park.name}" 
+                            style="
+                                height: 100%;
+                                width: 100%;
+                                object-fit: cover;
+                            "
+                        >
+                    </div>
+
+
+                    <!-- Details Container-->
+                    <a href="/park/${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
+                        <div style="padding: 10px;">
+
+                            <!-- Park Name with link to park page-->
+                            <h6 style="
+                                margin: 0 0 15px 0;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                color: #333;
+                            ">
+                                <div>
+                                    ${park.name}
+                                </div>
+                            </h6>
+
+                            <!-- Details -->
+                            <p style="
+                                margin: 0;
+                                font-size: 0.85rem;
+                                color: #555;
+                            ">
+                                <strong>Type:</strong> ${park.dogruns_type}<br>
+                                <strong>Accessible:</strong>
+                                <span style="color: ${park.accessible=='True' ? 'green' : '#c11212'};">
+                                    ${park.accessible=='True' ? 'Yes' : 'No'}
+                                </span><br>
+                                <strong>Address:</strong> ${park.formatted_address}<br>
+                                <strong>Borough:</strong> ${boroughCharToBorough[park.borough]}<br>
+                                <strong>Zip Code:</strong> ${park.zip_code}
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            `;
+
+        // marker creation
         let marker = L.marker(
             [park.latitude, park.longitude],
             { 
                 icon: baseIcon,
                 riseOnHover: true,
+                title: park.name
             }
-        ).bindPopup(park.name, {
+        ).bindPopup(popupContent, {
             autoPan: false,
             offset: L.point(0, basePopupOffsetY)
-        });
+        }).openPopup();//.addTo(map);
 
         // Add to cluster
         markerCluster.addLayer(marker);
@@ -280,65 +415,92 @@
         // Also map park id to the park info object
         parkIdToPark[park.id] = park;
 
-        // Set listener for marker click
+
         marker.on("click", function (e) {
-
-            if (park.id != lastClickedParkId) {
-                // Reset last clicked marker
-                if (markers[lastClickedParkId])
-                    resetMarker(markers[lastClickedParkId]);
-
-                // highlight this marker
-                highlightMarker(marker);
-                lastClickedParkId = park.id;
+            // If this clicked marker not the last clicked marker,
+            // reset last clicked marker, highlight this marker
+            if (marker != lastClickedMarker) {
+                
+                resetMarker(lastClickedMarker);
+                
+                highlightMarker(marker, true);
+                lastClickedMarker = marker;
             } else {
+                // Same marker as last clicked, just reset
                 resetMarker(marker);
             }
         });
     });
 
     map.on('click', (e) => {
-        if (markers[lastClickedParkId])
-            resetMarker(markers[lastClickedParkId]);
+        resetMarker(lastClickedMarker);
     })
 
     // Add cluster to map
-    map.addLayer(markerCluster);    
+    map.addLayer(markerCluster);
 
 
 
-    function highlightMarker(marker) {
-        marker.setIcon(highlightedIcon); // Change marker color and size
-        marker.getPopup().options.offset = L.point(0, highlightPopupOffsetY); // Move popup to match increased marker
-        marker.setZIndexOffset(250); // Bring forward
-        
-        setTimeout(() => {
-            marker.openPopup(); // Open popup 
-        }, 1300);
+    function highlightMarker(marker, click) {
+        if (!marker)
+            return;
 
         let cluster = markerCluster.getVisibleParent(marker);
 
-        if (cluster) {
+        marker.setIcon(highlightedIcon); // Change marker color and size
+        // marker.getPopup().options.offset = L.point(0, highlightPopupOffsetY); // Move popup to match increased marker
+        marker.setZIndexOffset(250); // Bring forward        
+
+        // if marker is in a cluster
+        if (cluster && cluster._icon && cluster !== marker) {
+            // If a marker is in a cluster, the marker is not on map
+            // so popup does not work. Delay marker popup to run 
+            // after zoomed in from cluster and marker appears
+            setTimeout(() => {
+                marker.openPopup(); // Open popup 
+            }, 600);
+
+
             let outerCircle = cluster._icon.children[0].children[0];
             let innerCircle = cluster._icon.children[0].children[1];
-
+    
             outerCircle.style.backgroundColor = "rgba(109, 76, 65, 0.7)";
-            innerCircle.style.backgroundColor = "rgba(109, 76, 65, 1)";
+            innerCircle.style.backgroundColor = "rgba(109, 76, 65, 1)";   
 
-            
+        } 
+
+        // Clicked marker persistence 
+        if (click) {
+            // Remove from clustering group and add marker individually
+            // so it does not recluster from zoom out
+            markerCluster.removeLayer(marker);
+            marker.addTo(map);
         }
+
+        marker.openPopup();
+
+        markerHighlightedFromClick = click;
     }
 
     function resetMarker(marker) {
+        if (!marker) 
+            return;
+
         marker.setIcon(baseIcon); // Revert marker to original
         marker.setZIndexOffset(0); // Revert to default Z pos
         marker.closePopup(); 
-        marker.getPopup().options.offset = L.point(0, basePopupOffsetY);
-        lastClickedParkId = -1;
+        // marker.getPopup().options.offset = L.point(0, basePopupOffsetY);
+        lastClickedMarker = null;
+
+        if (markerHighlightedFromClick) {
+            // Add marker back to clustering layer; remove persistence
+            map.removeLayer(marker);
+            markerCluster.addLayer(marker);
+        }
 
         let cluster = markerCluster.getVisibleParent(marker);
 
-        if (cluster) {
+        if (cluster && cluster._icon && cluster !== marker) {
             let outerCircle = cluster._icon.children[0].children[0];
             let innerCircle = cluster._icon.children[0].children[1];
 
@@ -364,58 +526,40 @@
         }
     }
 
-    // Check whether marks is in a cluster
+    // Check whether marker is in a cluster
     function findClusterForMarker(marker) {
         let clusterLayer = markerCluster.getVisibleParent(marker);
         return clusterLayer !== marker ? clusterLayer : null;
     }
 
 
-    // Hovering on a park in the list highlights the park marker
-    // on the map
+    // Event listeners for park cards
     document.addEventListener("DOMContentLoaded", function () {
         let parkCards = document.querySelectorAll(".park-card");
 
         parkCards.forEach((card) => {
 
-            // When mouse hovers over park card, it highlights the marker on the map
+            // Mouse hovers over park card, highlights the marker on the map
             card.addEventListener("mouseenter", function () {
                 let parkId = card.id.replace("park-", ""); // Extract park ID
                 let marker = markers[parkId]; // Find corresponding marker
 
+                // get park object
                 let park = parkIdToPark[parkId];
                 
                 // If this park is not the last clicked park
-                if (marker && parkId != lastClickedParkId) {
+                if (marker && marker != lastClickedMarker) {
 
-                        
-                    // Reset last clicked marker
-                    if (markers[lastClickedParkId]) {
-                        resetTimeout = setTimeout(() => {
-                            
-                            resetMarker(markers[lastClickedParkId]);
+                    resetMarker(lastClickedMarker);
 
-                            // highlight this marker
-                            highlightMarker(marker);
-        
-                            // set highlight from click to false
-                            highlightedFromClick = false;
-                        }, 200);
-                    }
-                    else {
-                        // highlight this marker
-                        highlightMarker(marker);
-                        // set highlight from click to false
-                        highlightedFromClick = false;
-                    }
+                    highlightMarker(marker, false);
 
-     
                     // reset map view
-                    // Delay the map reset action by 500ms
+                    // Delay the map reset action by 200ms
                     // in case accidental entering of card
-                    flyToTimeout = setTimeout(() => {
-                        safeFlyTo(NYC_LAT_AND_LONG, 11);
-                    }, 150); 
+                    // flyToTimeout = setTimeout(() => {
+                    //     safeFlyTo(NYC_LAT_AND_LONG, 11);
+                    // }, 200); 
                 }
             });
             
@@ -425,13 +569,13 @@
                 let marker = markers[parkId];
 
                 // Only reset marker if it is highlighted from hover
-                if (marker && !highlightedFromClick) {
+                if (marker && !markerHighlightedFromClick) {
                     resetMarker(marker);
                 }
 
                 // Cancel flyTo if user moves out before delay ends
                 clearTimeout(flyToTimeout);
-                clearTimeout(resetTimeout);
+                // clearTimeout(resetTimeout);
             });
 
 
@@ -441,24 +585,52 @@
                 let marker = markers[parkId]; // Find corresponding marker
 
                 let park = parkIdToPark[parkId];
-                console.log(markerCluster.getVisibleParent(marker));
-
+                // console.log(lastClickedParkCard);
                 if (marker) {
-                    // Center the map on this marker
-                    // and zoom closer
-                    safeFlyTo([park.latitude, park.longitude], 15);
+                    
+                    if (card !== lastClickedParkCard) {
+                        console.log(lastClickedParkCard);
+                        console.log(lastClickedParkCard + ' here');
+                        // Center the map on this marker
+                        // and zoom closer
+                        safeFlyTo([park.latitude, park.longitude], 15);
+    
+                        highlightMarker(marker, true);
+    
+                        lastClickedMarker = marker;
+                        lastClickedParkCard = card;
 
-                    highlightMarker(marker);
-
-                    highlightedFromClick = true;
-                    popupOpenedFromClick = true;
-
-                    lastClickedParkId = parkId;
+                    } else {
+                        safeFlyTo(NYC_LAT_AND_LONG, 11);
+                        resetMarker(marker);
+                        lastClickedParkCard = null;
+                    }
                 }
+                // console.log(lastClickedParkCard);
+
             });
 
         });
+
+
+        // Prevent map centering when details button is clicked on the card
+        document.querySelectorAll('#details-button').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation(); 
+            });
+        });
     });
+
+    /*
+        Problems:
+
+        - When marker in cluster and click card still in smaller cluster
+         Click again no zoom. After first click then move off card then move in again
+         activates reset map
+         Pelham Bay Park
+
+        - Maybe only render parks in the list that are visible in the map
+    */
 
 </script>
 
