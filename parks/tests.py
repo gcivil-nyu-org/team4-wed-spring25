@@ -213,8 +213,12 @@ class ParkDetailViewTest(TestCase):
 class ReportFunctionalityTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username="reporter", password="testpass123")
-        self.other_user = User.objects.create_user(username="uploader", password="testpass123")
+        self.user = User.objects.create_user(
+            username="reporter", password="testpass123"
+        )
+        self.other_user = User.objects.create_user(
+            username="uploader", password="testpass123"
+        )
 
         self.park = DogRunNew.objects.create(
             id="10",
@@ -231,14 +235,11 @@ class ReportFunctionalityTests(TestCase):
         self.image = ParkImage.objects.create(
             park=self.park,
             image="https://res.cloudinary.com/demo/image/upload/sample.jpg",
-            user=self.other_user
+            user=self.other_user,
         )
 
         self.review = Review.objects.create(
-            park=self.park,
-            text="Nice place!",
-            rating=4,
-            user=self.other_user
+            park=self.park, text="Nice place!", rating=4, user=self.other_user
         )
 
         self.client.login(username="reporter", password="testpass123")
@@ -246,7 +247,7 @@ class ReportFunctionalityTests(TestCase):
     def test_report_image_creates_record(self):
         response = self.client.post(
             reverse("report_image", args=[self.image.id]),
-            {"reason": "Inappropriate image"}
+            {"reason": "Inappropriate image"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.image.reports.count(), 1)
@@ -260,8 +261,8 @@ class ReportFunctionalityTests(TestCase):
             {
                 "form_type": "report_review",
                 "review_id": self.review.id,
-                "reason": "Offensive content"
-            }
+                "reason": "Offensive content",
+            },
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.review.reports.count(), 1)
@@ -272,35 +273,30 @@ class ReportFunctionalityTests(TestCase):
     def test_submit_review(self):
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
-            {
-                "form_type": "submit_review",
-                "text": "Another review!",
-                "rating": "5"
-            }
+            {"form_type": "submit_review", "text": "Another review!", "rating": "5"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Review.objects.filter(park=self.park).count(), 2)
-    
+
     def test_review_report_str(self):
         report = ReviewReport.objects.create(
-        review=self.review, reported_by=self.user, reason="Inappropriate content"
-         )
+            review=self.review, reported_by=self.user, reason="Inappropriate content"
+        )
         self.assertIn("Reported by", str(report))
         self.assertIn(str(self.review.id), str(report))
 
     def test_image_report_str(self):
         report = ImageReport.objects.create(
-        image=self.image, user=self.user, reason="Offensive image"
+            image=self.image, user=self.user, reason="Offensive image"
         )
         self.assertIn("Report by", str(report))
         self.assertIn(str(self.image.id), str(report))
-    
 
     def test_missing_reason_does_not_create_report(self):
         self.client.login(username="user2", password="testpass")
         response = self.client.post(
-        reverse("report_image", args=[self.image.id]),
-        {"reason": ""},
+            reverse("report_image", args=[self.image.id]),
+            {"reason": ""},
         )
         self.assertEqual(ImageReport.objects.count(), 0)
         self.assertEqual(response.status_code, 302)
@@ -313,12 +309,24 @@ class DeleteTests(TestCase):
         self.client.login(username="deleter", password="123pass")
 
         self.park = DogRunNew.objects.create(
-            id="22", prop_id="9988", name="Del Park",
-            address="Somewhere", dogruns_type="All", accessible="Yes",
-            formatted_address="Addr", latitude=40.0, longitude=-73.0,
+            id="22",
+            prop_id="9988",
+            name="Del Park",
+            address="Somewhere",
+            dogruns_type="All",
+            accessible="Yes",
+            formatted_address="Addr",
+            latitude=40.0,
+            longitude=-73.0,
         )
-        self.review = Review.objects.create(park=self.park, text="Review", rating=4, user=self.user)
-        self.image = ParkImage.objects.create(park=self.park, image="https://res.cloudinary.com/demo/image/upload/sample.jpg", user=self.user)
+        self.review = Review.objects.create(
+            park=self.park, text="Review", rating=4, user=self.user
+        )
+        self.image = ParkImage.objects.create(
+            park=self.park,
+            image="https://res.cloudinary.com/demo/image/upload/sample.jpg",
+            user=self.user,
+        )
 
     def test_delete_review(self):
         response = self.client.post(reverse("delete_review", args=[self.review.id]))
