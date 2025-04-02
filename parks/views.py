@@ -3,6 +3,7 @@ from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unuse
 from django.db.models import OuterRef, Subquery, CharField
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage
+from django.forms.models import model_to_dict
 
 import folium
 from folium.plugins import MarkerCluster
@@ -157,10 +158,12 @@ def park_detail(request, id):
                 "park_detail", id=park.id
             )  # Redirect after review submission
 
+    park_json = json.dumps(model_to_dict(park))
+
     return render(
         request,
         "parks/park_detail.html",
-        {"park": park, "images": images, "reviews": reviews},
+        {"park": park, "images": images, "reviews": reviews, "park_json": park_json},
     )
 
 

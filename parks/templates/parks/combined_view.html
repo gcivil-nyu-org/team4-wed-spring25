@@ -4,15 +4,17 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="hero text-center py-2">
-    <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
-    <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
+<div class="hero text-center">
+    <div class="m-2">
+        <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
+        <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
+    </div>
 </div>
 
 <!-- Full-width container for layout consistency -->
-<div class="container-fluid mt-3">
+<div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
-    <div class="row justify-content-center mb-3">
+    <div id="map-filter-menu" class="row justify-content-center">
         <div class="col-md-10">
             <div class="card p-3 shadow-sm">
                 <form class="row g-2">
@@ -47,43 +49,53 @@
     </div>
 
     <!-- Parks List + Map -->
-    <div class="row g-0">
-        <div class="col-md-3 d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;">
-            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin-bottom: 8px;">
+    <div id="parklist-map-container">
+        <div class="left-panel col-md-3">
+            <h3 class="text-center text-dark" style="font-size: 1.3rem; margin: 0">
                 Parks ({{ parks|length }})
             </h3>
-            {% for park in parks %}
-            <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
-                <!-- Park Image (Left) -->
-                <div class="me-3">
-                    {% if park.images.all %}
-                        <img src="{{ park.images.first.image.url }}" 
-                            class="rounded-circle" 
-                            alt="{{ park.name }} image" 
-                            style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
-                        >
-                    {% else %}
-                        <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
-                            class="rounded-circle" 
-                            alt="{{ park.name }}" 
-                            style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
-                        >
-                    {% endif %}
+            <!-- <div id="parklist-container" class="d-flex flex-column" style="max-height: 100vh; overflow-y: auto; padding-right: 5px;"> -->
+            <div id="parklist-container">
+                {% for park in parks %}
+                <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
+                    <!-- Park Image (Left) -->
+                    <div class="me-3">
+                        {% if park.images.all %}
+                            <img src="{{ park.images.first.image.url }}" 
+                                class="rounded-circle" 
+                                alt="{{ park.name }} image" 
+                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            >
+                        {% else %}
+                            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
+                                class="rounded-circle" 
+                                alt="{{ park.name }}" 
+                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            >
+                        {% endif %}
+                    </div>
+    
+                    <!-- Park Details (Middle) -->
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
+                        <p class="park-card-details mb-0" style="font-size: 0.9rem;">
+                            <strong>Type:</strong> {{ park.dogruns_type }} <br>
+                            <strong>Accessible:</strong> 
+                            <span>
+                                {% if park.accessible == 'True' %}
+                                    <span id="yes-span">Yes</span>
+                                {% else %}
+                                    <span id="no-span">No</span>
+                                {% endif %}
+                            </span><br>
+                        </p>
+                    </div>
+                    <div id="details-button">
+                        <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                    </div>
                 </div>
-
-                <!-- Park Details (Middle) -->
-                <div class="flex-grow-1">
-                    <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
-                    <p class="mb-0" style="font-size: 0.9rem;">
-                        <strong>Type:</strong> {{ park.dogruns_type }} <br>
-                        <strong>Accessible:</strong> {{ park.accessible }}
-                    </p>
-                </div>
-                <div id="details-button">
-                    <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
 
 
@@ -292,23 +304,68 @@
 
     // Place markers for each park on map
     parks.forEach(park => {
-        console.log(park)
-        console.log(park.thumbnail_url)
+            const popupContent = `
+                <div style="
+                    width: 300px;
+                    font-family: Arial, sans-serif;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                    background-color: white;
+                    ">
+                    <!-- Image -->
+                    <div
+                        style="width: 100%;
+                        overflow: hidden;
+                        aspect-ratio: 2 / 1;
+                    ">
+                        <img 
+                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
+                            alt="${park.name}" 
+                            style="
+                                height: 100%;
+                                width: 100%;
+                                object-fit: cover;
+                            "
+                        >
+                    </div>
 
-        const popupContent = `
-        <div style="min-width:200px;" class="row gap-2">
-            <div style="align-content: center"> 
-                <img src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}" ?  alt="${park.name}" style="width:100%; height:auto;">
-            </div>
-            <div> 
-                <h4><a href="/park/${park.id}/">${park.name}</a></h4>
-                <p><strong>Type:</strong> ${park.dogruns_type}</p>
-                <p><strong>Accessible:</strong> ${park.accessible}</p>
-                <p><strong>Address:</strong> ${park.formatted_address}</p>
-                <p><strong>Borough:</strong> ${boroughCharToBorough[park.borough]}</p>
-                <p><strong>Zip Code:</strong> ${park.zip_code}</p>
-            </div>
-        </div>`;
+
+                    <!-- Details Container-->
+                    <a href="/park/${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
+                        <div style="padding: 10px;">
+
+                            <!-- Park Name with link to park page-->
+                            <h6 style="
+                                margin: 0 0 15px 0;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                color: #333;
+                            ">
+                                <div>
+                                    ${park.name}
+                                </div>
+                            </h6>
+
+                            <!-- Details -->
+                            <p style="
+                                margin: 0;
+                                font-size: 0.85rem;
+                                color: #555;
+                            ">
+                                <strong>Type:</strong> ${park.dogruns_type}<br>
+                                <strong>Accessible:</strong>
+                                <span style="color: ${park.accessible=='True' ? 'green' : '#c11212'};">
+                                    ${park.accessible=='True' ? 'Yes' : 'No'}
+                                </span><br>
+                                <strong>Address:</strong> ${park.formatted_address}<br>
+                                <strong>Borough:</strong> ${boroughCharToBorough[park.borough]}<br>
+                                <strong>Zip Code:</strong> ${park.zip_code}
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            `;
 
         // marker creation
         let marker = L.marker(
