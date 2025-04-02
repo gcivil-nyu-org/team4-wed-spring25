@@ -197,6 +197,8 @@
 
 
     </style>
+    {% block extra_head %}{% endblock %}
+
 </head>
 
 <body>
@@ -220,6 +222,9 @@
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                         </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>
                     {% else %}
@@ -231,7 +236,7 @@
                         </li>
                     {% endif %}
                 </ul>
-                
+
             </div>
         </div>
     </nav>
@@ -247,17 +252,17 @@
         document.addEventListener("DOMContentLoaded", function () {
             const imageUpload = document.querySelector("input[name='images']");
             const imagePreview = document.getElementById("imagePreview");
-    
+
             if (!imageUpload || !imagePreview) return; //Prevents errors on other pages
-    
+
             imageUpload.addEventListener("change", function () {
                 imagePreview.innerHTML = ""; // Clear previous previews
-    
+
                 if (this.files) {
                     Array.from(this.files).forEach(file => {
                         if (file.type.startsWith("image/")) { // Ensure only images are processed
                             const reader = new FileReader();
-    
+
                             reader.onload = function (e) {
                                 const img = document.createElement("img"); // Create image element
                                 img.src = e.target.result; // Assign image source
@@ -265,19 +270,21 @@
                                 img.setAttribute("onclick", `openImagePopup('${e.target.result}')`); // Add click event
                                 imagePreview.appendChild(img); // Append image to preview div
                             };
-    
+
                             reader.readAsDataURL(file); // Read image file
                         }
                     });
                 }
             });
         });
-    
+
         //Function to Open the Image in a Popup
         function openImagePopup(imageSrc) {
             const popup = window.open("", "_blank", "width=800,height=600");
             popup.document.write(`<img src="${imageSrc}" style="width: 100%; height: auto; border-radius: 10px;">`);
         }
     </script>
+    {% block extra_scripts %}{% endblock %}
+
 </body>
 </html>
