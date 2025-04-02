@@ -1,24 +1,87 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ pet.name }} - Pet Profile{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* --- Card Styling --- */
+    .pet-detail-card { font-family: 'Nunito', Arial, sans-serif; border: none; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); background-color: #ffffff; margin-bottom: 2.5rem; }
+    /* --- Headers --- */
+    .pet-detail-header { font-family: 'Poppins', sans-serif; background-color: #6D4C41 !important; color: white; border-bottom: none; padding: 1.25rem 1.5rem; text-align: center; }
+    .pet-detail-header h1 { margin-bottom: 0; font-size: 1.8rem; font-weight: 600; }
+    /* --- Card Body --- */
+    .pet-detail-card .card-body { padding: 2rem; }
+
+    /* --- Pet Picture Display Styling --- */
+    .pet-picture-display { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; margin-bottom: 1.5rem; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); display: block; margin-left: auto; margin-right: auto; }
+    /* Style for Pet Image Placeholder */
+    .pet-detail-image-placeholder { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #f0f0f0; color: #ccc; font-size: 5rem; margin-bottom: 1.5rem; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); margin-left: auto; margin-right: auto; }
+
+    /* --- Pet Details Styling (Definition List) --- */
+    .pet-details dl { margin-bottom: 1.5rem; text-align: left; }
+    .pet-details dt { font-weight: 600; color: #333; padding-right: 0.5em; margin-bottom: 1rem; float: left; clear: left; width: 130px; display: flex; align-items: center; font-size: 1rem; }
+    .pet-details dt i.fa-fw { margin-right: 8px; color: #888; font-size: 1em; width: 1.2em; text-align: center; }
+    .pet-details dd { margin-left: 140px; margin-bottom: 1rem; color: #555; word-wrap: break-word; padding-top: 0.1em; font-size: 1rem; }
+    .pet-details dd a { color: #6D4C41; text-decoration: none; }
+    .pet-details dd a:hover { text-decoration: underline; }
+
+    /* --- Button Styling --- */
+    .btn-pet-action { padding: 0.7rem 1.3rem; font-weight: 600; font-size: 0.9rem; border-radius: 8px; text-decoration: none !important; text-align: center; vertical-align: middle; cursor: pointer; user-select: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; margin: 0.25rem; border: 1px solid transparent; line-height: 1.5; }
+    .btn-pet-action i { margin-right: 0.5rem; font-size: inherit; }
+    .btn-edit-pet-detail { background-color: #6c757d; border-color: #6c757d; color: white; }
+    .btn-edit-pet-detail:hover { background-color: #5a6268; border-color: #545b62; color: white; }
+    .btn-delete-pet-detail { background-color: #dc3545; border-color: #dc3545; color: white; }
+    .btn-delete-pet-detail:hover { background-color: #bb2d3b; border-color: #b02a37; color: white; }
+
+    .btn-back-profile {
+        /* Use solid brown style */
+        background-color: #6D4C41;
+        border-color: #6D4C41;
+        color: white;
+    }
+    .btn-back-profile:hover {
+        /* Darker brown on hover */
+        background-color: #5d4037;
+        border-color: #5d4037;
+        color: white;
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center">{{ pet.name }}</h1>
-    <div class="card mx-auto mb-4" style="max-width: 500px;">
-        <div class="card-body text-center">
-            {% if pet.pet_picture %}
-                <img src="{{ pet.pet_picture.url }}" class="rounded-circle mb-3">
-            {% else %}
-                <img src="https://via.placeholder.com/120" class="rounded-circle mb-3">
-            {% endif %}
-            <p><strong>Breed:</strong> {{ pet.breed }}</p>
-            <p><strong>Age:</strong> {{ pet.age }}</p>
-            <p><strong>Personality:</strong> {{ pet.personality|default:"Friendly" }}</p>
-            <p><strong>Favorite Food:</strong> {{ pet.favorite_food|default:"Not provided" }}</p>
-            <a href="{% url 'edit_pet' pet.id %}" class="btn btn-secondary">Edit</a>
-            <a href="{% url 'delete_pet' pet.id %}" class="btn btn-danger">Delete</a>
-        </div>
-    </div>
-</div>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow-sm pet-detail-card animate-on-load">
+                <div class="card-header pet-detail-header text-center"> <h1 class="mb-0">{{ pet.name }}</h1> </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                         {% if pet.pet_picture and pet.pet_picture.url %} <img src="{{ pet.pet_picture.url }}" alt="{{ pet.name }}'s picture" class="pet-picture-display"> {% else %} <div class="pet-detail-image-placeholder"> <i class="fas fa-paw"></i> </div> {% endif %}
+                    </div>
+                    <div class="pet-details">
+                        <dl>
+                            <dt><i class="fas fa-tag fa-fw"></i>Breed:</dt> <dd>{{ pet.breed }}</dd>
+                            <dt><i class="fas fa-birthday-cake fa-fw"></i>Age:</dt> <dd>{{ pet.age }}</dd>
+                            {% if pet.gender %} <dt><i class="fas fa-venus-mars fa-fw"></i>Gender:</dt> <dd>{{ pet.get_gender_display|default:pet.gender }}</dd> {% endif %}
+                            {% if pet.species %} <dt><i class="fas fa-dna fa-fw"></i>Species:</dt> <dd>{{ pet.species }}</dd> {% endif %}
+                            <dt><i class="fas fa-smile fa-fw"></i>Personality:</dt> <dd>{{ pet.personality|default:"Not specified" }}</dd>
+                            <dt><i class="fas fa-bone fa-fw"></i>Favorite Food:</dt> <dd>{{ pet.favorite_food|default:"Not specified" }}</dd>
+                            {% if pet.description %} <dt><i class="fas fa-file-alt fa-fw"></i>Description:</dt> <dd>{{ pet.description|linebreaksbr }}</dd> {% endif %}
+                        </dl>
+                    </div>
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <a href="{% url 'edit_pet' pet.id %}" class="btn btn-pet-action btn-edit-pet-detail"> <i class="fas fa-edit"></i> Edit </a>
+                        <a href="{% url 'delete_pet' pet.id %}" class="btn btn-pet-action btn-delete-pet-detail"> <i class="fas fa-trash-alt"></i> Delete </a>
+                        <a href="{% url 'profile' %}" class="btn btn-pet-action btn-back-profile"> <i class="fas fa-arrow-left"></i> Back to Profile </a>
+                    </div>
+                </div> {# End card-body #}
+            </div> {# End card #}
+        </div> {# End col #}
+    </div> {# End row #}
+</div> {# End container #}
 {% endblock %}

@@ -105,6 +105,8 @@
             transform: scale(1.1);
         }
     </style>
+    {% block extra_head %}{% endblock %}
+
 </head>
 <body>
 
@@ -190,5 +192,7 @@
             popup.document.write(`<img src="${imageSrc}" style="width: 100%; height: auto; border-radius: 10px;">`);
         }
     </script>
+    {% block extra_scripts %}{% endblock %}
+
 </body>
 </html>
