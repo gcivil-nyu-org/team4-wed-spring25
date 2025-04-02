@@ -58,4 +58,3 @@ deploy:
       branch: main
       condition: $TRAVIS_EVENT_TYPE != cron
     skip_cleanup: 'true'  
-
