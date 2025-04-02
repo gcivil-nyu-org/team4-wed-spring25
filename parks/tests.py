@@ -209,6 +209,78 @@ class ParkDetailViewTest(TestCase):
             },
         )
 
+
+class ReportFunctionalityTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="user1", password="pass123")
+        self.other_user = User.objects.create_user(username="user2", password="pass456")
+
+        self.park = DogRunNew.objects.create(
+            id="20",
+            prop_id="8888",
+            name="Test Park",
+            address="Test Address",
+            dogruns_type="All",
+            accessible="Yes",
+        )
+        self.image = ParkImage.objects.create(
+            park=self.park, user=self.other_user, image="image.jpg"
+        )
+        self.review = Review.objects.create(
+            park=self.park, user=self.other_user, text="Nice!", rating=4
+        )
+
+        self.client.login(username="user1", password="pass123")
+
+    def test_report_image_creates_record(self):
+        self.client.login(username="user1", password="pass123abc")
+        response = self.client.post(
+            reverse("report_image", args=[self.image.id]),
+            data={"reason": "Inappropriate content"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.image.reports.count(), 1)
+        report = self.image.reports.first()
+        self.assertEqual(report.reason, "Inappropriate content")
+        self.assertEqual(report.user, self.user)
+
+    def test_report_review_creates_record(self):
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.id]),
+            data={
+                "form_type": "report_review",
+                "review_id": self.review.id,
+                "reason": "Offensive comment",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.review.reports.count(), 1)
+        report = self.review.reports.first()
+        self.assertEqual(report.reason, "Offensive comment")
+        self.assertEqual(report.reported_by, self.user)
+
+    def test_user_cannot_delete_others_review(self):
+        review = self.review
+        response = self.client.post(reverse("delete_review", args=[review.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_cannot_delete_others_image(self):
+        image = self.image
+        response = self.client.post(reverse("delete_image", args=[image.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_submit_invalid_review_rating(self):
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.id]),
+            data={
+                "form_type": "submit_review",
+                "text": "Too high rating!",
+                "rating": "999",
+            },
+        )
+        self.assertContains(response, "Rating must be between 1 and 5 stars!")
+
     def test_park_detail_not_found(self):
         """Test accessing a non-existent park should return 404."""
         response = self.client.get(
@@ -239,15 +311,21 @@ class ParkDetailViewTest(TestCase):
         self.assertContains(response, "Rating must be between 1 and 5 stars!")
 
     def test_submit_review(self):
-        self.user = User.objects.create_user(username="testuser", password="123456abc")
-        self.client.login(username="testuser", password="123456abc")
-        # Test submitting a review should correctly redirect
+        reviews_before = Review.objects.filter(park=self.park).count()
+        self.client.login(username="your_user", password="password123")
+
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
-            {"form_type": "submit_review", "text": "Awesome park!", "rating": "5"},
+            {
+                "form_type": "submit_review",
+                "text": "Awesome park!",
+                "rating": "5",
+            },
         )
+
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Review.objects.count(), 1)
+        reviews_after = Review.objects.filter(park=self.park).count()
+        self.assertEqual(reviews_after, reviews_before + 1)
 
 
 class ParkImageModelTest(TestCase):
