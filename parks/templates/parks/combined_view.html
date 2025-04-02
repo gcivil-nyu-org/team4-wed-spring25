@@ -16,32 +16,57 @@
     <!-- Filter Section (Full Width) -->
     <div id="map-filter-menu" class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card p-3 shadow-sm">
-                <form class="row g-2">
-                    <!-- Park Type -->
-                    <!-- Park Type -->
+            <div class="container section my-4">
+                <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
+            
+                    <!-- Search Field -->
                     <div class="col-md-4">
-                        <label for="filter" class="form-label fw-bold">Filter by Type:</label>
+                        <label for="query" class="form-label fw-bold">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="query" id="query" class="form-control" placeholder="ZIP, park name, etc."
+                                   value="{{ query }}">
+                        </div>
+                    </div>
+            
+                    <!-- Park Type Filter -->
+                    <div class="col-md-3">
+                        <label for="filter" class="form-label fw-bold">Type</label>
                         <select class="form-select" name="filter" id="filter">
-                            <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
-                            <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
-                            <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
+                            <option value="" {% if selected_type == "" %}selected{% endif %}>All Types</option>
+                            <option value="Off-Leash" {% if selected_type == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
+                            <option value="Run" {% if selected_type == "Run" %}selected{% endif %}>Run</option>
                         </select>
                     </div>
-
-                    <!-- Accessibility -->
-                    <div class="col-md-4">
-                        <label for="accessible" class="form-label fw-bold">Accessibility:</label>
+            
+                    <!-- Accessibility Filter -->
+                    <div class="col-md-3">
+                        <label for="accessible" class="form-label fw-bold">Accessibility</label>
                         <select class="form-select" name="accessible" id="accessible">
-                            <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                            <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
-                            <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
+                            <option value="" {% if selected_accessible == "" %}selected{% endif %}>All</option>
+                            <option value="True" {% if selected_accessible == "True" %}selected{% endif %}>Yes</option>
+                            <option value="False" {% if selected_accessible == "False" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <!-- Borough Filter -->
+                    <div class="col-md-3">
+                        <label for="borough" class="form-label fw-bold">Borough</label>
+                        <select class="form-select" name="borough" id="borough">
+                            <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
+                            <option value="M" {% if selected_borough == "M" %}selected{% endif %}>Manhattan</option>
+                            <option value="B" {% if selected_borough == "B" %}selected{% endif %}>Brooklyn</option>
+                            <option value="Q" {% if selected_borough == "Q" %}selected{% endif %}>Queens</option>
+                            <option value="X" {% if selected_borough == "X" %}selected{% endif %}>Bronx</option>
+                            <option value="R" {% if selected_borough == "R" %}selected{% endif %}>Staten Island</option>
+                        </select>
+                    </div>
+            
+                    <!-- Search Button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
                     </div>
                 </form>
             </div>
