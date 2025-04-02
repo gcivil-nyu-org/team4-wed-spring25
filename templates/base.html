@@ -30,17 +30,35 @@
 
 
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .navbar {
             background-color: #6D4C41 !important;
+            flex-shrink: 0;
         }
 
         .navbar-brand, .nav-link {
             color: white !important;
+        }
+
+        .main {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; 
         }
 
         /* Custom Table Header */
@@ -57,8 +75,41 @@
         .hero {
             background-color: #6D4C41;
             color: white;
-            padding: 50px 20px;
             text-align: center;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        #map-search-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        #map-filter-menu {
+            flex-shrink: 0;
+        }
+
+        #parklist-map-container {
+            display: flex;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        #parklist-container {
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            flex-grow: 1;
         }
 
         /* Card Styling */
@@ -86,6 +137,31 @@
             background-color: #6d4c41;
             color: white;
         }
+
+        .park-card-details {
+            color: #555;
+        }
+        
+        .park-card:hover .park-card-details {
+            color: white;
+        }
+
+        #no-span {
+            color: #c11212;
+        }
+        
+        .park-card:hover #no-span {
+            color: #ff0000;
+            font-weight: bolder;
+        }
+
+        #yes-span {
+            color: green
+        }
+
+        .park-card:hover #yes-span {
+            color: rgb(0, 255, 0);
+        }
         
 
         /* Image Preview styling */
@@ -104,10 +180,26 @@
         .preview-img:hover {
             transform: scale(1.1);
         }
+
+
+        /* Remove default Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            background: none;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            padding: 0;
+        }
+
+
     </style>
 </head>
-<body>
 
+<body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
@@ -147,7 +239,7 @@
         </div>
     </nav>
 
-    <main>
+    <main class="main">
         {% block content %}{% endblock %}
     </main>
 
