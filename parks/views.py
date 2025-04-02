@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
 from django.db.models import OuterRef, Subquery, CharField
 from django.db.models.functions import Cast
-from .models import DogRunNew, Review, ParkImage
+from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.forms.models import model_to_dict
 
 import folium
@@ -13,6 +13,11 @@ from .utilities import folium_cluster_styling
 from django.contrib.auth import login
 from .forms import RegisterForm
 import json
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Avg
+from django.contrib.auth.models import User
+from django.http import HttpResponseForbidden
 
 
 def register_view(request):
@@ -108,22 +113,19 @@ def park_and_map(request):
 
 
 def park_detail(request, id):
-    park = get_object_or_404(DogRunNew, id=id)  # Get the park by id
-    images = ParkImage.objects.filter(
-        park=park
-    )  # Retrieve all images related to this park
-    reviews = park.reviews.all()  # Retrieve all reviews related to this park
+    park = get_object_or_404(DogRunNew, id=id)
+    images = ParkImage.objects.filter(park=park)
+    reviews = park.reviews.all()
+    average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
 
-    if request.method == "POST":
-        form_type = request.POST.get("form_type")  # Determine which form is submitted
+    if request.user.is_authenticated and request.method == "POST":
+        form_type = request.POST.get("form_type")
 
-        # Handle multiple image uploads
         if form_type == "upload_image" and request.FILES.getlist("images"):
             for image in request.FILES.getlist("images"):
-                ParkImage.objects.create(park=park, image=image)
-            return redirect("park_detail", id=park.id)  # Redirect after upload
+                ParkImage.objects.create(park=park, image=image, user=request.user)
+            return redirect("park_detail", id=park.id)
 
-        # Handle review submission separately
         elif form_type == "submit_review":
             review_text = request.POST.get("text", "").strip()
             rating_value = request.POST.get("rating", "").strip()
@@ -137,6 +139,7 @@ def park_detail(request, id):
                         "images": images,
                         "reviews": reviews,
                         "error_message": "Please select a valid rating!",
+                        "average_rating": average_rating,
                     },
                 )
 
@@ -150,22 +153,64 @@ def park_detail(request, id):
                         "images": images,
                         "reviews": reviews,
                         "error_message": "Rating must be between 1 and 5 stars!",
+                        "average_rating": average_rating,
                     },
                 )
 
-            Review.objects.create(park=park, text=review_text, rating=rating)
-            return redirect(
-                "park_detail", id=park.id
-            )  # Redirect after review submission
+            Review.objects.create(park=park, text=review_text, rating=rating, user=request.user)
+            return redirect("park_detail", id=park.id)
+        #report reviews
+        elif form_type == "report_review":
+             if request.user.is_authenticated:
+                 review_id = request.POST.get("review_id")
+                 reason = request.POST.get("reason", "").strip()
+             if review_id and reason:
+                  review = get_object_or_404(Review, id=review_id)
+                  ReviewReport.objects.create(review=review, reported_by=request.user, reason=reason)
+                  return redirect("park_detail", id=park.id)
 
     park_json = json.dumps(model_to_dict(park))
 
     return render(
         request,
         "parks/park_detail.html",
-        {"park": park, "images": images, "reviews": reviews, "park_json": park_json},
+        {
+            "park": park,
+            "images": images,
+            "reviews": reviews,
+            "park_json": park_json,
+            "average_rating": average_rating,
+        },
     )
 
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.user == review.user:
+        review.delete()
+        return redirect("park_detail", id=review.park.id)
+    else:
+        return HttpResponseForbidden("You are not allowed to delete this review.")
+    
+@login_required
+def delete_image(request, image_id):
+    image = get_object_or_404(ParkImage, id=image_id)
+    if image.user == request.user:
+        park_id = image.park.id
+        image.delete()
+        return redirect("park_detail", id=park_id)
+    return HttpResponseForbidden("You are not allowed to delete this image.")
 
 def contact_view(request):
     return render(request, "parks/contact.html")
+
+
+@login_required
+def report_image(request, image_id):
+    image = get_object_or_404(ParkImage, id=image_id)
+    if request.method == "POST":
+        reason = request.POST.get("reason", "").strip()
+        if reason:
+            ImageReport.objects.create(user=request.user, image=image, reason=reason)
+            return redirect("park_detail", id=image.park.id)
+    return redirect("park_detail", id=image.park.id)
