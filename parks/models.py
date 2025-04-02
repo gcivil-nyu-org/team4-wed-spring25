@@ -4,8 +4,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
-
-
 class DogRun(models.Model):
     id = models.CharField(max_length=255)
     prop_id = models.CharField(max_length=255, primary_key=True)
@@ -47,8 +45,12 @@ class DogRunNew(models.Model):
 
 
 class Review(models.Model):
-    park = models.ForeignKey(DogRunNew, on_delete=models.CASCADE, related_name="reviews")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")  # 添加
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="reviews"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviews"
+    )  # 添加
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -62,27 +64,41 @@ class Review(models.Model):
 
 
 class ParkImage(models.Model):
-    park = models.ForeignKey(DogRunNew, on_delete=models.CASCADE, related_name="images", to_field="id", db_column="park_id")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="images", null=True, blank=True)
+    park = models.ForeignKey(
+        DogRunNew,
+        on_delete=models.CASCADE,
+        related_name="images",
+        to_field="id",
+        db_column="park_id",
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="images", null=True, blank=True
+    )
     image = CloudinaryField("image")
 
     def __str__(self):
         return f"Image for {self.park.name}"
-    
+
 
 class ReviewReport(models.Model):
-    review = models.ForeignKey("Review", on_delete=models.CASCADE, related_name="reports")
+    review = models.ForeignKey(
+        "Review", on_delete=models.CASCADE, related_name="reports"
+    )
     reported_by = models.ForeignKey(User, on_delete=models.CASCADE)
     reason = models.TextField()
     reported_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Reported by {self.reported_by.username} on {self.review.id}"
-    
+
 
 class ImageReport(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='image_reports')
-    image = models.ForeignKey(ParkImage, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="image_reports"
+    )
+    image = models.ForeignKey(
+        ParkImage, on_delete=models.CASCADE, related_name="reports"
+    )
     reason = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

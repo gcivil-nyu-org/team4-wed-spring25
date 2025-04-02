@@ -94,6 +94,7 @@ class ParkModelTest(TestCase):
 
 class ReviewModelTest(TestCase):
     def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="123456abc")
         self.park = DogRunNew.objects.create(
             id="2",
             prop_id="5678",
@@ -104,7 +105,7 @@ class ReviewModelTest(TestCase):
             notes="Another test park",
         )
         self.review = Review.objects.create(
-            park=self.park, text="Great park!", rating=5
+            park=self.park, text="Great park!", rating=5, user=self.user
         )
 
     def test_review_creation(self):
@@ -223,6 +224,8 @@ class ParkDetailViewTest(TestCase):
         self.assertContains(response, self.park.name)
 
     def test_submit_invalid_rating(self):
+        self.user = User.objects.create_user(username="testuser", password="123456abc")
+        self.client.login(username="testuser", password="123456abc")
         # Test submitting an invalid rating (>5) to ensure an error message appears
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),
@@ -236,6 +239,8 @@ class ParkDetailViewTest(TestCase):
         self.assertContains(response, "Rating must be between 1 and 5 stars!")
 
     def test_submit_review(self):
+        self.user = User.objects.create_user(username="testuser", password="123456abc")
+        self.client.login(username="testuser", password="123456abc")
         # Test submitting a review should correctly redirect
         response = self.client.post(
             reverse("park_detail", args=[self.park.id]),

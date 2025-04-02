@@ -16,7 +16,6 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 
 
@@ -157,17 +156,21 @@ def park_detail(request, id):
                     },
                 )
 
-            Review.objects.create(park=park, text=review_text, rating=rating, user=request.user)
+            Review.objects.create(
+                park=park, text=review_text, rating=rating, user=request.user
+            )
             return redirect("park_detail", id=park.id)
-        #report reviews
+        # report reviews
         elif form_type == "report_review":
-             if request.user.is_authenticated:
-                 review_id = request.POST.get("review_id")
-                 reason = request.POST.get("reason", "").strip()
-             if review_id and reason:
-                  review = get_object_or_404(Review, id=review_id)
-                  ReviewReport.objects.create(review=review, reported_by=request.user, reason=reason)
-                  return redirect("park_detail", id=park.id)
+            if request.user.is_authenticated:
+                review_id = request.POST.get("review_id")
+                reason = request.POST.get("reason", "").strip()
+            if review_id and reason:
+                review = get_object_or_404(Review, id=review_id)
+                ReviewReport.objects.create(
+                    review=review, reported_by=request.user, reason=reason
+                )
+                return redirect("park_detail", id=park.id)
 
     park_json = json.dumps(model_to_dict(park))
 
@@ -183,6 +186,7 @@ def park_detail(request, id):
         },
     )
 
+
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
@@ -191,7 +195,8 @@ def delete_review(request, review_id):
         return redirect("park_detail", id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
-    
+
+
 @login_required
 def delete_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
@@ -200,6 +205,7 @@ def delete_image(request, image_id):
         image.delete()
         return redirect("park_detail", id=park_id)
     return HttpResponseForbidden("You are not allowed to delete this image.")
+
 
 def contact_view(request):
     return render(request, "parks/contact.html")
