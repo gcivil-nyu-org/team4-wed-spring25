@@ -340,9 +340,6 @@
         maxClusterRadius: 50,
     });
 
-    console.log(document.querySelectorAll('.rating-display-1'));
-
-
     // Place markers for each park on map
     parks.forEach(park => {
             const ratingDiv = document.querySelector(`.rating-display-${park.id}`);
@@ -607,12 +604,9 @@
                 let marker = markers[parkId]; // Find corresponding marker
 
                 let park = parkIdToPark[parkId];
-                // console.log(lastClickedParkCard);
                 if (marker) {
                     
                     if (card !== lastClickedParkCard) {
-                        console.log(lastClickedParkCard);
-                        console.log(lastClickedParkCard + ' here');
                         // Center the map on this marker
                         // and zoom closer
                         safeFlyTo([park.latitude, park.longitude], 15);
@@ -628,8 +622,6 @@
                         lastClickedParkCard = null;
                     }
                 }
-                // console.log(lastClickedParkCard);
-
             });
 
         });
