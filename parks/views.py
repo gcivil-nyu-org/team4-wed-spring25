@@ -41,7 +41,6 @@ def register_view(request):
     return render(request, "parks/register.html", {"form": form})
 
 
-
 def park_list(request):
     query = request.GET.get("query", "")
     parks = DogRunNew.objects.all()  # Fetch all dog runs from the database

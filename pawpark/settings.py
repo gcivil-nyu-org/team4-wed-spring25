@@ -165,4 +165,3 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "pawpark.noreply@gmail.com"
 EMAIL_HOST_PASSWORD = "yvtm objm fbrk cimi"
 DEFAULT_FROM_EMAIL = "no-reply@pawpark.com"
-

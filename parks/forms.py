@@ -8,17 +8,25 @@ ROLE_CHOICES = [
     ("admin", "Admin"),
 ]
 
+
 class RegisterForm(UserCreationForm):
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
     admin_access_code = forms.CharField(
         max_length=50,
         required=False,
-        help_text="Enter the admin access code if signing up as an admin."
+        help_text="Enter the admin access code if signing up as an admin.",
     )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2", "role", "admin_access_code"]
+        fields = [
+            "username",
+            "email",
+            "password1",
+            "password2",
+            "role",
+            "admin_access_code",
+        ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -30,9 +38,6 @@ class RegisterForm(UserCreationForm):
             REQUIRED_CODE = "SUPERDOG123"  # Hardcoded example
 
             if not access_code or access_code != REQUIRED_CODE:
-                self.add_error(
-                    "admin_access_code",
-                    "Invalid admin access code."
-                )
+                self.add_error("admin_access_code", "Invalid admin access code.")
 
         return cleaned_data
