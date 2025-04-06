@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
+from parks.templatetags.display_rating import render_stars
 
 
 # import os
@@ -468,3 +469,73 @@ class ParkDetailViewImageTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.park.name)
         # self.assertIn(self.image.image, response.content.decode())
+
+
+class RenderStarsTests(TestCase):
+    def test_int_stars(self):
+        size = 20
+        result = render_stars(4, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 1)
+        self.assertEqual(result["size"], size)
+
+    def test_full_stars(self):
+        size = 15
+        result = render_stars(5, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    def test_no_stars(self):
+        size = 10
+        result = render_stars(0, size)
+        self.assertEqual(result["filled_stars"], 0)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 5)
+        self.assertEqual(result["size"], size)
+
+    def test_half_stars(self):
+        size = 20
+        result = render_stars(2.5, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.25 -> one half star
+    def test_round_up_to_half(self):
+        size = 20
+        result = render_stars(4.25, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    # < X.25 -> round down to whole
+    def test_round_down_to_whole(self):
+        size = 20
+        result = render_stars(3.24, size)
+        self.assertEqual(result["filled_stars"], 3)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # < X.75 -> one half star
+    def test_round_down_to_half(self):
+        size = 20
+        result = render_stars(2.74, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.75 -> round up to next whole
+    def test_round_up_to_whole(self):
+        size = 20
+        result = render_stars(4.75, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)

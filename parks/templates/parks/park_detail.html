@@ -1,15 +1,25 @@
 {% extends "base.html" %}
+{% load display_rating %}
 
 {% block content %}
 <div class="container my-4">
     <!-- Park Heading -->
-    <div class="text-center bg-brown text-white py-3 rounded">
-        <h1>
-            {{ park.name }}
-            {% if average_rating %}
-                <small class="text-warning">({{ average_rating|floatformat:1 }} ★)</small>
-            {% endif %}
-        </h1>
+    <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
+    <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
+        <div class="d-flex flex-column gap-1">
+            <h1 class="my-0">
+                {{ park.name }}
+            <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
+                {% if average_rating %}
+                    <span>{{ average_rating|floatformat:1 }}</span>
+                    <span class="d-flex align-items-center">{% render_stars average_rating 20 %}</span>
+                    <span> ({{ reviews|length }}) </span>
+                {% else %}
+                    <span style="color: #cccccc94;">No reviews</span>
+                {% endif %}
+                
+            </h5>
+        </div>
     </div>
 
     <!-- Park Image -->
@@ -164,11 +174,14 @@
             <!-- Star Rating System -->
             <label class="form-label">Rating:</label>
             <div class="stars mb-3">
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="2">&#9733;</span>
-                <span class="star" data-value="3">&#9733;</span>
-                <span class="star" data-value="4">&#9733;</span>
-                <span class="star" data-value="5">&#9733;</span>
+                {% for i in "12345" %}
+                    <span class="star" data-value=" {{ i }}">
+                        <svg width="40" height="40">
+                            <use href="#star-icon" />
+                        </svg>
+                    </span>          
+                {% endfor %}
+
             </div>
             <input type="hidden" name="rating" id="star-rating" required>
 
@@ -190,11 +203,13 @@
             {% if reviews %}
                 {% for review in reviews %}
                     <div class="review border-bottom py-2 d-flex justify-content-between align-items-start">
-                        <div>
+                        <div class="d-flex flex-column">
                             <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p>
-                            <p>
-                                <strong>Rating:</strong> {{ review.rating }} ★
-                                <span class="text-muted float-end">{{ review.created_at|date:"Y-m-d H:i" }}</span>
+                            <p class="d-flex gap-1">
+                                <span class="d-flex gap-0 align-items-center">
+                                    {% render_stars review.rating 17 %}
+                                </span>
+                                <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|date:"Y-m-d H:i" }}</span>
                             </p>
                             <p>{{ review.text }}</p>
                         </div>
@@ -244,7 +259,7 @@
     </div>
 
     <!-- Back Button -->
-    <div class="text-center mt-3">
+    <div class="text-center mt-3 mb-5">
         <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
     </div>
 </div>
@@ -253,6 +268,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const stars = document.querySelectorAll('.star');
+        console.log(stars);
         const ratingInput = document.getElementById('star-rating');
 
         stars.forEach(star => {
@@ -334,8 +350,15 @@
     .btn-brown { background-color: #6D4C41; color: white; }
     .btn-brown:hover { background-color: #5D4037; }
     .stars { display: flex; justify-content: center; font-size: 30px; cursor: pointer; }
-    .star { color: #ccc; transition: color 0.2s ease-in-out; }
-    .star.selected { color: #ffcc00; }
+    .star { 
+        color: #ccc;
+        fill: #ccc; 
+        transition: color 0.2s ease-in-out; 
+    }
+    .star.selected { 
+        color: #ffcc00; 
+        fill: #ffcc00
+    }
     .review { text-align: left; }
     .image-action-buttons {
     z-index: 10;

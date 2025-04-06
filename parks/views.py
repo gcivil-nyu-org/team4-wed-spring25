@@ -1,23 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from django.db.models import OuterRef, Subquery, CharField
+from django.http import (  # noqa: F401  # Ignore "imported but unused"
+    HttpResponseForbidden,
+    HttpResponse,
+)
+from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.forms.models import model_to_dict
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 
 import folium
 from folium.plugins import MarkerCluster
 
 from .utilities import folium_cluster_styling
-
-from django.contrib.auth import login
 from .forms import RegisterForm
-import json
-from django.db.models import Q  # Import Q for complex queries
 
-from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
-from django.http import HttpResponseForbidden
+import json
 
 
 def register_view(request):
@@ -94,7 +93,11 @@ def park_and_map(request):
         DogRunNew.objects.all()
         .order_by("id")
         .prefetch_related("images")
-        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        .annotate(
+            thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()),
+            average_rating=Avg("reviews__rating"),
+            review_count=Count("reviews"),
+        )
     )
 
     # Search by ZIP, name, or Google name
@@ -117,6 +120,7 @@ def park_and_map(request):
 
     if borough_value:
         parks = parks.filter(borough=borough_value)
+
     # Convert parks to JSON (for JS use)
     parks_json = json.dumps(list(parks.values()))
 
