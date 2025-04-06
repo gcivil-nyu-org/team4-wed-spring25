@@ -2,21 +2,18 @@
 {% load static %}
 
 {% block content %}
-<!-- Full-height background container -->
 <div class="container-fluid"
      style="min-height: 100%; 
             background: url('{% static "parks/images/doggy-bg2.png" %}') center center no-repeat; 
             background-size: cover;">
-  
-  <!-- Center contents both vertically and horizontally -->
   <div class="row justify-content-center align-items-center" style="min-height: 100%;">
     <div class="col-md-5">
-      <!-- Semi-transparent card -->
       <div class="card shadow p-4" style="background-color: rgba(255, 255, 255, 0.8); border:none;">
         <h2 class="text-center mb-3">Join the PawPark Community!</h2>
         <p class="text-center mb-4" style="font-size: 1.1rem;">
           Find the best dog parks, connect with fellow dog lovers, and let your pup play to their heart’s content!
         </p>
+
         <form method="POST">
           {% csrf_token %}
           {{ form.as_p }}
@@ -30,4 +27,31 @@
     </div>
   </div>
 </div>
+
+<!-- Place the script AFTER the form and fields are rendered -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const roleRadios = document.querySelectorAll('input[name="role"]');
+  const accessCodeField = document.querySelector('input[name="admin_access_code"]');
+  const accessCodeContainer = accessCodeField.closest("p");
+
+  function toggleAccessCode() {
+    const selectedValue = document.querySelector('input[name="role"]:checked').value;
+    if (selectedValue === "admin") {
+      accessCodeContainer.style.display = "block";
+    } else {
+      accessCodeContainer.style.display = "none";
+      accessCodeField.value = ""; // Clear it if the user switches back
+    }
+  }
+
+  // Initial state
+  toggleAccessCode();
+
+  // Listen for changes
+  roleRadios.forEach(radio => {
+    radio.addEventListener("change", toggleAccessCode);
+  });
+});
+</script>
 {% endblock %}

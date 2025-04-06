@@ -24,14 +24,22 @@ def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Save user
-            login(request, user)  # Log in the user immediately
-            request.session.save()  # Ensure session is updated
-            return redirect("home")  # Redirect to homepage
+            # Save but don't commit yet
+            user = form.save(commit=False)
+            # If they chose Admin, mark them as staff
+            if form.cleaned_data["role"] == "admin":
+                user.is_staff = True
+            user.save()
+
+            # Log the user in immediately
+            login(request, user)
+            request.session.save()
+            return redirect("home")
     else:
         form = RegisterForm()
 
     return render(request, "parks/register.html", {"form": form})
+
 
 
 def park_list(request):
