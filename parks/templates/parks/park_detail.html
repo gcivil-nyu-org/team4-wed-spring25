@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load display_rating %}
+{% load tz %}
 
 {% block content %}
 <div class="container my-4">
@@ -209,7 +210,7 @@
                                 <span class="d-flex gap-0 align-items-center">
                                     {% render_stars review.rating 17 %}
                                 </span>
-                                <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|date:"Y-m-d H:i" }}</span>
+                                <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
                             </p>
                             <p>{{ review.text }}</p>
                         </div>
