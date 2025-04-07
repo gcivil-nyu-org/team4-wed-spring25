@@ -1,4 +1,3 @@
-# forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -7,7 +6,6 @@ ROLE_CHOICES = [
     ("user", "User"),
     ("admin", "Admin"),
 ]
-
 
 class RegisterForm(UserCreationForm):
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
@@ -28,6 +26,12 @@ class RegisterForm(UserCreationForm):
             "admin_access_code",
         ]
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("A user with that email address already exists.")
+        return email
+
     def clean(self):
         cleaned_data = super().clean()
         role = cleaned_data.get("role")
@@ -36,8 +40,6 @@ class RegisterForm(UserCreationForm):
         # Only check the access code if user selected "Admin"
         if role == "admin":
             REQUIRED_CODE = "SUPERDOG123"  # Hardcoded example
-
             if not access_code or access_code != REQUIRED_CODE:
                 self.add_error("admin_access_code", "Invalid admin access code.")
-
         return cleaned_data
