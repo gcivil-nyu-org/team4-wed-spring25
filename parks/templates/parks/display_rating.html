@@ -1,0 +1,13 @@
+{% with filled_list=filled_stars|add:""|center:filled_stars empty_list=empty_stars|add:""|center:empty_stars %}
+    {% for _ in filled_list %}
+        <svg width="{{ size }}" height="{{ size }}" fill="#f5c518"><use href="#star-icon" /></svg>
+    {% endfor %}
+
+    {% if half_stars %}
+        <svg width="{{ size }}" height="{{ size }}"><use href="#half-star" /></svg>
+    {% endif %}
+
+    {% for _ in empty_list %}
+        <svg width="{{ size }}" height="{{ size }}" fill="#e4e5e9"><use href="#star-icon" /></svg>
+    {% endfor %}
+{% endwith %}
