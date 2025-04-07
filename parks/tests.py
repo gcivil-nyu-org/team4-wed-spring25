@@ -2,6 +2,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
+from parks.templatetags.display_rating import render_stars
+from django.utils.text import slugify
 
 
 # import os
@@ -84,12 +86,15 @@ class ParkModelTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_creation(self):
         self.assertEqual(self.park.name, "Central Park")
         self.assertEqual(self.park.address, "New York, NY")
         self.assertEqual(self.park.notes, "Test park notes")
+        self.assertEqual(self.park.slug, "central-park-1234")
 
 
 class ReviewModelTest(TestCase):
@@ -103,6 +108,8 @@ class ReviewModelTest(TestCase):
             dogruns_type="Large",
             accessible="No",
             notes="Another test park",
+            display_name="Brooklyn Park",
+            slug=slugify(f"{'Brooklyn Park'}-{'5678'}"),
         )
         self.review = Review.objects.create(
             park=self.park, text="Great park!", rating=5, user=self.user
@@ -148,6 +155,8 @@ class ParkListViewTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_list_view(self):
@@ -186,6 +195,7 @@ class CombinedViewTest(TestCase):
             zip_code="10024",
             latitude=40.7987768,
             longitude=-73.9537196,
+            display_name="Central Park",
         )
         # One park in Brooklyn
         self.park_brooklyn = DogRunNew.objects.create(
@@ -201,6 +211,7 @@ class CombinedViewTest(TestCase):
             zip_code="11201",
             latitude=40.700292,
             longitude=-73.996123,
+            display_name="Brooklyn Bridge Park",
         )
 
     def test_combined_view_filters_by_borough(self):
@@ -293,7 +304,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_report_review_creates_record(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {
                 "form_type": "report_review",
                 "review_id": self.review.id,
@@ -308,7 +319,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_submit_review(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {"form_type": "submit_review", "text": "Another review!", "rating": "5"},
         )
         self.assertEqual(response.status_code, 302)
@@ -464,7 +475,79 @@ class ParkDetailViewImageTest(TestCase):
 
     def test_park_detail_view_with_images(self):
         """Test that the park detail view displays associated images."""
-        response = self.client.get(reverse("park_detail", args=[self.park.id]))
+        response = self.client.get(
+            reverse("park_detail", args=[self.park.slug, self.park.id])
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.park.name)
         # self.assertIn(self.image.image, response.content.decode())
+
+
+class RenderStarsTests(TestCase):
+    def test_int_stars(self):
+        size = 20
+        result = render_stars(4, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 1)
+        self.assertEqual(result["size"], size)
+
+    def test_full_stars(self):
+        size = 15
+        result = render_stars(5, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    def test_no_stars(self):
+        size = 10
+        result = render_stars(0, size)
+        self.assertEqual(result["filled_stars"], 0)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 5)
+        self.assertEqual(result["size"], size)
+
+    def test_half_stars(self):
+        size = 20
+        result = render_stars(2.5, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.25 -> one half star
+    def test_round_up_to_half(self):
+        size = 20
+        result = render_stars(4.25, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    # < X.25 -> round down to whole
+    def test_round_down_to_whole(self):
+        size = 20
+        result = render_stars(3.24, size)
+        self.assertEqual(result["filled_stars"], 3)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # < X.75 -> one half star
+    def test_round_down_to_half(self):
+        size = 20
+        result = render_stars(2.74, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.75 -> round up to next whole
+    def test_round_up_to_whole(self):
+        size = 20
+        result = render_stars(4.75, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
