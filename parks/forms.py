@@ -7,6 +7,7 @@ ROLE_CHOICES = [
     ("admin", "Admin"),
 ]
 
+
 class RegisterForm(UserCreationForm):
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
     admin_access_code = forms.CharField(
@@ -29,7 +30,9 @@ class RegisterForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("A user with that email address already exists.")
+            raise forms.ValidationError(
+                "A user with that email address already exists."
+            )
         return email
 
     def clean(self):

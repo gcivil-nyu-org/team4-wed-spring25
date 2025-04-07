@@ -4,12 +4,15 @@ from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.core import mail
 
+
 # import os
 class UniqueEmailTests(TestCase):
     def setUp(self):
         self.client = Client()
         User.objects.create_user(
-            username="existinguser", email="duplicate@pawpark.com", password="SomeStrongPassword1"
+            username="existinguser",
+            email="duplicate@pawpark.com",
+            password="SomeStrongPassword1",
         )
         self.register_url = reverse("register")
 
@@ -22,7 +25,7 @@ class UniqueEmailTests(TestCase):
             self.register_url,
             {
                 "username": "newuser",
-                "email": "duplicate@pawpark.com",  
+                "email": "duplicate@pawpark.com",
                 "password1": "StrongPass123",
                 "password2": "StrongPass123",
                 "role": "user",
@@ -32,6 +35,7 @@ class UniqueEmailTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "A user with that email address already exists.")
         self.assertFalse(User.objects.filter(username="newuser").exists())
+
 
 class WeakPasswordTests(TestCase):
     def setUp(self):
@@ -50,7 +54,7 @@ class WeakPasswordTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.filter(username="weakuser").exists())
-        self.assertContains(response, "must contain at least 8 characters") 
+        self.assertContains(response, "must contain at least 8 characters")
 
     def test_entirely_numeric_password(self):
         response = self.client.post(
@@ -66,12 +70,13 @@ class WeakPasswordTests(TestCase):
         self.assertFalse(User.objects.filter(username="numericuser").exists())
         self.assertContains(response, "can’t be entirely numeric")
 
-   
 
 class PasswordResetTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user("resetuser", "reset@pawpark.com", "Pass123456")
+        self.user = User.objects.create_user(
+            "resetuser", "reset@pawpark.com", "Pass123456"
+        )
 
     def test_password_reset_page_loads(self):
         url = reverse("password_reset")
@@ -88,11 +93,10 @@ class PasswordResetTests(TestCase):
         response = self.client.post(url, {"email": "reset@pawpark.com"})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("password_reset_done"))
-        
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("resetuser", mail.outbox[0].body)
 
-    
 
 class AdminSignUpTests(TestCase):
     def setUp(self):
@@ -110,7 +114,7 @@ class AdminSignUpTests(TestCase):
                 "password1": "StrongAdminPass123",
                 "password2": "StrongAdminPass123",
                 "role": "admin",
-                "admin_access_code": "SUPERDOG123",  
+                "admin_access_code": "SUPERDOG123",
             },
         )
         self.assertEqual(response.status_code, 302)
@@ -146,7 +150,7 @@ class AdminSignUpTests(TestCase):
                 "password1": "StrongPass456",
                 "password2": "StrongPass456",
                 "role": "user",
-                "admin_access_code": "SUPERDOG123",  
+                "admin_access_code": "SUPERDOG123",
             },
         )
         self.assertEqual(response.status_code, 302)
