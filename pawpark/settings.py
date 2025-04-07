@@ -28,7 +28,7 @@ DEBUG = True
 
 
 ALLOWED_HOSTS = [
-    "pawpark-prod-env.eba-wdriaqjm.us-east-1.elasticbeanstalk.com/", # new
+    "pawpark-prod-env.eba-wdriaqjm.us-east-1.elasticbeanstalk.com/",  # new
     "pawpark-prod-env.eba-3rmwysme.us-west-2.elasticbeanstalk.com",
     "pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com",
     "127.0.0.1",
