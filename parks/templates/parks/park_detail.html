@@ -9,7 +9,7 @@
     <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
         <div class="d-flex flex-column gap-1">
             <h1 class="my-0">
-                {{ park.name }}
+                {{ park.display_name }}
             <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
                 {% if average_rating %}
                     <span>{{ average_rating|floatformat:1 }}</span>
@@ -345,7 +345,7 @@
         { 
             icon: highlightedIcon,
             riseOnHover: true,
-            title: park.name
+            title: park.display_name
         }
     ).addTo(detail_page_map);
 </script>

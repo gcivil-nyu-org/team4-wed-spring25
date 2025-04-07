@@ -36,6 +36,7 @@ class DogRunNew(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     additional = models.JSONField(null=True, blank=True)  # PostgreSQL JSONB
+    display_name = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "dog_runs_new"

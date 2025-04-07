@@ -187,6 +187,7 @@ class CombinedViewTest(TestCase):
             zip_code="10024",
             latitude=40.7987768,
             longitude=-73.9537196,
+            display_name="Central Park",
         )
         # One park in Brooklyn
         self.park_brooklyn = DogRunNew.objects.create(
@@ -202,6 +203,7 @@ class CombinedViewTest(TestCase):
             zip_code="11201",
             latitude=40.700292,
             longitude=-73.996123,
+            display_name="Brooklyn Bridge Park",
         )
 
     def test_combined_view_filters_by_borough(self):

@@ -89,13 +89,13 @@
                         {% if park.images.all %}
                             <img src="{{ park.images.first.image.url }}" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }} image" 
+                                alt="{{ park.display_name }} image" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% else %}
                             <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }}" 
+                                alt="{{ park.display_name }}" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% endif %}
@@ -105,7 +105,7 @@
                     <div class="d-flex flex-column gap-2 flex-grow-1">
                         <!-- Park name and rating container -->
                         <div class="card-ratings-container d-flex flex-column" style="gap: 1pt;">
-                            <h6 class="mb-0" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
+                            <h6 class="mb-0" style="font-size: 1rem; font-weight: bold;">{{ park.display_name|safe }}</h6>
                             <!-- Render ratings on card -->
                             <div class="d-flex my-0 gap-2 rating-display-{{ park.id }}" style="font-size: 15px;">
                                 {% if park.average_rating %}
@@ -362,7 +362,7 @@
                     ">
                         <img 
                             src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
-                            alt="${park.name}" 
+                            alt="${park.display_name}" 
                             style="
                                 height: 100%;
                                 width: 100%;
@@ -385,7 +385,7 @@
                                     color: #333;
                                 ">
                                     <div>
-                                        ${park.name}
+                                        ${park.display_name}
                                     </div>
                                 </h6>
                                 ${ratingHTML}
@@ -417,7 +417,7 @@
             { 
                 icon: baseIcon,
                 riseOnHover: true,
-                title: park.name
+                title: park.display_name
             }
         ).bindPopup(popupContent, {
             autoPan: false,
