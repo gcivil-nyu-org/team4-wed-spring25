@@ -86,8 +86,10 @@ class PasswordResetTests(TestCase):
 
     def test_password_reset_flow(self):
         """
-        Ensure that posting an email to password_reset sends the user to password_reset_done,
-        and optionally check that an email was "sent" (console backend or etc.)
+        Ensure that posting an email to password_reset
+        sends the user to password_reset_done,
+        and optionally check that an email was
+        "sent" (console backend or etc.)
         """
         url = reverse("password_reset")
         response = self.client.post(url, {"email": "reset@pawpark.com"})
