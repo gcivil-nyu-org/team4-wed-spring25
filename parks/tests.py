@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from parks.templatetags.display_rating import render_stars
+from django.utils.text import slugify
 
 
 # import os
@@ -85,12 +86,15 @@ class ParkModelTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_creation(self):
         self.assertEqual(self.park.name, "Central Park")
         self.assertEqual(self.park.address, "New York, NY")
         self.assertEqual(self.park.notes, "Test park notes")
+        self.assertEqual(self.park.slug, "central-park-1234")
 
 
 class ReviewModelTest(TestCase):
@@ -104,6 +108,8 @@ class ReviewModelTest(TestCase):
             dogruns_type="Large",
             accessible="No",
             notes="Another test park",
+            display_name="Brooklyn Park",
+            slug=slugify(f"{'Brooklyn Park'}-{'5678'}"),
         )
         self.review = Review.objects.create(
             park=self.park, text="Great park!", rating=5, user=self.user
@@ -149,6 +155,8 @@ class ParkListViewTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_list_view(self):
@@ -296,7 +304,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_report_review_creates_record(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {
                 "form_type": "report_review",
                 "review_id": self.review.id,
@@ -311,7 +319,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_submit_review(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {"form_type": "submit_review", "text": "Another review!", "rating": "5"},
         )
         self.assertEqual(response.status_code, 302)
@@ -467,7 +475,9 @@ class ParkDetailViewImageTest(TestCase):
 
     def test_park_detail_view_with_images(self):
         """Test that the park detail view displays associated images."""
-        response = self.client.get(reverse("park_detail", args=[self.park.id]))
+        response = self.client.get(
+            reverse("park_detail", args=[self.park.slug, self.park.id])
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.park.name)
         # self.assertIn(self.image.image, response.content.decode())

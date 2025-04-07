@@ -2,6 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
 
 
 class DogRun(models.Model):
@@ -36,13 +37,19 @@ class DogRunNew(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     additional = models.JSONField(null=True, blank=True)  # PostgreSQL JSONB
-    display_name = models.TextField(null=True, blank=True)
+    display_name = models.TextField(null=False, blank=False)
+    slug = models.SlugField(null=False, blank=False)
 
     class Meta:
         db_table = "dog_runs_new"
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        combined = f"{self.display_name}-{self.prop_id}"
+        self.slug = slugify(combined)
+        super().save(*args, **kwargs)
 
 
 class Review(models.Model):
