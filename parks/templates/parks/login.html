@@ -39,6 +39,13 @@
           {{ form.as_p }}
           <button type="submit" class="btn btn-success w-100 mt-2">Login</button>
         </form>
+
+        <!-- NEW Forgot Password Link -->
+        <p class="text-center mt-3">
+          <a href="{% url 'password_reset' %}">Forgot Password?</a>
+        </p>
+        <!-- End of new link -->
+
         <p class="mt-3 text-center">
           Don’t have an account?
           <a href="{% url 'register' %}">Sign up now</a>
