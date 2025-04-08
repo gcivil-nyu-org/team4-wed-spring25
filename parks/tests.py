@@ -6,7 +6,23 @@ from parks.templatetags.display_rating import render_stars
 from django.utils.text import slugify
 
 
-# import os
+class ErrorPageTests(TestCase):
+    def test_trigger_400(self):
+        response = self.client.get("/test400/")
+        self.assertEqual(response.status_code, 400)
+
+    def test_trigger_403(self):
+        response = self.client.get("/test403/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_trigger_404(self):
+        response = self.client.get("/test404/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_trigger_500(self):
+        with self.assertRaises(Exception) as context:
+            self.client.get("/test500/")
+        self.assertIn("Intentional server error", str(context.exception))
 
 
 class LoginTests(TestCase):
