@@ -292,7 +292,8 @@
     
             imageUpload.addEventListener("change", function () {
                 const newFiles = Array.from(this.files);
-                selectedFiles = newFiles; // Overwrite current selection
+                selectedFiles = selectedFiles.concat(newFiles); // Overwrite current selection
+                this.value = "";
                 renderPreviews();
             });
     
