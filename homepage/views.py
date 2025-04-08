@@ -16,7 +16,3 @@ def test_db_connection(request):
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
-
-
-def hello_world(request):
-    return HttpResponse("Hello World")
