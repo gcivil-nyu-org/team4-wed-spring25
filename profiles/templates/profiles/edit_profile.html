@@ -8,92 +8,39 @@
 <style>
     .profile-edit-card { font-family: 'Nunito', Arial, sans-serif; border: none; border-radius: 15px; overflow: hidden; }
     .profile-card-header h2, .btn-save-changes { font-family: 'Poppins', sans-serif; }
-
     .profile-card-header { background-color: #6D4C41 !important; color: white; border-bottom: none; padding: 1.25rem 1.5rem; }
     .profile-card-header h2 { margin-bottom: 0; font-size: 1.6rem; font-weight: 600; }
     .card-body { background-color: #ffffff; }
-
     .form-label { font-weight: 600; color: #555; margin-bottom: 0.5rem; font-size: 0.95rem; }
     .form-label i { font-size: 1em; }
     .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; padding: 0.75rem 1rem; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; }
     .form-control:focus, .form-select:focus { border-color: #a57d6e; box-shadow: 0 0 0 0.25rem rgba(109, 76, 65, 0.2); }
     textarea.form-control { min-height: 120px; }
-
-    .profile-picture-preview {
-        width: 160px; height: 160px; border-radius: 50%;
-        border: 4px solid #ffffff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        overflow: hidden; position: relative; background-color: #e9ecef;
-        cursor: pointer;
-    }
-    .profile-picture-label {
-        display: block; width: 100%; height: 100%; position: relative; cursor: pointer;
-    }
-    .profile-picture-preview img {
-        width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-     .profile-picture-preview img.default-preview {
-         /* Styles for default image if needed */
-     }
-     .profile-picture-preview img.image-error {
-         object-fit: contain;
-     }
-    .profile-picture-overlay {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.3); color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 2rem; opacity: 0; transition: opacity 0.3s ease; border-radius: 50%;
-    }
-    .profile-picture-preview:hover .profile-picture-overlay {
-        opacity: 1;
-    }
-
-    .btn-outline-secondary {
-         border-color: #a57d6e;
-         color: #6D4C41;
-    }
-    .btn-outline-secondary:hover {
-         background-color: #f5f0ee;
-         color: #5d4037;
-         border-color: #8d6e63;
-    }
-
-    #clearProfilePicDiv {
-        vertical-align: middle;
-    }
-     #clearProfilePicDiv .form-check-label {
-         color: #dc3545;
-         cursor: pointer;
-         font-size: 0.85rem;
-     }
-
-    .btn-save-changes {
-        background-color: #6D4C41;
-        border-color: #6D4C41;
-        font-weight: 600;
-        padding: 0.8rem 1.5rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
+    .profile-picture-preview { width: 160px; height: 160px; border-radius: 50%; border: 4px solid #ffffff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); overflow: hidden; position: relative; background-color: #e9ecef; cursor: pointer; }
+    .profile-picture-label { display: block; width: 100%; height: 100%; position: relative; cursor: pointer; }
+    .profile-picture-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .profile-picture-preview img.default-preview { }
+    .profile-picture-preview img.image-error { object-fit: contain; }
+    .profile-picture-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.3); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0; transition: opacity 0.3s ease; border-radius: 50%; }
+    .profile-picture-preview:hover .profile-picture-overlay { opacity: 1; }
+    .btn-outline-secondary { border-color: #a57d6e; color: #6D4C41; }
+    .btn-outline-secondary:hover { background-color: #f5f0ee; color: #5d4037; border-color: #8d6e63; }
+    #clearProfilePicDiv { vertical-align: middle; }
+    #clearProfilePicDiv .form-check-label { color: #dc3545; cursor: pointer; font-size: 0.85rem; }
+    .btn-save-changes { background-color: #6D4C41; border-color: #6D4C41; font-weight: 600; padding: 0.8rem 1.5rem; border-radius: 8px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
     .btn-save-changes:hover { background-color: #5d4037; border-color: #5d4037; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18); }
     .btn-save-changes:active { transform: translateY(0); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); }
     .btn-save-changes i { margin-right: 0.6rem; }
-
     .invalid-feedback.d-block { color: #dc3545; width: 100%; font-size: 0.875em; margin-top: 0.25rem; }
     .form-control.is-invalid, .was-validated .form-control:invalid { border-color: #dc3545; }
-
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
-
     .img-container-modal { max-height: 50vh; width: 100%; margin-bottom: 1rem; overflow: hidden; display: flex; justify-content: center; align-items: center; background-color: #f7f7f7; }
     .img-container-modal > img { max-width: 100%; }
     .cropper-container { direction: ltr; font-size: 0; line-height: 0; position: relative; -ms-touch-action: none; touch-action: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
     .cropper-bg { background-image: none !important; }
 </style>
 {% endblock %}
-
 
 {% block content %}
 <div class="container mt-5 mb-5">
@@ -114,7 +61,6 @@
                                 class="d-none"
                                 accept="image/*">
                         {% endwith %}
-
 
                         {% if form.non_field_errors %}
                             <div class="alert alert-danger mb-4" role="alert">
@@ -187,7 +133,8 @@
 
                                 <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
                                      <button type="submit" class="btn btn-primary btn-save-changes" id="saveProfileChangesBtn">
-                                         <i class="fas fa-save me-2"></i>Save Changes <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                         <i class="fas fa-save me-2"></i>Save Changes
+                                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                      </button>
                                 </div>
                             </div>
@@ -221,7 +168,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
@@ -241,250 +187,225 @@ document.addEventListener('DOMContentLoaded', function () {
     let croppedImageBlob = null;
     let currentModal = null;
 
-    if (cropModalElement) {
-         try {
-             currentModal = new bootstrap.Modal(cropModalElement);
-         } catch (e) {
-             console.error("Failed to initialize Bootstrap modal:", e);
-         }
-    } else {
-        console.warn("Profile crop modal element not found!");
-    }
+     if (cropModalElement) { try { currentModal = new bootstrap.Modal(cropModalElement); } catch (e) { console.error("Failed to init modal:", e); }} else { console.warn("Profile crop modal element not found!"); }
+     if (!imageInput) console.warn("Profile image input element not found!"); if (!previewImage) console.warn("Profile image preview element not found!"); if (!imageToCrop) console.warn("Image element inside modal not found!"); if (!cropAndSaveButton) console.warn("Crop button inside modal not found!"); if (!fileNameDisplay) console.warn("Filename display span not found!"); if (!profileForm) console.warn("Profile edit form element not found!"); if (!saveChangesBtn) console.warn("Save changes button not found!"); if (!cropperErrorDiv) console.warn("Cropper error div not found!");
 
-    if (!imageInput) console.warn("Profile image input element not found! Field name or ID might be wrong.");
-    if (!previewImage) console.warn("Profile image preview element not found!");
-    if (!imageToCrop) console.warn("Image element inside modal not found!");
-    if (!cropAndSaveButton) console.warn("Crop button inside modal not found!");
-    if (!fileNameDisplay) console.warn("Filename display span not found!");
-    if (!profileForm) console.warn("Profile edit form element not found!");
-    if (!saveChangesBtn) console.warn("Save changes button not found!");
-    if (!cropperErrorDiv) console.warn("Cropper error div not found!");
-
-
-    if (imageInput) {
-        imageInput.addEventListener('change', function (event) {
-            const files = event.target.files;
-            if (files && files.length > 0) {
-                const file = files[0];
-                if (!file.type.startsWith('image/')) {
+     if (imageInput) {
+         imageInput.addEventListener('change', function (event) {
+             const files = event.target.files;
+             if (files && files.length > 0) {
+                 const file = files[0];
+                 if (!file.type.startsWith('image/')) {
                      alert('Please select an image file.');
                      imageInput.value = '';
                      if(fileNameDisplay) fileNameDisplay.textContent = '';
                      return;
-                }
-                if(fileNameDisplay) fileNameDisplay.textContent = file.name;
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
+                 }
+                 if(fileNameDisplay) fileNameDisplay.textContent = file.name;
+                 const reader = new FileReader();
+                 reader.onload = function (e) {
                      if (imageToCrop) {
                          imageToCrop.src = e.target.result;
                          if (currentModal) currentModal.show();
-                         else console.error("Modal instance not available for profile");
+                         else console.error("Modal instance not available");
                      } else {
-                          console.error("Cannot load image to crop, target element missing.");
+                         console.error("Cannot load image to crop");
                      }
-                };
+                 };
                  reader.onerror = function() {
                      console.error("FileReader error.");
                      alert("Error reading file.");
-                      if(fileNameDisplay) fileNameDisplay.textContent = '';
+                     if(fileNameDisplay) fileNameDisplay.textContent = '';
                  };
-                reader.readAsDataURL(file);
-            } else {
+                 reader.readAsDataURL(file);
+             } else {
                  if(fileNameDisplay) fileNameDisplay.textContent = '';
-            }
-        });
-    }
-
+             }
+         });
+     }
 
      if (cropModalElement) {
-         cropModalElement.addEventListener('shown.bs.modal', function () {
-             if(cropperErrorDiv) cropperErrorDiv.classList.add('d-none');
-             if (cropper) {
-                  console.log("Destroying previous cropper instance.");
+          cropModalElement.addEventListener('shown.bs.modal', function () {
+              if(cropperErrorDiv) cropperErrorDiv.classList.add('d-none');
+              if (cropper) {
                   cropper.destroy();
-             }
-             if (!imageToCrop || !imageToCrop.src || imageToCrop.src === window.location.href || imageToCrop.naturalWidth === 0) {
-                console.error("Image source for cropper is not set, invalid, or image not loaded.");
-                 if(cropperErrorDiv){
-                     cropperErrorDiv.textContent = "Could not load image for cropping. Please select a valid image.";
-                     cropperErrorDiv.classList.remove('d-none');
-                 }
-                 if (cropAndSaveButton) cropAndSaveButton.disabled = true;
-                return;
-             }
-
-             if (cropAndSaveButton) cropAndSaveButton.disabled = false;
-
-             try {
+              }
+              if (!imageToCrop || !imageToCrop.src || imageToCrop.src === window.location.href || imageToCrop.naturalWidth === 0) {
+                  console.error("Image source for cropper invalid.");
+                  if(cropperErrorDiv){
+                      cropperErrorDiv.textContent = "Could not load image for cropping.";
+                      cropperErrorDiv.classList.remove('d-none');
+                  }
+                  if (cropAndSaveButton) cropAndSaveButton.disabled = true;
+                  return;
+              }
+              if (cropAndSaveButton) cropAndSaveButton.disabled = false;
+              try {
                   console.log("Initializing Cropper on #imageToCropProfile");
                   cropper = new Cropper(imageToCrop, {
                       aspectRatio: 1 / 1,
                       viewMode: 1,
                       background: false,
-                      autoCropArea: 0.8,
-                      responsive: true,
-                      checkOrientation: false,
-                      modal: true,
-                      guides: true,
-                      center: true,
-                      highlight: true,
-                      cropBoxMovable: true,
-                      cropBoxResizable: true,
-                      toggleDragModeOnDblclick: false,
                   });
-             } catch (e) {
+              } catch (e) {
                   console.error("Error initializing Cropper:", e);
                   if(cropperErrorDiv){
-                       cropperErrorDiv.textContent = "Failed to initialize image cropper.";
-                       cropperErrorDiv.classList.remove('d-none');
-                  }
-             }
-         });
-     }
-
-
-     if (cropAndSaveButton) {
-         cropAndSaveButton.addEventListener('click', function () {
-             if (!cropper) {
-                  console.error("Cropper not initialized when trying to crop.");
-                  return;
-              }
-
-             let canvas;
-             try {
-                 canvas = cropper.getCroppedCanvas({
-                     width: 300,
-                     height: 300,
-                     imageSmoothingEnabled: true,
-                     imageSmoothingQuality: 'medium',
-                 });
-             } catch (e) {
-                 console.error("Error getting cropped canvas:", e);
-                  if(cropperErrorDiv){
-                      cropperErrorDiv.textContent = "Could not crop the image. Please try again.";
+                      cropperErrorDiv.textContent = "Failed to init cropper.";
                       cropperErrorDiv.classList.remove('d-none');
                   }
-                 return;
-             }
+              }
+          });
+     }
 
-             if (!canvas) {
-                  console.error("Cropped canvas is null or undefined.");
+     if (cropAndSaveButton) {
+          cropAndSaveButton.addEventListener('click', function () {
+              if (!cropper) return;
+              let canvas;
+              try {
+                  canvas = cropper.getCroppedCanvas({
+                      width: 300,
+                      height: 300,
+                  });
+              } catch (e) {
+                  console.error("Error getting canvas:", e);
                   if(cropperErrorDiv){
-                       cropperErrorDiv.textContent = "Failed to create cropped image.";
-                       cropperErrorDiv.classList.remove('d-none');
+                      cropperErrorDiv.textContent = "Could not crop image.";
+                      cropperErrorDiv.classList.remove('d-none');
                   }
-                 return;
-             }
-
-             if(previewImage) {
-                 previewImage.src = canvas.toDataURL('image/png');
-                 previewImage.onerror = function() { this.onerror=null; this.src='{% static 'images/img_placeholder.svg' %}'; };
-             }
-
-             canvas.toBlob(function (blob) {
-                 if (blob) {
-                     croppedImageBlob = blob;
-                     console.log("Image cropped successfully. Blob ready.");
-                 } else {
-                      console.error("Canvas to Blob conversion failed.");
-                      if(cropperErrorDiv){
-                          cropperErrorDiv.textContent = "Could not prepare image for saving.";
+                  return;
+              }
+              if (!canvas) {
+                  console.error("Cropped canvas null.");
+                   if(cropperErrorDiv){
+                      cropperErrorDiv.textContent = "Failed to create crop.";
+                      cropperErrorDiv.classList.remove('d-none');
+                  }
+                  return;
+              }
+              if(previewImage) {
+                  previewImage.src = canvas.toDataURL('image/png');
+                  previewImage.onerror = function() {
+                      this.onerror=null;
+                      this.src='{% static 'images/img_placeholder.svg' %}';
+                  };
+              }
+              canvas.toBlob(function (blob) {
+                  if (blob) {
+                      croppedImageBlob = blob;
+                      console.log("Image cropped successfully.");
+                  } else {
+                      console.error("Blob conversion failed.");
+                       if(cropperErrorDiv){
+                          cropperErrorDiv.textContent = "Could not prepare image.";
                           cropperErrorDiv.classList.remove('d-none');
                       }
-                     croppedImageBlob = null;
-                 }
-                 if (currentModal) currentModal.hide();
-             }, 'image/png');
-         });
+                      croppedImageBlob = null;
+                  }
+                  if (currentModal) currentModal.hide();
+              }, 'image/png');
+          });
      }
-
 
      if (cropModalElement) {
-         cropModalElement.addEventListener('hidden.bs.modal', function () {
-             console.log("Modal hidden, destroying cropper instance.");
-             if (cropper) {
-                 cropper.destroy();
-                 cropper = null;
-             }
-             if (imageInput) imageInput.value = '';
-         });
+          cropModalElement.addEventListener('hidden.bs.modal', function () {
+              console.log("Modal hidden, destroying cropper.");
+              if (cropper) {
+                  cropper.destroy();
+                  cropper = null;
+              }
+              if (imageInput) imageInput.value = '';
+          });
      }
 
-
     if (profileForm && saveChangesBtn) {
-        profileForm.addEventListener('submit', function (event) {
-            event.preventDefault();
+    profileForm.addEventListener('submit', function (event) {
+        event.preventDefault();
 
-            saveChangesBtn.disabled = true;
-            if(spinner) spinner.classList.remove('d-none');
+        const phoneInput = document.getElementById('phone_number');
+        if (phoneInput && phoneInput.value.trim() !== '' && !/^\d+$/.test(phoneInput.value.trim())) {
+            alert("Phone numbers can only contain numbers!");
+            phoneInput.classList.add("is-invalid");
+            phoneInput.focus();
+            return;
+        } else if (phoneInput) {
+            phoneInput.classList.remove("is-invalid");
+        }
 
-            const formData = new FormData(profileForm);
+        saveChangesBtn.disabled = true;
+        if(spinner) spinner.classList.remove('d-none');
 
-            if (croppedImageBlob && imageInput) {
-                let inputName = imageInput.getAttribute('name');
-                if (inputName && inputName.endsWith('_original')) {
-                    inputName = inputName.replace('_original', '');
-                } else {
-                     inputName = 'profile_picture';
-                     console.warn(`Could not determine input name from ${imageInput.getAttribute('name')}, defaulting to '${inputName}'`);
-                }
-                formData.delete(imageInput.getAttribute('name'));
-                formData.append(inputName, croppedImageBlob, 'profile_picture.png');
-                console.log(`Appending cropped blob with name: ${inputName}`);
+        const formData = new FormData(profileForm);
+
+        if (croppedImageBlob && imageInput) {
+            let inputName = imageInput.getAttribute('name');
+            if (inputName && inputName.endsWith('_original')) {
+                inputName = inputName.replace('_original', '');
             } else {
-                if(imageInput) formData.delete(imageInput.getAttribute('name'));
-                const clearCheckbox = document.getElementById('{{ form.profile_picture.id_for_label }}-clear_id');
-                if (clearCheckbox && clearCheckbox.checked) {
-                    formData.append('{{ form.profile_picture.html_name }}-clear', 'on');
-                     console.log("Appending clear flag.");
-                } else {
-                     formData.delete('{{ form.profile_picture.html_name }}-clear');
-                }
+                inputName = 'profile_picture';
+                console.warn(`Input name defaulting to '${inputName}'`);
             }
+            formData.delete(imageInput.getAttribute('name'));
+            formData.append(inputName, croppedImageBlob, 'profile_picture.png');
+            console.log(`Appending cropped blob with name: ${inputName}`);
+        } else {
+            if(imageInput) formData.delete(imageInput.getAttribute('name'));
 
-            fetch(profileForm.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Profile updated successfully!');
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                         window.location.reload();
-                    }
+            const clearCheckbox = document.getElementById('{{ form.profile_picture.id_for_label }}-clear_id');
+            if (clearCheckbox && clearCheckbox.checked) {
+                formData.append('{{ form.profile_picture.html_name }}-clear', 'on');
+                console.log("Appending clear flag.");
+            } else {
+                 formData.delete('{{ form.profile_picture.html_name }}-clear');
+            }
+        }
+
+        fetch(profileForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Profile updated successfully!');
+                if (response.redirected) {
+                    window.location.href = response.url;
                 } else {
-                     console.error('Error updating profile:', response.status, response.statusText);
-                     response.json().then(errors => {
-                          console.error('Server validation errors:', errors);
-                          let errorMsg = 'Error saving profile. Please check the form.\n';
-                          for (const field in errors) {
-                              errorMsg += `\n${field}: ${errors[field].join(', ')}`;
-                          }
-                          alert(errorMsg);
-                     }).catch(() => {
-                          alert(`Error saving profile (${response.status}). Please try again.`);
-                     });
-                     saveChangesBtn.disabled = false;
-                     if(spinner) spinner.classList.add('d-none');
+                    const profileUrl = "{% url 'profile' username=user.username %}";
+                    if (profileUrl) {
+                        window.location.href = profileUrl;
+                    } else {
+                        window.location.reload();
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('Network error during profile update:', error);
-                alert('Network error occurred. Please try again.');
+            } else {
+                console.error('Error updating profile:', response.status, response.statusText);
+                response.json().then(errors => {
+                    console.error('Server validation errors:', errors);
+                    let errorMsg = 'Error saving profile. Please check the form.\n';
+                    for (const field in errors) {
+                        errorMsg += `\n${field}: ${errors[field].join(', ')}`;
+                    }
+                    alert(errorMsg);
+                }).catch(() => {
+                    alert(`Error saving profile (${response.status}). Please try again.`);
+                });
                 saveChangesBtn.disabled = false;
                 if(spinner) spinner.classList.add('d-none');
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Network error during profile update:', error);
+            alert('Network error occurred. Please try again.');
+            saveChangesBtn.disabled = false;
+            if(spinner) spinner.classList.add('d-none');
         });
-    } else {
+    });
+}   else {
          console.error("Profile form or save button not found, submit event listener not added.");
     }
 
-}); // End DOMContentLoaded
+});
 </script>
 {% endblock %}
