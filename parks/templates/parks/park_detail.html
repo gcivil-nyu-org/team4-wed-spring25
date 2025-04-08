@@ -279,7 +279,7 @@
 <!-- JavaScript for image submit -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const form = document.querySelector('form[action="{% url "park_detail" park.id %}"][enctype="multipart/form-data"]');
+      const form = document.querySelector('form[action="{% url "park_detail" park.slug park.id %}"][enctype="multipart/form-data"]');
       const fileInput = form.querySelector('input[type="file"]');
   
       form.addEventListener("submit", function (e) {
@@ -381,7 +381,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const stars = document.querySelectorAll('.star');
         const ratingInput = document.getElementById('star-rating');
-        const reviewForm = document.querySelector(`form[action="{% url 'park_detail' park.id %}"] input[value='submit_review']`).closest('form');
+        const reviewForm = document.querySelector(`form[action="{% url 'park_detail' park.slug  park.id %}"] input[value='submit_review']`).closest('form');
         // logic of star choosing
         stars.forEach(star => {
             star.addEventListener('click', function () {

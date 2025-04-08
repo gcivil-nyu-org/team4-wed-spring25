@@ -17,9 +17,6 @@ from .utilities import folium_cluster_styling
 from .forms import RegisterForm
 
 import json
-
-from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
 from django.contrib import messages
 
 
@@ -170,7 +167,7 @@ def park_detail(request, slug, id):
 
             if not rating_value.isdigit():
                 messages.error(request, "Please select a rating before submitting.")
-                return redirect("park_detail", id=park.id)
+                return redirect("park_detail", slug=park.slug, id=park.id)
 
             rating = int(rating_value)
             if rating < 1 or rating > 5:
@@ -206,7 +203,7 @@ def park_detail(request, slug, id):
                 messages.success(
                     request, "Your review report was submitted successfully."
                 )
-                return redirect("park_detail", id=park.id)
+                return redirect("park_detail", slug=park.slug, id=park.id)
 
     park_json = json.dumps(model_to_dict(park))
 
@@ -229,7 +226,7 @@ def delete_review(request, review_id):
     if request.user == review.user:
         review.delete()
         messages.success(request, "You have successfully deleted the review!")
-        return redirect("park_detail", slug=image.park.slug, id=review.park.id)
+        return redirect("park_detail", slug=review.park.slug, id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
 
