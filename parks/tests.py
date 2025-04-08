@@ -24,6 +24,8 @@ class ErrorPageTests(TestCase):
         with self.assertRaises(Exception) as context:
             self.client.get("/test500/")
         self.assertIn("Intentional server error", str(context.exception))
+
+
 class UniqueEmailTests(TestCase):
     def setUp(self):
         self.client = Client()
