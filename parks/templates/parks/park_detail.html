@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container my-4">
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- Park Heading -->
     <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
     <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
@@ -64,7 +75,7 @@
                         <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
+                                    <form method="POST" action="{% url 'report_image' img.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="form_type" value="report_image">
                                         <input type="hidden" name="image_id" value="{{ img.id }}">
@@ -169,7 +180,7 @@
             
             <div class="mb-3">
                 <label class="form-label">Your Review:</label>
-                <textarea name="text" class="form-control" rows="4" required></textarea>
+                <textarea name="text" class="form-control" rows="4"></textarea>
             </div>
 
             <!-- Star Rating System -->
@@ -265,6 +276,22 @@
     </div>
 </div>
 
+<!-- JavaScript for image submit -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.querySelector('form[action="{% url "park_detail" park.slug park.id %}"][enctype="multipart/form-data"]');
+      const fileInput = form.querySelector('input[type="file"]');
+  
+      form.addEventListener("submit", function (e) {
+        if (!fileInput.files.length) {
+          e.preventDefault(); 
+          alert("Please select at least one image before submitting.");
+        }
+      });
+    });
+  </script>
+
+
 <!-- JavaScript for Star Rating -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -350,6 +377,37 @@
     ).addTo(detail_page_map);
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('star-rating');
+        const reviewForm = document.querySelector(`form[action="{% url 'park_detail' park.slug  park.id %}"] input[value='submit_review']`).closest('form');
+        // logic of star choosing
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const ratingValue = this.getAttribute('data-value');
+                ratingInput.value = ratingValue;
+    
+                stars.forEach(s => s.classList.remove('selected'));
+                for (let i = 0; i < ratingValue; i++) {
+                    stars[i].classList.add('selected');
+                }
+            });
+        });
+    
+        // check logic before submit
+        reviewForm.addEventListener('submit', function (e) {
+            const reviewText = reviewForm.querySelector('textarea[name="text"]').value.trim();
+            const rating = ratingInput.value;
+    
+            if (reviewText && !rating) {
+                e.preventDefault();
+                alert("Please select a rating before submitting your review.");
+            }
+        });
+    });
+    </script>
+    
 
 
 <!-- Custom Styles -->

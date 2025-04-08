@@ -17,6 +17,7 @@ from .utilities import folium_cluster_styling
 from .forms import RegisterForm
 
 import json
+from django.contrib import messages
 
 
 def register_view(request):
@@ -165,17 +166,8 @@ def park_detail(request, slug, id):
             rating_value = request.POST.get("rating", "").strip()
 
             if not rating_value.isdigit():
-                return render(
-                    request,
-                    "parks/park_detail.html",
-                    {
-                        "park": park,
-                        "images": images,
-                        "reviews": reviews,
-                        "error_message": "Please select a valid rating!",
-                        "average_rating": average_rating,
-                    },
-                )
+                messages.error(request, "Please select a rating before submitting.")
+                return redirect("park_detail", slug=park.slug, id=park.id)
 
             rating = int(rating_value)
             if rating < 1 or rating > 5:
@@ -192,7 +184,10 @@ def park_detail(request, slug, id):
                 )
 
             Review.objects.create(
-                park=park, text=review_text, rating=rating, user=request.user
+                park=park,
+                text=review_text if review_text else "",
+                rating=rating,
+                user=request.user,
             )
             return redirect("park_detail", slug=park.slug, id=park.id)
         # report reviews
@@ -204,6 +199,9 @@ def park_detail(request, slug, id):
                 review = get_object_or_404(Review, id=review_id)
                 ReviewReport.objects.create(
                     review=review, reported_by=request.user, reason=reason
+                )
+                messages.success(
+                    request, "Your review report was submitted successfully."
                 )
                 return redirect("park_detail", slug=park.slug, id=park.id)
 
@@ -227,6 +225,7 @@ def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.user == review.user:
         review.delete()
+        messages.success(request, "You have successfully deleted the review!")
         return redirect("park_detail", slug=review.park.slug, id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
@@ -238,6 +237,7 @@ def delete_image(request, image_id):
     if image.user == request.user:
         park_id = image.park.id
         image.delete()
+        messages.success(request, "You have successfully deleted the image!")
         return redirect("park_detail", slug=image.park.slug, id=park_id)
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
@@ -253,5 +253,6 @@ def report_image(request, image_id):
         reason = request.POST.get("reason", "").strip()
         if reason:
             ImageReport.objects.create(user=request.user, image=image, reason=reason)
+            messages.success(request, "You have successfully reported the image!")
             return redirect("park_detail", slug=image.park.slug, id=image.park.id)
     return redirect("park_detail", slug=image.park.slug, id=image.park.id)
