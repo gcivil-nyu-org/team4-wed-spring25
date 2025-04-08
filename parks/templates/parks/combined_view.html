@@ -3,14 +3,6 @@
 {% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero text-center">
-    <div class="m-2">
-        <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
-        <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
-    </div>
-</div>
-
 <!-- Full-width container for layout consistency -->
 <div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
@@ -20,19 +12,19 @@
                 <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
             
                     <!-- Search Field -->
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="query" class="form-label fw-bold">Search</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" name="query" id="query" class="form-control" placeholder="ZIP, park name, etc."
+                            <input type="text" name="query" id="query" class="form-control" placeholder="Park name or ZIP"
                                    value="{{ query }}">
                         </div>
                     </div>
             
                     <!-- Park Type Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="filter" class="form-label fw-bold">Type</label>
                         <select class="form-select" name="filter" id="filter">
                             <option value="" {% if selected_type == "" %}selected{% endif %}>All Types</option>
@@ -42,7 +34,7 @@
                     </div>
             
                     <!-- Accessibility Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="accessible" class="form-label fw-bold">Accessibility</label>
                         <select class="form-select" name="accessible" id="accessible">
                             <option value="" {% if selected_accessible == "" %}selected{% endif %}>All</option>
@@ -52,7 +44,7 @@
                     </div>
 
                     <!-- Borough Filter -->
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="borough" class="form-label fw-bold">Borough</label>
                         <select class="form-select" name="borough" id="borough">
                             <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
