@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
 
+
 class HealthCheckTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -28,6 +29,7 @@ class TestDBConnectionTest(TestCase):
             self.assertEqual(response.status_code, 500)
             self.assertEqual(response.json()["status"], "error")
             self.assertIn("Simulated DB failure", response.json()["message"])
+
 
 class ContactPageTest(TestCase):
     def setUp(self):

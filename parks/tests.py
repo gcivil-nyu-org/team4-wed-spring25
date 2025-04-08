@@ -3,28 +3,24 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 
-# import os
-from django.http import (
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    HttpResponseNotFound,
-)
 
+class ErrorPageTests(TestCase):
+    def test_trigger_400(self):
+        response = self.client.get("/test400/")
+        self.assertEqual(response.status_code, 400)
 
-def trigger_400(request):
-    return HttpResponseBadRequest()
+    def test_trigger_403(self):
+        response = self.client.get("/test403/")
+        self.assertEqual(response.status_code, 403)
 
+    def test_trigger_404(self):
+        response = self.client.get("/test404/")
+        self.assertEqual(response.status_code, 404)
 
-def trigger_403(request):
-    return HttpResponseForbidden()
-
-
-def trigger_404(request):
-    return HttpResponseNotFound()
-
-
-def trigger_500(request):
-    raise Exception("Intentional server error")
+    def test_trigger_500(self):
+        with self.assertRaises(Exception) as context:
+            self.client.get("/test500/")
+        self.assertIn("Intentional server error", str(context.exception))
 
 
 class LoginTests(TestCase):
