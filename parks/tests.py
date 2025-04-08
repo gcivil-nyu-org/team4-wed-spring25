@@ -3,8 +3,28 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 
-
 # import os
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+)
+
+
+def trigger_400(request):
+    return HttpResponseBadRequest()
+
+
+def trigger_403(request):
+    return HttpResponseForbidden()
+
+
+def trigger_404(request):
+    return HttpResponseNotFound()
+
+
+def trigger_500(request):
+    raise Exception("Intentional server error")
 
 
 class LoginTests(TestCase):
