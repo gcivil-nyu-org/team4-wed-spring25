@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load display_rating %}
 
 {% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
@@ -88,21 +89,34 @@
                         {% if park.images.all %}
                             <img src="{{ park.images.first.image.url }}" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }} image" 
+                                alt="{{ park.display_name }} image" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% else %}
                             <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }}" 
+                                alt="{{ park.display_name }}" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% endif %}
                     </div>
     
                     <!-- Park Details (Middle) -->
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <!-- Park name and rating container -->
+                        <div class="card-ratings-container d-flex flex-column" style="gap: 1pt;">
+                            <h6 class="mb-0" style="font-size: 1rem; font-weight: bold;">{{ park.display_name|safe }}</h6>
+                            <!-- Render ratings on card -->
+                            <div class="d-flex my-0 gap-2 rating-display-{{ park.id }}" style="font-size: 15px;">
+                                {% if park.average_rating %}
+                                    <span>{{ park.average_rating|floatformat:1 }}</span>
+                                    <span class="d-flex align-items-center">{% render_stars park.average_rating 15 %}</span>
+                                    <span> ({{ park.review_count }}) </span>
+                                {% else %}
+                                    <span>No Reviews</span>
+                                {% endif %}
+                            </div>
+                        </div>
                         <p class="park-card-details mb-0" style="font-size: 0.9rem;">
                             <strong>Type:</strong> {{ park.dogruns_type }} <br>
                             <strong>Accessible:</strong> 
@@ -116,7 +130,7 @@
                         </p>
                     </div>
                     <div id="details-button">
-                        <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                        <a href="{% url 'park_detail' park.slug park.id %}" class="btn btn-sm btn-primary">Details</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -326,9 +340,11 @@
         maxClusterRadius: 50,
     });
 
-
     // Place markers for each park on map
     parks.forEach(park => {
+            const ratingDiv = document.querySelector(`.rating-display-${park.id}`);
+            const ratingHTML = ratingDiv ? ratingDiv.outerHTML : '<span>No rating</span>';
+
             const popupContent = `
                 <div style="
                     width: 300px;
@@ -346,7 +362,7 @@
                     ">
                         <img 
                             src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
-                            alt="${park.name}" 
+                            alt="${park.display_name}" 
                             style="
                                 height: 100%;
                                 width: 100%;
@@ -357,20 +373,23 @@
 
 
                     <!-- Details Container-->
-                    <a href="/park/${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
-                        <div style="padding: 10px;">
+                    <a href="/parks/${park.slug}-${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
+                        <div class="d-flex flex-column gap-2" style="padding: 10px;">
 
                             <!-- Park Name with link to park page-->
-                            <h6 style="
-                                margin: 0 0 15px 0;
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #333;
-                            ">
-                                <div>
-                                    ${park.name}
-                                </div>
-                            </h6>
+                            <div class="d-flex flex-column" style="gap: 1pt">
+                                <h6 style="
+                                    margin: 0;
+                                    font-size: 1rem;
+                                    font-weight: 600;
+                                    color: #333;
+                                ">
+                                    <div>
+                                        ${park.display_name}
+                                    </div>
+                                </h6>
+                                ${ratingHTML}
+                            </div>
 
                             <!-- Details -->
                             <p style="
@@ -398,7 +417,7 @@
             { 
                 icon: baseIcon,
                 riseOnHover: true,
-                title: park.name
+                title: park.display_name
             }
         ).bindPopup(popupContent, {
             autoPan: false,
@@ -585,12 +604,9 @@
                 let marker = markers[parkId]; // Find corresponding marker
 
                 let park = parkIdToPark[parkId];
-                // console.log(lastClickedParkCard);
                 if (marker) {
                     
                     if (card !== lastClickedParkCard) {
-                        console.log(lastClickedParkCard);
-                        console.log(lastClickedParkCard + ' here');
                         // Center the map on this marker
                         // and zoom closer
                         safeFlyTo([park.latitude, park.longitude], 15);
@@ -606,8 +622,6 @@
                         lastClickedParkCard = null;
                     }
                 }
-                // console.log(lastClickedParkCard);
-
             });
 
         });

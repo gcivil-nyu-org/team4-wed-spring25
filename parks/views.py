@@ -1,23 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from django.db.models import OuterRef, Subquery, CharField
+from django.http import (  # noqa: F401  # Ignore "imported but unused"
+    HttpResponseForbidden,
+    HttpResponse,
+)
+from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.forms.models import model_to_dict
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 
 import folium
 from folium.plugins import MarkerCluster
 
 from .utilities import folium_cluster_styling
-
-from django.contrib.auth import login
 from .forms import RegisterForm
-import json
-from django.db.models import Q  # Import Q for complex queries
 
-from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
-from django.http import HttpResponseForbidden
+import json
 
 
 def register_view(request):
@@ -101,7 +100,11 @@ def park_and_map(request):
         DogRunNew.objects.all()
         .order_by("id")
         .prefetch_related("images")
-        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        .annotate(
+            thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()),
+            average_rating=Avg("reviews__rating"),
+            review_count=Count("reviews"),
+        )
     )
 
     # Search by ZIP, name, or Google name
@@ -124,6 +127,7 @@ def park_and_map(request):
 
     if borough_value:
         parks = parks.filter(borough=borough_value)
+
     # Convert parks to JSON (for JS use)
     parks_json = json.dumps(list(parks.values()))
 
@@ -142,7 +146,7 @@ def park_and_map(request):
     )
 
 
-def park_detail(request, id):
+def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
     images = ParkImage.objects.filter(park=park)
     reviews = park.reviews.all()
@@ -154,7 +158,7 @@ def park_detail(request, id):
         if form_type == "upload_image" and request.FILES.getlist("images"):
             for image in request.FILES.getlist("images"):
                 ParkImage.objects.create(park=park, image=image, user=request.user)
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", slug=park.slug, id=park.id)
 
         elif form_type == "submit_review":
             review_text = request.POST.get("text", "").strip()
@@ -190,7 +194,7 @@ def park_detail(request, id):
             Review.objects.create(
                 park=park, text=review_text, rating=rating, user=request.user
             )
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", slug=park.slug, id=park.id)
         # report reviews
         elif form_type == "report_review":
             if request.user.is_authenticated:
@@ -201,7 +205,7 @@ def park_detail(request, id):
                 ReviewReport.objects.create(
                     review=review, reported_by=request.user, reason=reason
                 )
-                return redirect("park_detail", id=park.id)
+                return redirect("park_detail", slug=park.slug, id=park.id)
 
     park_json = json.dumps(model_to_dict(park))
 
@@ -223,7 +227,7 @@ def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.user == review.user:
         review.delete()
-        return redirect("park_detail", id=review.park.id)
+        return redirect("park_detail", slug=review.park.slug, id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
 
@@ -234,7 +238,7 @@ def delete_image(request, image_id):
     if image.user == request.user:
         park_id = image.park.id
         image.delete()
-        return redirect("park_detail", id=park_id)
+        return redirect("park_detail", slug=image.park.slug, id=park_id)
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
 
@@ -249,5 +253,5 @@ def report_image(request, image_id):
         reason = request.POST.get("reason", "").strip()
         if reason:
             ImageReport.objects.create(user=request.user, image=image, reason=reason)
-            return redirect("park_detail", id=image.park.id)
-    return redirect("park_detail", id=image.park.id)
+            return redirect("park_detail", slug=image.park.slug, id=image.park.id)
+    return redirect("park_detail", slug=image.park.slug, id=image.park.id)

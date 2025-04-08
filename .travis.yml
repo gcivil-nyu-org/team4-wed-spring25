@@ -46,8 +46,8 @@ deploy:
     skip_cleanup: 'true'
 
   - provider: elasticbeanstalk
-    bucket_name: elasticbeanstalk-us-west-2-940482403872
-    region: us-west-2
+    bucket_name: elasticbeanstalk-us-east-1-940482403872
+    region: us-east-1
     bucket_path: pawpark-prod
     access_key_id: $AWS_ACCESS_KEY_ID_PROD
     secret_access_key: $AWS_SECRET_ACCESS_KEY_PROD
