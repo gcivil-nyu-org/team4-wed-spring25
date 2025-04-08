@@ -162,6 +162,14 @@
         .park-card:hover #yes-span {
             color: rgb(0, 255, 0);
         }
+
+        .card-ratings-container {
+            color: #555;
+        }
+
+        .park-card:hover .card-ratings-container {
+            color: white;
+        }
         
 
         /* Image Preview styling */
@@ -227,14 +235,30 @@
             margin: 0;
             padding: 0;
         }
-
-
     </style>
     {% block extra_head %}{% endblock %}
 
 </head>
 
 <body>
+    <!-- Reusable star symbol -->
+    <svg style="display: none;">
+        <!-- Grey by default -->
+        <symbol id="star-icon" viewBox="0 0 26 26">
+            <path d="M13 19.32L19.09 23l-1.64-7.03L24 10.24l-7.19-.61L13 3 
+                    9.19 9.63 2 10.24l5.55 4.73L5.91 23z" />
+        </symbol>
+
+        <!-- Left half gold, right half grey -->
+        <symbol id="half-star" viewBox="0 0 26 26">
+            <!-- Full grey star -->
+            <path fill="#e4e5e9" d="M13 19.32L19.09 23l-1.64-7.03L24 10.24l-7.19-.61L13 3 
+                                    9.19 9.63 2 10.24l5.55 4.73L5.91 23z"/>
+            <!-- Left half gold star (slightly adjusted clipping) -->
+            <path fill="#f5c518" d="M13 3L9.19 9.63 2 10.24l5.55 4.73L5.91 23l7.09-3.68V3z"/>
+          </symbol>
+    </svg>
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
