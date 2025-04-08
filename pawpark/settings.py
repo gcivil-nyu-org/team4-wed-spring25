@@ -24,13 +24,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5eooghf%un4sb3)r4=d9%97$(wdb)4cdd75)1xzo3!5%4#@)@-"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = [
+    "pawpark-prod-env.eba-wdriaqjm.us-east-1.elasticbeanstalk.com",  # new
     "pawpark-prod-env.eba-3rmwysme.us-west-2.elasticbeanstalk.com",
     "pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com",
     "127.0.0.1",
+    "localhost",
 ]
 
 
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "parks",
     "homepage",
+    "profiles",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +65,7 @@ ROOT_URLCONF = "pawpark.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -143,11 +146,24 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = "/static/"
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGIN_URL = "/login/"
+
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = "pawpark.noreply@gmail.com"
+EMAIL_HOST_PASSWORD = "yvtm objm fbrk cimi"
+DEFAULT_FROM_EMAIL = "no-reply@pawpark.com"

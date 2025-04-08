@@ -1,22 +1,25 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse  # noqa: F401  # Ignore "imported but unused"
-from django.db.models import OuterRef, Subquery, CharField
+from django.http import (  # noqa: F401  # Ignore "imported but unused"
+    HttpResponseForbidden,
+    HttpResponse,
+)
+from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.forms.models import model_to_dict
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 
 import folium
 from folium.plugins import MarkerCluster
 
 from .utilities import folium_cluster_styling
-
-from django.contrib.auth import login
 from .forms import RegisterForm
+
 import json
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from django.http import HttpResponseForbidden
 from django.contrib import messages
 
 
@@ -24,10 +27,17 @@ def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Save user
-            login(request, user)  # Log in the user immediately
-            request.session.save()  # Ensure session is updated
-            return redirect("home")  # Redirect to homepage
+            # Save but don't commit yet
+            user = form.save(commit=False)
+            # If they chose Admin, mark them as staff
+            if form.cleaned_data["role"] == "admin":
+                user.is_staff = True
+            user.save()
+
+            # Log the user in immediately
+            login(request, user)
+            request.session.save()
+            return redirect("home")
     else:
         form = RegisterForm()
 
@@ -35,8 +45,17 @@ def register_view(request):
 
 
 def park_list(request):
+    query = request.GET.get("query", "")
     parks = DogRunNew.objects.all()  # Fetch all dog runs from the database
-    return render(request, "parks/park_list.html", {"parks": parks})
+
+    if query:
+        parks = parks.filter(
+            Q(name__icontains=query)
+            | Q(google_name__icontains=query)
+            | Q(zip_code__icontains=query)
+        )
+
+    return render(request, "parks/park_list.html", {"parks": parks, "query": query})
 
 
 def home_view(request):
@@ -73,8 +92,10 @@ def map(request):
 
 def park_and_map(request):
     # Get filter values from GET request
-    filter_value = request.GET.get("filter", "")
-    accessible_value = request.GET.get("accessible", "")
+    query = request.GET.get("query", "").strip()
+    filter_value = request.GET.get("filter", "").strip()
+    accessible_value = request.GET.get("accessible", "").strip()
+    borough_value = request.GET.get("borough", "").strip().upper()
 
     thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
 
@@ -83,36 +104,53 @@ def park_and_map(request):
         DogRunNew.objects.all()
         .order_by("id")
         .prefetch_related("images")
-        .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
+        .annotate(
+            thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()),
+            average_rating=Avg("reviews__rating"),
+            review_count=Count("reviews"),
+        )
     )
 
+    # Search by ZIP, name, or Google name
+    if query:
+        parks = parks.filter(
+            Q(name__icontains=query)
+            | Q(google_name__icontains=query)
+            | Q(zip_code__icontains=query)
+        )
+
+    # Filter by park type (e.g., "Off-Leash")
     if filter_value:
-        parks = (
-            parks.filter(dogruns_type__icontains=filter_value)
-            .prefetch_related("images")
-            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
-        )
+        parks = parks.filter(dogruns_type__iexact=filter_value)
 
-    if accessible_value:
-        parks = (
-            parks.filter(accessible=accessible_value)
-            .prefetch_related("images")
-            .annotate(thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()))
-        )
+    # Filter by accessibility only if explicitly set to "True" or "False"
+    if accessible_value == "True":
+        parks = parks.filter(accessible=True)
+    elif accessible_value == "False":
+        parks = parks.filter(accessible=False)
 
-    # Serialize parks object into json string
-    # Passed to front end to render parks with LeafletJS
+    if borough_value:
+        parks = parks.filter(borough=borough_value)
+
+    # Convert parks to JSON (for JS use)
     parks_json = json.dumps(list(parks.values()))
 
-    # Render map as HTML
+    # Render the template
     return render(
         request,
         "parks/combined_view.html",
-        {"parks": parks, "parks_json": parks_json},
+        {
+            "parks": parks,
+            "parks_json": parks_json,
+            "query": query,
+            "selected_type": filter_value,
+            "selected_accessible": accessible_value,
+            "selected_borough": borough_value,
+        },
     )
 
 
-def park_detail(request, id):
+def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
     images = ParkImage.objects.filter(park=park)
     reviews = park.reviews.all()
@@ -124,7 +162,7 @@ def park_detail(request, id):
         if form_type == "upload_image" and request.FILES.getlist("images"):
             for image in request.FILES.getlist("images"):
                 ParkImage.objects.create(park=park, image=image, user=request.user)
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", slug=park.slug, id=park.id)
 
         elif form_type == "submit_review":
             review_text = request.POST.get("text", "").strip()
@@ -154,7 +192,7 @@ def park_detail(request, id):
                 rating=rating,
                 user=request.user,
             )
-            return redirect("park_detail", id=park.id)
+            return redirect("park_detail", slug=park.slug, id=park.id)
         # report reviews
         elif form_type == "report_review":
             if request.user.is_authenticated:
@@ -191,7 +229,7 @@ def delete_review(request, review_id):
     if request.user == review.user:
         review.delete()
         messages.success(request, "You have successfully deleted the review!")
-        return redirect("park_detail", id=review.park.id)
+        return redirect("park_detail", slug=image.park.slug, id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
 
@@ -203,7 +241,7 @@ def delete_image(request, image_id):
         park_id = image.park.id
         image.delete()
         messages.success(request, "You have successfully deleted the image!")
-        return redirect("park_detail", id=park_id)
+        return redirect("park_detail", slug=image.park.slug, id=park_id)
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
 
@@ -219,5 +257,5 @@ def report_image(request, image_id):
         if reason:
             ImageReport.objects.create(user=request.user, image=image, reason=reason)
             messages.success(request, "You have successfully reported the image!")
-            return redirect("park_detail", id=image.park.id)
-    return redirect("park_detail", id=image.park.id)
+            return redirect("park_detail", slug=image.park.slug, id=image.park.id)
+    return redirect("park_detail", slug=image.park.slug, id=image.park.id)

@@ -2,9 +2,183 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
+from parks.templatetags.display_rating import render_stars
+from django.utils.text import slugify
+from django.core import mail
 
 
-# import os
+class ErrorPageTests(TestCase):
+    def test_trigger_400(self):
+        response = self.client.get("/test400/")
+        self.assertEqual(response.status_code, 400)
+
+    def test_trigger_403(self):
+        response = self.client.get("/test403/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_trigger_404(self):
+        response = self.client.get("/test404/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_trigger_500(self):
+        with self.assertRaises(Exception) as context:
+            self.client.get("/test500/")
+        self.assertIn("Intentional server error", str(context.exception))
+
+
+class UniqueEmailTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User.objects.create_user(
+            username="existinguser",
+            email="duplicate@pawpark.com",
+            password="SomeStrongPassword1",
+        )
+        self.register_url = reverse("register")
+
+    def test_duplicate_email_registration(self):
+        """
+        Attempting to register a new user with an email that already exists should
+        re-render the form with an error message.
+        """
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "newuser",
+                "email": "duplicate@pawpark.com",
+                "password1": "StrongPass123",
+                "password2": "StrongPass123",
+                "role": "user",
+                "admin_access_code": "",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "A user with that email address already exists.")
+        self.assertFalse(User.objects.filter(username="newuser").exists())
+
+
+class WeakPasswordTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.register_url = reverse("register")
+
+    def test_too_short_password(self):
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "weakuser",
+                "password1": "123",
+                "password2": "123",
+                "role": "user",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="weakuser").exists())
+        self.assertContains(response, "must contain at least 8 characters")
+
+    def test_entirely_numeric_password(self):
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "numericuser",
+                "password1": "12345678",
+                "password2": "12345678",
+                "role": "user",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="numericuser").exists())
+        self.assertContains(response, "can’t be entirely numeric")
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            "resetuser", "reset@pawpark.com", "Pass123456"
+        )
+
+    def test_password_reset_page_loads(self):
+        url = reverse("password_reset")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/password_reset_form.html")
+
+    def test_password_reset_flow(self):
+        """
+        Ensure that posting an email to password_reset
+        sends the user to password_reset_done,
+        and optionally check that an email was
+        "sent" (console backend or etc.)
+        """
+        url = reverse("password_reset")
+        response = self.client.post(url, {"email": "reset@pawpark.com"})
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("password_reset_done"))
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("resetuser", mail.outbox[0].body)
+
+
+class AdminSignUpTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.register_url = reverse("register")
+
+    def test_admin_signup_with_correct_code(self):
+        """
+        Signing up as admin with correct access code should create a staff user.
+        """
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "adminuser",
+                "password1": "StrongAdminPass123",
+                "password2": "StrongAdminPass123",
+                "role": "admin",
+                "admin_access_code": "SUPERDOG123",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(username="adminuser").exists())
+        user = User.objects.get(username="adminuser")
+        self.assertTrue(user.is_staff)
+
+    def test_admin_signup_with_wrong_code(self):
+        """
+        Signing up as admin with wrong code should fail and not create staff user.
+        """
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "fakeadmin",
+                "password1": "StrongAdminPass123",
+                "password2": "StrongAdminPass123",
+                "role": "admin",
+                "admin_access_code": "WRONGCODE",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="fakeadmin").exists())
+
+    def test_signup_as_normal_user_ignores_access_code(self):
+        """
+        If someone chooses 'user' role, the admin_access_code is irrelevant.
+        """
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "normaluser",
+                "password1": "StrongPass456",
+                "password2": "StrongPass456",
+                "role": "user",
+                "admin_access_code": "SUPERDOG123",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(User.objects.filter(username="normaluser").exists())
+        user = User.objects.get(username="normaluser")
+        self.assertFalse(user.is_staff)
 
 
 class LoginTests(TestCase):
@@ -84,12 +258,15 @@ class ParkModelTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_creation(self):
         self.assertEqual(self.park.name, "Central Park")
         self.assertEqual(self.park.address, "New York, NY")
         self.assertEqual(self.park.notes, "Test park notes")
+        self.assertEqual(self.park.slug, "central-park-1234")
 
 
 class ReviewModelTest(TestCase):
@@ -103,6 +280,8 @@ class ReviewModelTest(TestCase):
             dogruns_type="Large",
             accessible="No",
             notes="Another test park",
+            display_name="Brooklyn Park",
+            slug=slugify(f"{'Brooklyn Park'}-{'5678'}"),
         )
         self.review = Review.objects.create(
             park=self.park, text="Great park!", rating=5, user=self.user
@@ -148,6 +327,8 @@ class ParkListViewTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug=slugify(f"{'Central Park'}-{'1234'}"),
         )
 
     def test_park_list_view(self):
@@ -166,12 +347,50 @@ class MapViewTest(TestCase):
 
 
 class CombinedViewTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-
     def test_combined_view(self):
         response = self.client.get(reverse("park_and_map"))
         self.assertEqual(response.status_code, 200)
+
+    def setUp(self):
+        self.client = Client()
+        # One park in Manhattan
+        self.park_manhattan = DogRunNew.objects.create(
+            id="1",
+            prop_id="1234",
+            name="Central Park",
+            address="New York, NY",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Manhattan park",
+            google_name="Central Park",
+            borough="M",
+            zip_code="10024",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            display_name="Central Park",
+        )
+        # One park in Brooklyn
+        self.park_brooklyn = DogRunNew.objects.create(
+            id="2",
+            prop_id="5678",
+            name="Brooklyn Bridge Park",
+            address="Brooklyn, NY",
+            dogruns_type="Large",
+            accessible="Yes",
+            notes="Brooklyn park",
+            google_name="Brooklyn Bridge Park",
+            borough="B",
+            zip_code="11201",
+            latitude=40.700292,
+            longitude=-73.996123,
+            display_name="Brooklyn Bridge Park",
+        )
+
+    def test_combined_view_filters_by_borough(self):
+        response = self.client.get(reverse("park_and_map"), {"borough": "M"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Central Park")
+        self.assertNotContains(response, "Brooklyn Bridge Park")
 
 
 class ParkDetailViewTest(TestCase):
@@ -257,7 +476,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_report_review_creates_record(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {
                 "form_type": "report_review",
                 "review_id": self.review.id,
@@ -272,7 +491,7 @@ class ReportFunctionalityTests(TestCase):
 
     def test_submit_review(self):
         response = self.client.post(
-            reverse("park_detail", args=[self.park.id]),
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
             {"form_type": "submit_review", "text": "Another review!", "rating": "5"},
         )
         self.assertEqual(response.status_code, 302)
@@ -428,7 +647,79 @@ class ParkDetailViewImageTest(TestCase):
 
     def test_park_detail_view_with_images(self):
         """Test that the park detail view displays associated images."""
-        response = self.client.get(reverse("park_detail", args=[self.park.id]))
+        response = self.client.get(
+            reverse("park_detail", args=[self.park.slug, self.park.id])
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.park.name)
         # self.assertIn(self.image.image, response.content.decode())
+
+
+class RenderStarsTests(TestCase):
+    def test_int_stars(self):
+        size = 20
+        result = render_stars(4, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 1)
+        self.assertEqual(result["size"], size)
+
+    def test_full_stars(self):
+        size = 15
+        result = render_stars(5, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    def test_no_stars(self):
+        size = 10
+        result = render_stars(0, size)
+        self.assertEqual(result["filled_stars"], 0)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 5)
+        self.assertEqual(result["size"], size)
+
+    def test_half_stars(self):
+        size = 20
+        result = render_stars(2.5, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.25 -> one half star
+    def test_round_up_to_half(self):
+        size = 20
+        result = render_stars(4.25, size)
+        self.assertEqual(result["filled_stars"], 4)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)
+
+    # < X.25 -> round down to whole
+    def test_round_down_to_whole(self):
+        size = 20
+        result = render_stars(3.24, size)
+        self.assertEqual(result["filled_stars"], 3)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # < X.75 -> one half star
+    def test_round_down_to_half(self):
+        size = 20
+        result = render_stars(2.74, size)
+        self.assertEqual(result["filled_stars"], 2)
+        self.assertEqual(result["half_stars"], 1)
+        self.assertEqual(result["empty_stars"], 2)
+        self.assertEqual(result["size"], size)
+
+    # >= X.75 -> round up to next whole
+    def test_round_up_to_whole(self):
+        size = 20
+        result = render_stars(4.75, size)
+        self.assertEqual(result["filled_stars"], 5)
+        self.assertEqual(result["half_stars"], 0)
+        self.assertEqual(result["empty_stars"], 0)
+        self.assertEqual(result["size"], size)

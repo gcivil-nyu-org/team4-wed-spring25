@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load display_rating %}
+{% load tz %}
 
 {% block content %}
 <div class="container my-4">
@@ -14,13 +16,22 @@
     {% endif %}
 
     <!-- Park Heading -->
-    <div class="text-center bg-brown text-white py-3 rounded">
-        <h1>
-            {{ park.name }}
-            {% if average_rating %}
-                <small class="text-warning">({{ average_rating|floatformat:1 }} ★)</small>
-            {% endif %}
-        </h1>
+    <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
+    <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
+        <div class="d-flex flex-column gap-1">
+            <h1 class="my-0">
+                {{ park.display_name }}
+            <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
+                {% if average_rating %}
+                    <span>{{ average_rating|floatformat:1 }}</span>
+                    <span class="d-flex align-items-center">{% render_stars average_rating 20 %}</span>
+                    <span> ({{ reviews|length }}) </span>
+                {% else %}
+                    <span style="color: #cccccc94;">No reviews</span>
+                {% endif %}
+                
+            </h5>
+        </div>
     </div>
 
     <!-- Park Image -->
@@ -105,7 +116,7 @@
     </div>
 
     <!-- Map -->
-    <div class="col-md-9 d-flex flex-column mt-3" style="width: 100%; height: 400px;">
+    <div class="col-md-9 d-flex flex-column mt-3" style="width: 100%; height: 500px;">
         <div class="map-container flex-grow-1 w-100" style="height: 100%;">
             <!-- id map used in JS for Leaflet -->
             <div id="detail-page-map" style="height: 100%"></div>
@@ -125,7 +136,7 @@
                 {% endif %}
             </span><br></td></tr>
             {% if park.notes %}
-                <tr><th>Notes</th><td>{{ park.notes }}</td></tr>
+                <tr><th>Notes</th><td>{{ park.notes|safe }}</td></tr>
             {% endif %}
         </table>
     </div>
@@ -137,7 +148,7 @@
         </div>
         <div class="card-body">
             {% if user.is_authenticated %}
-                <form method="POST" action="{% url 'park_detail' park.id %}" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'park_detail' park.slug park.id %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="upload_image">
                     <div class="mb-3">
@@ -163,7 +174,7 @@
             {% if error_message %}
                 <div class="alert alert-danger">{{ error_message }}</div>
         {% endif %}
-        <form method="POST" action="{% url 'park_detail' park.id %}">
+        <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="submit_review">
             
@@ -175,11 +186,14 @@
             <!-- Star Rating System -->
             <label class="form-label">Rating:</label>
             <div class="stars mb-3">
-                <span class="star" data-value="1">&#9733;</span>
-                <span class="star" data-value="2">&#9733;</span>
-                <span class="star" data-value="3">&#9733;</span>
-                <span class="star" data-value="4">&#9733;</span>
-                <span class="star" data-value="5">&#9733;</span>
+                {% for i in "12345" %}
+                    <span class="star" data-value=" {{ i }}">
+                        <svg width="40" height="40">
+                            <use href="#star-icon" />
+                        </svg>
+                    </span>          
+                {% endfor %}
+
             </div>
             <input type="hidden" name="rating" id="star-rating" required>
 
@@ -201,11 +215,13 @@
             {% if reviews %}
                 {% for review in reviews %}
                     <div class="review border-bottom py-2 d-flex justify-content-between align-items-start">
-                        <div>
+                        <div class="d-flex flex-column">
                             <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p>
-                            <p>
-                                <strong>Rating:</strong> {{ review.rating }} ★
-                                <span class="text-muted float-end">{{ review.created_at|date:"Y-m-d H:i" }}</span>
+                            <p class="d-flex gap-1">
+                                <span class="d-flex gap-0 align-items-center">
+                                    {% render_stars review.rating 17 %}
+                                </span>
+                                <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
                             </p>
                             <p>{{ review.text }}</p>
                         </div>
@@ -225,7 +241,7 @@
                                 <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <form method="POST" action="{% url 'park_detail' park.id %}">
+                                            <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="form_type" value="report_review">
                                                 <input type="hidden" name="review_id" value="{{ review.id }}">
@@ -255,7 +271,7 @@
     </div>
 
     <!-- Back Button -->
-    <div class="text-center mt-3">
+    <div class="text-center mt-3 mb-5">
         <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
     </div>
 </div>
@@ -280,6 +296,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const stars = document.querySelectorAll('.star');
+        console.log(stars);
         const ratingInput = document.getElementById('star-rating');
 
         stars.forEach(star => {
@@ -300,10 +317,17 @@
     // Map
     const park = JSON.parse('{{ park_json|escapejs }}');
 
+    const nycBounds = L.latLngBounds([
+        [40.45, -74.3],
+        [40.95, -73.65] 
+    ]);
+
     const detail_page_map = L.map('detail-page-map', {
         center: [park.latitude, park.longitude],
         zoom: 13,
         minZoom: 10,
+        maxBounds: nycBounds,
+        maxBoundsViscosity: 1.0
     });
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -348,7 +372,7 @@
         { 
             icon: highlightedIcon,
             riseOnHover: true,
-            title: park.name
+            title: park.display_name
         }
     ).addTo(detail_page_map);
 </script>
@@ -392,8 +416,15 @@
     .btn-brown { background-color: #6D4C41; color: white; }
     .btn-brown:hover { background-color: #5D4037; }
     .stars { display: flex; justify-content: center; font-size: 30px; cursor: pointer; }
-    .star { color: #ccc; transition: color 0.2s ease-in-out; }
-    .star.selected { color: #ffcc00; }
+    .star { 
+        color: #ccc;
+        fill: #ccc; 
+        transition: color 0.2s ease-in-out; 
+    }
+    .star.selected { 
+        color: #ffcc00; 
+        fill: #ffcc00
+    }
     .review { text-align: left; }
     .image-action-buttons {
     z-index: 10;

@@ -17,7 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from homepage.views import health_check, test_db_connection
+from homepage import views as homepage_views
+from homepage import error_views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 # from homepage.views import test_db_connection
 
@@ -25,6 +29,14 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
     path("", include("homepage.urls")),
-    path("health_check/", health_check),
-    path("dbtest/", test_db_connection),
+    path("health_check/", homepage_views.health_check),
+    path("dbtest/", homepage_views.test_db_connection),
+    path("profiles/", include("profiles.urls")),
+    path("test400/", error_views.trigger_400),
+    path("test403/", error_views.trigger_403),
+    path("test404/", error_views.trigger_404),
+    path("test500/", error_views.trigger_500),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

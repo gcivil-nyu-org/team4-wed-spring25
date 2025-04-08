@@ -1,47 +1,65 @@
 {% extends "base.html" %}
+{% load display_rating %}
 
 {% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero text-center">
-    <div class="m-2">
-        <h1 style="font-size: 1.6rem; margin-bottom: 5px;">Welcome to NYC PawPark</h1>
-        <p style="font-size: 1rem; margin-bottom: 0;">Find the best dog parks in NYC for your furry friend!</p>
-    </div>
-</div>
-
 <!-- Full-width container for layout consistency -->
 <div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
     <div id="map-filter-menu" class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card p-3 shadow-sm">
-                <form class="row g-2">
-                    <!-- Park Type -->
-                    <!-- Park Type -->
-                    <div class="col-md-4">
-                        <label for="filter" class="form-label fw-bold">Filter by Type:</label>
+            <div class="container section my-4">
+                <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
+            
+                    <!-- Search Field -->
+                    <div class="col-md-3">
+                        <label for="query" class="form-label fw-bold">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="query" id="query" class="form-control" placeholder="Park name or ZIP"
+                                   value="{{ query }}">
+                        </div>
+                    </div>
+            
+                    <!-- Park Type Filter -->
+                    <div class="col-md-2">
+                        <label for="filter" class="form-label fw-bold">Type</label>
                         <select class="form-select" name="filter" id="filter">
-                            <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
-                            <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
-                            <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
+                            <option value="" {% if selected_type == "" %}selected{% endif %}>All Types</option>
+                            <option value="Off-Leash" {% if selected_type == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
+                            <option value="Run" {% if selected_type == "Run" %}selected{% endif %}>Run</option>
                         </select>
                     </div>
-
-                    <!-- Accessibility -->
-                    <div class="col-md-4">
-                        <label for="accessible" class="form-label fw-bold">Accessibility:</label>
+            
+                    <!-- Accessibility Filter -->
+                    <div class="col-md-2">
+                        <label for="accessible" class="form-label fw-bold">Accessibility</label>
                         <select class="form-select" name="accessible" id="accessible">
-                            <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                            <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
-                            <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
+                            <option value="" {% if selected_accessible == "" %}selected{% endif %}>All</option>
+                            <option value="True" {% if selected_accessible == "True" %}selected{% endif %}>Yes</option>
+                            <option value="False" {% if selected_accessible == "False" %}selected{% endif %}>No</option>
                         </select>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <!-- Borough Filter -->
+                    <div class="col-md-2">
+                        <label for="borough" class="form-label fw-bold">Borough</label>
+                        <select class="form-select" name="borough" id="borough">
+                            <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
+                            <option value="M" {% if selected_borough == "M" %}selected{% endif %}>Manhattan</option>
+                            <option value="B" {% if selected_borough == "B" %}selected{% endif %}>Brooklyn</option>
+                            <option value="Q" {% if selected_borough == "Q" %}selected{% endif %}>Queens</option>
+                            <option value="X" {% if selected_borough == "X" %}selected{% endif %}>Bronx</option>
+                            <option value="R" {% if selected_borough == "R" %}selected{% endif %}>Staten Island</option>
+                        </select>
+                    </div>
+            
+                    <!-- Search Button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
                     </div>
                 </form>
             </div>
@@ -63,21 +81,34 @@
                         {% if park.images.all %}
                             <img src="{{ park.images.first.image.url }}" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }} image" 
+                                alt="{{ park.display_name }} image" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% else %}
                             <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
                                 class="rounded-circle" 
-                                alt="{{ park.name }}" 
+                                alt="{{ park.display_name }}" 
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% endif %}
                     </div>
     
                     <!-- Park Details (Middle) -->
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1" style="font-size: 1rem; font-weight: bold;">{{ park.name|safe }}</h6>
+                    <div class="d-flex flex-column gap-2 flex-grow-1">
+                        <!-- Park name and rating container -->
+                        <div class="card-ratings-container d-flex flex-column" style="gap: 1pt;">
+                            <h6 class="mb-0" style="font-size: 1rem; font-weight: bold;">{{ park.display_name|safe }}</h6>
+                            <!-- Render ratings on card -->
+                            <div class="d-flex my-0 gap-2 rating-display-{{ park.id }}" style="font-size: 15px;">
+                                {% if park.average_rating %}
+                                    <span>{{ park.average_rating|floatformat:1 }}</span>
+                                    <span class="d-flex align-items-center">{% render_stars park.average_rating 15 %}</span>
+                                    <span> ({{ park.review_count }}) </span>
+                                {% else %}
+                                    <span>No Reviews</span>
+                                {% endif %}
+                            </div>
+                        </div>
                         <p class="park-card-details mb-0" style="font-size: 0.9rem;">
                             <strong>Type:</strong> {{ park.dogruns_type }} <br>
                             <strong>Accessible:</strong> 
@@ -91,7 +122,7 @@
                         </p>
                     </div>
                     <div id="details-button">
-                        <a href="{% url 'park_detail' park.id %}" class="btn btn-sm btn-primary">Details</a>
+                        <a href="{% url 'park_detail' park.slug park.id %}" class="btn btn-sm btn-primary">Details</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -301,9 +332,11 @@
         maxClusterRadius: 50,
     });
 
-
     // Place markers for each park on map
     parks.forEach(park => {
+            const ratingDiv = document.querySelector(`.rating-display-${park.id}`);
+            const ratingHTML = ratingDiv ? ratingDiv.outerHTML : '<span>No rating</span>';
+
             const popupContent = `
                 <div style="
                     width: 300px;
@@ -321,7 +354,7 @@
                     ">
                         <img 
                             src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
-                            alt="${park.name}" 
+                            alt="${park.display_name}" 
                             style="
                                 height: 100%;
                                 width: 100%;
@@ -332,20 +365,23 @@
 
 
                     <!-- Details Container-->
-                    <a href="/park/${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
-                        <div style="padding: 10px;">
+                    <a href="/parks/${park.slug}-${park.id}/" style="text-decoration: none; color: inherit; transition: color 0.2s ease-in-out;">
+                        <div class="d-flex flex-column gap-2" style="padding: 10px;">
 
                             <!-- Park Name with link to park page-->
-                            <h6 style="
-                                margin: 0 0 15px 0;
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #333;
-                            ">
-                                <div>
-                                    ${park.name}
-                                </div>
-                            </h6>
+                            <div class="d-flex flex-column" style="gap: 1pt">
+                                <h6 style="
+                                    margin: 0;
+                                    font-size: 1rem;
+                                    font-weight: 600;
+                                    color: #333;
+                                ">
+                                    <div>
+                                        ${park.display_name}
+                                    </div>
+                                </h6>
+                                ${ratingHTML}
+                            </div>
 
                             <!-- Details -->
                             <p style="
@@ -373,7 +409,7 @@
             { 
                 icon: baseIcon,
                 riseOnHover: true,
-                title: park.name
+                title: park.display_name
             }
         ).bindPopup(popupContent, {
             autoPan: false,
@@ -560,12 +596,9 @@
                 let marker = markers[parkId]; // Find corresponding marker
 
                 let park = parkIdToPark[parkId];
-                // console.log(lastClickedParkCard);
                 if (marker) {
                     
                     if (card !== lastClickedParkCard) {
-                        console.log(lastClickedParkCard);
-                        console.log(lastClickedParkCard + ' here');
                         // Center the map on this marker
                         // and zoom closer
                         safeFlyTo([park.latitude, park.longitude], 15);
@@ -581,8 +614,6 @@
                         lastClickedParkCard = null;
                     }
                 }
-                // console.log(lastClickedParkCard);
-
             });
 
         });
