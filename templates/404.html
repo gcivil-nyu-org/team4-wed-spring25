@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex flex-column justify-content-center align-items-center text-center" style="flex: 1;">
+    <h1 class="display-4">404 - Page Not Found</h1>
+    <p class="lead">Sorry, the page you’re looking for doesn’t exist.</p>
+    <a class="btn btn-primary mt-3" href="{% url 'home' %}">Back to Home</a>
+  </div>
+{% endblock %}
