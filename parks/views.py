@@ -156,12 +156,7 @@ def park_detail(request, slug, id):
     if request.user.is_authenticated and request.method == "POST":
         form_type = request.POST.get("form_type")
 
-        if form_type == "upload_image" and request.FILES.getlist("images"):
-            for image in request.FILES.getlist("images"):
-                ParkImage.objects.create(park=park, image=image, user=request.user)
-            return redirect("park_detail", slug=park.slug, id=park.id)
-
-        elif form_type == "submit_review":
+        if form_type == "submit_review":
             review_text = request.POST.get("text", "").strip()
             rating_value = request.POST.get("rating", "").strip()
 
@@ -183,12 +178,22 @@ def park_detail(request, slug, id):
                     },
                 )
 
-            Review.objects.create(
+            review = Review.objects.create(
                 park=park,
                 text=review_text if review_text else "",
                 rating=rating,
                 user=request.user,
             )
+
+            images = request.FILES.getlist("images")
+
+            if images:
+                for image in images:
+                    ParkImage.objects.create(
+                        park=park, image=image, review=review, user=request.user
+                    )
+
+            messages.success(request, "Your review was submitted successfully!")
             return redirect("park_detail", slug=park.slug, id=park.id)
         # report reviews
         elif form_type == "report_review":

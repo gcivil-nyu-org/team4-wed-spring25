@@ -80,6 +80,9 @@ class ParkImage(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="images", null=True, blank=True
     )
+    review = models.ForeignKey(
+        "Review", on_delete=models.CASCADE, null=True, blank=True, related_name="images"
+    )
     image = CloudinaryField("image")
 
     def __str__(self):
