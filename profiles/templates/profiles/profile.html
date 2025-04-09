@@ -1,100 +1,238 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}User Profile - PAWPARK{% endblock %}
+{% block title %}
+    {% if is_own_profile %}My Profile{% else %}{{ profile_user.username }}'s Profile{% endif %} - PAWPARK
+{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* General Card Styling */
     .profile-card,
     .pets-section-card {
-        font-family: 'Nunito', Arial, sans-serif; border: none; border-radius: 15px;
-        overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        background-color: #ffffff; margin-bottom: 2.5rem;
+        font-family: 'Nunito', Arial, sans-serif;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        margin-bottom: 2.5rem;
     }
 
-    /* Headers */
     .profile-card-header,
     .pets-section-header {
-        font-family: 'Poppins', sans-serif; background-color: #6D4C41 !important; color: white;
-        border-bottom: none; padding: 1.25rem 1.5rem;
-        position: relative; text-align: center;
+        font-family: 'Poppins', sans-serif;
+        background-color: #6D4C41 !important;
+        color: white;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+        position: relative;
+        text-align: center;
     }
     .profile-card-header h2,
-    .pets-section-header h2 { margin-bottom: 0; font-size: 1.6rem; font-weight: 600; display: inline-block; }
-    .pets-section-header .btn-add-pet { padding: 0.5rem 1rem; font-size: 0.85rem; position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); }
+    .pets-section-header h2 {
+        margin-bottom: 0;
+        font-size: 1.6rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .pets-section-header .btn-add-pet {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
 
-    /* Card Bodies */
     .profile-card .card-body { padding: 2rem; }
     .pets-section-card .card-body { padding: 1.5rem; }
 
-    /* Profile Picture Display */
-    .profile-picture-display { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; margin-bottom: 1.5rem; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+    .profile-picture-display {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1.5rem;
+        border: 4px solid #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
 
-    /* Profile Details */
-    .profile-details dl { margin-bottom: 0; text-align: left; }
-    .profile-details dt { font-weight: 600; color: #333; padding-right: 0.5em; margin-bottom: 1rem; float: left; clear: left; width: 110px; display: flex; align-items: center; }
-    .profile-details dt i.fa-fw { margin-right: 8px; color: #888; font-size: 0.95em; width: 1.2em; text-align: center; }
-    .profile-details dd { margin-left: 120px; margin-bottom: 1rem; color: #555; word-wrap: break-word; padding-top: 0.1em; }
-    .profile-details dd a { color: #6D4C41; text-decoration: none; }
-    .profile-details dd a:hover { text-decoration: underline; }
+    .profile-details dl {
+        margin-bottom: 0;
+        text-align: left;
+    }
+    .profile-details dt {
+        font-weight: 600;
+        color: #333;
+        padding-right: 0.5em;
+        margin-bottom: 1rem;
+        float: left;
+        clear: left;
+        width: 110px;
+        display: flex;
+        align-items: center;
+    }
+     .profile-details dt i.fa-fw {
+        margin-right: 8px;
+        color: #888;
+        font-size: 0.95em;
+        width: 1.2em;
+        text-align: center;
+    }
+    .profile-details dd {
+        margin-left: 120px;
+        margin-bottom: 1rem;
+        color: #555;
+        word-wrap: break-word;
+        padding-top: 0.1em;
+    }
+    .profile-details dd a {
+        color: #6D4C41;
+        text-decoration: none;
+    }
+    .profile-details dd a:hover {
+        text-decoration: underline;
+    }
 
-    /* Pet Card Styling */
-    .pet-list-card { border: 1px solid #eee; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; height: 100%; border-radius: 10px; overflow: hidden;}
-    .pet-list-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
-    .pet-list-card .card-img-top { height: 200px; object-fit: cover; border-bottom: 1px solid #eee; }
-    .pet-image-placeholder { height: 200px; display: flex; align-items: center; justify-content: center; background-color: #f0f0f0; color: #ccc; font-size: 4rem; border-bottom: 1px solid #eee; }
-    .pet-list-card .card-title { color: #6D4C41; font-family: 'Poppins', sans-serif; font-weight: 600; margin-bottom: 0.75rem; }
+
+    .pet-list-card {
+        border: 1px solid #eee;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        height: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .pet-list-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    .pet-list-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid #eee;
+    }
+    .pet-image-placeholder {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f0f0;
+        color: #ccc;
+        font-size: 4rem;
+        border-bottom: 1px solid #eee;
+    }
+    .pet-list-card .card-title {
+        color: #6D4C41;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
     .pet-list-card .card-body { background-color: #fff; }
-    .pet-list-card .card-body p { font-size: 0.9rem; margin-bottom: 0.5rem; text-align: left; }
+    .pet-list-card .card-body p {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        text-align: left;
+    }
     .pet-list-card .card-body p strong { color: #333; }
-    .pet-list-card .card-footer { background-color: transparent; border-top: none; padding-top: 0.5rem; padding-bottom: 0.75rem; }
+    .pet-list-card .card-footer {
+        background-color: transparent;
+        border-top: none;
+        padding-top: 0.5rem;
+        padding-bottom: 0.75rem;
+    }
 
-    /* Empty State Styling */
-     .pets-empty-state { padding: 3rem 1rem; text-align: center; background-color: #f8f9fa; border-radius: 8px; border: 1px dashed #ddd; }
-     .pets-empty-state p { font-size: 1.1rem; color: #6c757d; margin-bottom: 1.5rem; }
-     .pets-empty-state .fas { font-size: 3rem; color: #ced4da; margin-bottom: 1rem; display: block; }
+     .pets-empty-state {
+         padding: 3rem 1rem;
+         text-align: center;
+         background-color: #f8f9fa;
+         border-radius: 8px;
+         border: 1px dashed #ddd;
+     }
+     .pets-empty-state p {
+         font-size: 1.1rem;
+         color: #6c757d;
+         margin-bottom: 1.5rem;
+     }
+     .pets-empty-state .fas {
+         font-size: 3rem;
+         color: #ced4da;
+         margin-bottom: 1rem;
+         display: block;
+     }
 
-    /* Button Styling */
-    .btn-profile-action, .btn-pet-action, .btn-add-pet { padding: 0.7rem 1.3rem; font-weight: 600; font-size: 0.9rem; border-radius: 8px; text-decoration: none !important; text-align: center; vertical-align: middle; cursor: pointer; user-select: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; margin: 0.25rem; border: 1px solid transparent; line-height: 1.5;}
-    .btn-profile-action i, .btn-pet-action i, .btn-add-pet i { margin-right: 0.5rem; font-size: inherit; }
+    .btn-profile-action, .btn-pet-action, .btn-add-pet {
+        padding: 0.7rem 1.3rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        text-decoration: none !important;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Poppins', sans-serif;
+        margin: 0.25rem;
+        border: 1px solid transparent;
+        line-height: 1.5;
+    }
+    .btn-profile-action i, .btn-pet-action i, .btn-add-pet i {
+        margin-right: 0.5rem;
+        font-size: inherit;
+    }
     .pets-empty-state .btn-add-pet i.fas.fa-plus { position: relative; top: 1px; }
     .pets-section-header .btn-add-pet i.fas.fa-plus { position: relative; top: -1px; }
+
     .btn-edit-profile { background-color: #6D4C41; border-color: #6D4C41; color: white; }
     .btn-edit-profile:hover { background-color: #5d4037; border-color: #5d4037; color: white; }
+
     .btn-edit-pet-card { background-color: #6c757d; border-color: #6c757d; color: white; }
     .btn-edit-pet-card:hover { background-color: #5a6268; border-color: #545b62; color: white; }
+
     .btn-delete-pet-card { background-color: #dc3545; border-color: #dc3545; color: white; }
     .btn-delete-pet-card:hover { background-color: #bb2d3b; border-color: #b02a37; color: white; }
+
     .btn-add-pet { background-color: #198754; border-color: #198754; color: white; }
     .btn-add-pet:hover { background-color: #157347; border-color: #146c43; color: white; }
 
-    /* Animation */
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-on-load {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5 mb-5">
 
-    <form method="post" style="display: none;">{% csrf_token %}</form>
-
     <div class="row justify-content-center mb-5">
         <div class="col-lg-10 col-xl-9">
             <div class="card shadow-sm profile-card animate-on-load">
-                <div class="card-header profile-card-header text-center"> <h2 class="mb-0">User Profile</h2> </div>
+                <div class="card-header profile-card-header text-center">
+                    <h2 class="mb-0">{% if is_own_profile %}My Profile{% else %}{{ profile_user.username }}'s Profile{% endif %}</h2>
+                </div>
                 <div class="card-body p-4">
                    <div class="row align-items-center">
                        <div class="col-md-4 text-center mb-4 mb-md-0">
-                           {% if user_profile.profile_picture and user_profile.profile_picture.url %} <img src="{{ user_profile.profile_picture.url }}" alt="{{ user_profile.user.username }}'s profile picture" class="profile-picture-display"> {% else %} <img src="{% static 'images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display"> {% endif %}
+                           {% if user_profile.profile_picture and user_profile.profile_picture.url %}
+                               <img src="{{ user_profile.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture" class="profile-picture-display">
+                           {% else %}
+                               <img src="{% static 'static/images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display">
+                           {% endif %}
                        </div>
                        <div class="col-md-8">
-                           <h3 class="mb-3 text-center text-md-start">{{ user_profile.user.username }}</h3>
+                           <h3 class="mb-3 text-center text-md-start">{{ profile_user.username }}</h3>
                            <div class="profile-details mt-3">
                                <dl>
-                                   <dt><i class="fas fa-envelope fa-fw"></i>Email:</dt><dd>{{ user_profile.user.email }}</dd>
-                                   <dt><i class="fas fa-calendar-alt fa-fw"></i>Joined:</dt><dd>{{ user_profile.user.date_joined|date:"Y-m-d" }}</dd>
+                                   <dt><i class="fas fa-envelope fa-fw"></i>Email:</dt><dd>{{ profile_user.email }}</dd>
+                                   <dt><i class="fas fa-calendar-alt fa-fw"></i>Joined:</dt><dd>{{ profile_user.date_joined|date:"Y-m-d" }}</dd>
                                    <dt><i class="fas fa-map-marker-alt fa-fw"></i>Location:</dt><dd>{{ user_profile.location|default:"Not provided" }}</dd>
                                    <dt><i class="fas fa-phone fa-fw"></i>Phone:</dt><dd>{{ user_profile.phone_number|default:"Not provided" }}</dd>
                                    <dt><i class="fas fa-link fa-fw"></i>Website:</dt><dd>{% if user_profile.website %}<a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer">{{ user_profile.website }}</a>{% else %}None{% endif %}</dd>
@@ -102,7 +240,13 @@
                                    <dt><i class="fas fa-signature fa-fw"></i>Signature:</dt><dd>"{{ user_profile.signature|default:"-"|linebreaksbr }}"</dd>
                                </dl>
                            </div>
-                            <div class="text-center mt-4"> <a href="{% url 'edit_profile' %}" class="btn btn-profile-action btn-edit-profile"> <i class="fas fa-pencil-alt"></i> Edit Profile </a> </div>
+                           {% if is_own_profile %}
+                           <div class="text-center mt-4">
+                               <a href="{% url 'edit_profile' %}" class="btn btn-profile-action btn-edit-profile">
+                                   <i class="fas fa-pencil-alt"></i> Edit Profile
+                               </a>
+                           </div>
+                           {% endif %}
                        </div>
                    </div>
                 </div>
@@ -112,8 +256,10 @@
 
     <div class="card shadow-sm pets-section-card animate-on-load mb-4">
         <div class="card-header pets-section-header d-flex justify-content-between align-items-center">
-            <h2 class="mb-0">My Pets</h2>
+            <h2 class="mb-0">{% if is_own_profile %}My Pets{% else %}{{ profile_user.username }}'s Pets{% endif %}</h2>
+            {% if is_own_profile %}
             <a href="{% url 'add_pet' %}" class="btn btn-add-pet"> <i class="fas fa-plus"></i> Add Pet </a>
+            {% endif %}
         </div>
         <div class="card-body p-4">
             <div class="row justify-content-center" id="pet-list-row">
@@ -121,24 +267,43 @@
                 {% for pet in pets %}
                     <div class="col-lg-4 col-md-6 mb-4 d-flex align-items-stretch animate-on-load" id="pet-card-{{ pet.id }}">
                         <div class="card pet-list-card w-100 card-hover-effect">
-                            <a href="{% url 'pet_detail' pet.id %}" style="text-decoration: none; color: inherit; display: block;">
-                                {% if pet.pet_picture and pet.pet_picture.url %} <img src="{{ pet.pet_picture.url }}" class="card-img-top" alt="{{ pet.name }}, {{ pet.breed }}"> {% else %} <div class="pet-image-placeholder"> <i class="fas fa-paw"></i> </div> {% endif %}
-                                <div class="card-body text-left"> <h4 class="card-title text-center">{{ pet.name }}</h4> <p><strong>Breed:</strong> {{ pet.breed }}</p> <p><strong>Age:</strong> {{ pet.age }}</p> </div>
+                            <a href="{% url 'pet_detail' username=profile_user.username pet_id=pet.id %}" style="text-decoration: none; color: inherit; display: block;">
+                                {% if pet.pet_picture and pet.pet_picture.url %}
+                                    <img src="{{ pet.pet_picture.url }}" class="card-img-top" alt="{{ pet.name }}, {{ pet.breed }}">
+                                {% else %}
+                                    <div class="pet-image-placeholder"> <i class="fas fa-paw"></i> </div>
+                                {% endif %}
+                                <div class="card-body text-left">
+                                    <h4 class="card-title text-center">{{ pet.name }}</h4>
+                                    <p><strong>Breed:</strong> {{ pet.breed }}</p>
+                                    <p><strong>Age:</strong> {{ pet.age }}</p>
+                                </div>
                             </a>
-                            <div class="card-footer text-center border-top-0 pt-2 pb-3"> <a href="{% url 'edit_pet' pet.id %}" class="btn btn-sm btn-pet-action btn-edit-pet-card" data-bs-toggle="tooltip" title="Edit {{ pet.name }}'s details"> <i class="fas fa-edit"></i> Edit </a> <button type="button" class="btn btn-sm btn-pet-action btn-delete-pet-card" data-bs-toggle="modal" data-bs-target="#deletePetModal" data-pet-id="{{ pet.id }}" data-pet-name="{{ pet.name }}" data-delete-url="{% url 'delete_pet' pet.id %}"> <i class="fas fa-trash-alt"></i> Delete </button> </div>
+                            {% if is_own_profile %}
+                            <div class="card-footer text-center border-top-0 pt-2 pb-3">
+                                <a href="{% url 'edit_pet' pet_id=pet.id %}" class="btn btn-sm btn-pet-action btn-edit-pet-card" data-bs-toggle="tooltip" title="Edit {{ pet.name }}'s details">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-sm btn-pet-action btn-delete-pet-card" data-bs-toggle="modal" data-bs-target="#deletePetModal" data-pet-id="{{ pet.id }}" data-pet-name="{{ pet.name }}" data-delete-url="{% url 'delete_pet' pet_id=pet.id %}">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
+                {% empty %}
+                     <div class="col-12 animate-on-load">
+                         <div class="pets-empty-state mt-3">
+                              <i class="fas fa-paw"></i>
+                             <p>{% if is_own_profile %}You haven't added any pets yet.{% else %}{{ profile_user.username }} hasn't added any pets yet.{% endif %}</p>
+                             {% if is_own_profile %}
+                             <a href="{% url 'add_pet' %}" class="btn btn-add-pet">
+                                <i class="fs fa-plus"></i> Add Your First Pet
+                             </a>
+                             {% endif %}
+                         </div>
+                     </div>
                 {% endfor %}
-
-                <div class="col-12 animate-on-load {% if pets %}d-none{% endif %}" id="empty-pet-message">
-                    <div class="pets-empty-state mt-3">
-                         <i class="fas fa-paw"></i>
-                        <p>You haven't added any pets yet.</p>
-                        <a href="{% url 'add_pet' %}" class="btn btn-add-pet">
-                           <i class="fs fa-plus"></i> Add Your First Pet
-                        </a>
-                    </div>
-                </div>
 
             </div>
         </div>
@@ -148,7 +313,25 @@
 
 
 <div class="modal fade" id="deletePetModal" tabindex="-1" aria-labelledby="deletePetModalLabel" aria-hidden="true">
-  <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <h5 class="modal-title" id="deletePetModalLabel">Confirm Deletion</h5> <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> </div> <div class="modal-body" id="deletePetModalBody"> Are you sure you want to delete pet "[Pet Name Here]"? This action cannot be undone. </div> <div class="modal-footer"> <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> <button type="button" class="btn btn-danger" id="confirmDeletePetBtn"> Delete Pet <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> </button> </div> <div id="deleteErrorAlert" class="alert alert-danger d-none mt-3 mx-3" role="alert"></div> </div> </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deletePetModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="deletePetModalBody">
+        Are you sure you want to delete pet "[Pet Name Here]"? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeletePetBtn">
+            Delete Pet
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div id="deleteErrorAlert" class="alert alert-danger d-none mt-3 mx-3" role="alert"></div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -156,7 +339,9 @@
 {% block extra_scripts %}
     <script>
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) { return new bootstrap.Tooltip(tooltipTriggerEl) });
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
     </script>
 
     <script>
@@ -166,17 +351,28 @@
             const deletePetModalBody = document.getElementById('deletePetModalBody');
             const deleteErrorAlert = document.getElementById('deleteErrorAlert');
             const petListRow = document.getElementById('pet-list-row');
-            const emptyMessageDiv = document.getElementById('empty-pet-message');
             let deleteUrlToConfirm = null;
             let petIdToConfirm = null;
             let deleteSpinner = confirmDeletePetBtn ? confirmDeletePetBtn.querySelector('.spinner-border') : null;
 
             let deleteModal = null;
-            if (deletePetModalElement) { try { deleteModal = new bootstrap.Modal(deletePetModalElement); } catch (e) { console.error("Failed to initialize Bootstrap modal:", e); } }
-            else { console.error("Delete confirmation modal element not found!"); }
+            if (deletePetModalElement) {
+                try { deleteModal = new bootstrap.Modal(deletePetModalElement); } catch (e) { console.error("Failed to initialize Bootstrap modal:", e); }
+            } else { console.error("Delete confirmation modal element not found!"); }
 
             function getCookie(name) {
-                 let cookieValue = null; if (document.cookie && document.cookie !== '') { const cookies = document.cookie.split(';'); for (let i = 0; i < cookies.length; i++) { const cookie = cookies[i].trim(); if (cookie.substring(0, name.length + 1) === (name + '=')) { cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); break; } } } return cookieValue;
+                 let cookieValue = null;
+                 if (document.cookie && document.cookie !== '') {
+                     const cookies = document.cookie.split(';');
+                     for (let i = 0; i < cookies.length; i++) {
+                         const cookie = cookies[i].trim();
+                         if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                             cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                             break;
+                         }
+                     }
+                 }
+                 return cookieValue;
              }
             const csrftoken = getCookie('csrftoken');
 
@@ -184,10 +380,20 @@
                 petListRow.addEventListener('click', function(event) {
                     const deleteButton = event.target.closest('.btn-delete-pet-card');
                     if (deleteButton) {
-                        petIdToConfirm = deleteButton.dataset.petId; deleteUrlToConfirm = deleteButton.dataset.deleteUrl; const petName = deleteButton.dataset.petName;
+                        petIdToConfirm = deleteButton.dataset.petId;
+                        deleteUrlToConfirm = deleteButton.dataset.deleteUrl;
+                        const petName = deleteButton.dataset.petName;
+
                         console.log(`[Delete Init] Pet ID: ${petIdToConfirm}, Name: ${petName}, URL: ${deleteUrlToConfirm}`);
-                        if (!petIdToConfirm || !deleteUrlToConfirm) { console.error("Missing pet ID or delete URL."); alert("Error: Could not initiate delete."); return; }
-                        if (deletePetModalBody) { deletePetModalBody.textContent = `Are you sure you want to delete pet "${petName}"? This action cannot be undone.`; }
+
+                        if (!petIdToConfirm || !deleteUrlToConfirm) {
+                            console.error("Missing pet ID or delete URL.");
+                            alert("Error: Could not initiate delete.");
+                            return;
+                        }
+                        if (deletePetModalBody) {
+                           deletePetModalBody.textContent = `Are you sure you want to delete pet "${petName}"? This action cannot be undone.`;
+                        }
                         if (deleteErrorAlert) deleteErrorAlert.classList.add('d-none');
                     }
                 });
@@ -196,13 +402,26 @@
 
             if (confirmDeletePetBtn && deleteModal) {
                 confirmDeletePetBtn.addEventListener('click', function() {
-                    const url = deleteUrlToConfirm; const petId = petIdToConfirm;
-                    console.log(`[Confirm Click] Confirming delete for Pet ID: ${petId}, URL: ${url}`);
-                    if (!url || !petId) { return; } if (!csrftoken) { return; }
-                    confirmDeletePetBtn.disabled = true; if(deleteSpinner) deleteSpinner.classList.remove('d-none'); if(deleteErrorAlert) deleteErrorAlert.classList.add('d-none');
+                    const url = deleteUrlToConfirm;
+                    const petId = petIdToConfirm;
 
-                    fetch(url, { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }, })
-                    .then(response => { if (response.ok && (response.status === 204 || response.status === 200) ) { return Promise.resolve(null); } return response.text().then(text => { let ed = text; try { const je = JSON.parse(text); ed = je.error || je.detail || text; } catch (e) {} throw new Error(`Server error: ${response.status} ${response.statusText}. ${ed}`); }); })
+                    console.log(`[Confirm Click] Confirming delete for Pet ID: ${petId}, URL: ${url}`);
+
+                    if (!url || !petId) { console.error("URL or Pet ID missing on confirmation."); return; }
+                    if (!csrftoken) { console.error("CSRF token not found."); alert("Error: Security token missing. Please refresh the page."); return; }
+
+                    confirmDeletePetBtn.disabled = true;
+                    if(deleteSpinner) deleteSpinner.classList.remove('d-none');
+                    if(deleteErrorAlert) deleteErrorAlert.classList.add('d-none');
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+                    })
+                    .then(response => {
+                        if (response.ok && (response.status === 204 || response.status === 200) ) { return Promise.resolve(null); }
+                        return response.text().then(text => { let ed = text; try { const je = JSON.parse(text); ed = je.error || je.detail || text; } catch (e) {} throw new Error(`Server error: ${response.status} ${response.statusText}. ${ed}`); });
+                    })
                     .then(data => {
                         console.log('[Fetch Success] Delete request successful.');
                         deleteModal.hide();
@@ -211,44 +430,41 @@
                         if (elementToRemove) {
                             elementToRemove.style.transition = 'opacity 0.5s ease-out'; elementToRemove.style.opacity = '0';
                             setTimeout(() => { elementToRemove.remove(); console.log(`[Fetch Success] Pet card ${petId} removed.`); checkEmptyState(); }, 500);
-                        } else { console.warn(`[Fetch Success] Could not find element to remove. Reloading.`); alert("Pet deleted, reload required."); window.location.reload(); }
+                        } else { console.warn(`[Fetch Success] Could not find element pet-card-${petId} to remove. Reloading.`); alert("Pet deleted, reload required."); window.location.reload(); }
                     })
                     .catch(error => { console.error('[Fetch Error] Error during deletion:', error); if(deleteErrorAlert) { deleteErrorAlert.textContent = `Error: ${error.message || 'Could not delete pet.'}`; deleteErrorAlert.classList.remove('d-none');} confirmDeletePetBtn.disabled = false; if(deleteSpinner) deleteSpinner.classList.add('d-none'); });
                 });
             }
 
              if (deletePetModalElement) {
-                  deletePetModalElement.addEventListener('hidden.bs.modal', function () { if(confirmDeletePetBtn) confirmDeletePetBtn.disabled = false; if(deleteSpinner) deleteSpinner.classList.add('d-none'); if(deleteErrorAlert) deleteErrorAlert.classList.add('d-none'); deleteUrlToConfirm = null; petIdToConfirm = null; console.log("[Modal Closed] Stored variables reset."); });
+                  deletePetModalElement.addEventListener('hidden.bs.modal', function () { if(confirmDeletePetBtn) confirmDeletePetBtn.disabled = false; if(deleteSpinner) deleteSpinner.classList.add('d-none'); if(deleteErrorAlert) deleteErrorAlert.classList.add('d-none'); deleteUrlToConfirm = null; petIdToConfirm = null; console.log("[Modal Closed] Stored delete variables reset."); });
              }
 
              function checkEmptyState() {
                  const petRow = document.getElementById('pet-list-row');
-                 const emptyMsgDiv = document.getElementById('empty-pet-message');
+                 const emptyMsgElement = petRow ? petRow.querySelector('.pets-empty-state') : null;
 
-                 if (petRow && emptyMsgDiv) {
+                 if (petRow) {
                      const remainingPetCards = petRow.querySelectorAll('div[id^="pet-card-"]');
                      console.log(`[Check Empty] Remaining pets count: ${remainingPetCards.length}`);
 
-                     if (remainingPetCards.length === 0) {
-                          emptyMsgDiv.classList.remove('d-none');
-                          emptyMsgDiv.style.opacity = '0';
-                          setTimeout(() => { emptyMsgDiv.style.opacity = '1'; }, 50);
-                          console.log("Pet list is empty, showing empty message div.");
-                     } else {
-                          emptyMsgDiv.classList.add('d-none');
-                          console.log("Pet list not empty, hiding empty message div.");
+                     if (remainingPetCards.length === 0 && !emptyMsgElement) {
+                          console.log("Pet list is empty, manually handling state (if needed).");
+                     } else if (remainingPetCards.length > 0 && emptyMsgElement) {
+                          emptyMsgElement.parentNode.classList.add('d-none');
+                          console.log("Pet list not empty, ensuring empty message div is hidden.");
                      }
                  } else {
-                      console.warn("Could not find pet list row or empty message div for checkEmptyState.");
+                      console.warn("Could not find pet list row for checkEmptyState.");
                  }
              }
 
              if(document.readyState === 'complete' || document.readyState === 'interactive') {
-                  checkEmptyState();
+                  setTimeout(checkEmptyState, 0);
              } else {
                   window.addEventListener('load', checkEmptyState);
              }
 
-        }); // End DOMContentLoaded
+        });
     </script>
 {% endblock %}

@@ -185,10 +185,43 @@
             transition: transform 0.2s ease-in-out;
         }
 
+        .preview-wrapper {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        }
+
+        .close-btn {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.7);
+        }
+
         .preview-img:hover {
             transform: scale(1.1);
         }
 
+        form .form-select,
+        form .form-control {
+            max-width: 100%;
+            font-size: 0.95rem;
+            padding: 0.375rem 0.5rem;
+        }
 
         /* Remove default Leaflet popup styling */
         .leaflet-popup-content-wrapper {
@@ -246,7 +279,7 @@
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                            <a class="nav-link" href="{% url 'profile' username=user.username %}"> Profile </a>
                          </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
@@ -276,33 +309,60 @@
         document.addEventListener("DOMContentLoaded", function () {
             const imageUpload = document.querySelector("input[name='images']");
             const imagePreview = document.getElementById("imagePreview");
-
-            if (!imageUpload || !imagePreview) return; //Prevents errors on other pages
-
+    
+            let selectedFiles = [];
+    
+            if (!imageUpload || !imagePreview) return;
+    
             imageUpload.addEventListener("change", function () {
-                imagePreview.innerHTML = ""; // Clear previous previews
-
-                if (this.files) {
-                    Array.from(this.files).forEach(file => {
-                        if (file.type.startsWith("image/")) { // Ensure only images are processed
-                            const reader = new FileReader();
-
-                            reader.onload = function (e) {
-                                const img = document.createElement("img"); // Create image element
-                                img.src = e.target.result; // Assign image source
-                                img.classList.add("preview-img"); // Apply CSS class
-                                img.setAttribute("onclick", `openImagePopup('${e.target.result}')`); // Add click event
-                                imagePreview.appendChild(img); // Append image to preview div
-                            };
-
-                            reader.readAsDataURL(file); // Read image file
-                        }
-                    });
-                }
+                const newFiles = Array.from(this.files);
+                selectedFiles = selectedFiles.concat(newFiles); // Overwrite current selection
+                this.value = "";
+                renderPreviews();
             });
+    
+            function renderPreviews() {
+                imagePreview.innerHTML = "";
+    
+                selectedFiles.forEach((file, index) => {
+                    if (!file.type.startsWith("image/")) return;
+    
+                    const reader = new FileReader();
+    
+                    reader.onload = function (e) {
+                        const wrapper = document.createElement("div");
+                        wrapper.classList.add("preview-wrapper");
+    
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.classList.add("preview-img");
+                        img.setAttribute("onclick", `openImagePopup('${e.target.result}')`);
+    
+                        const closeBtn = document.createElement("span");
+                        closeBtn.innerHTML = "&times;";
+                        closeBtn.classList.add("close-btn");
+    
+                        closeBtn.onclick = () => {
+                            selectedFiles.splice(index, 1);
+                            renderPreviews();
+                        };
+    
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(closeBtn);
+                        imagePreview.appendChild(wrapper);
+                    };
+    
+                    reader.readAsDataURL(file);
+                });
+    
+                // Sync selected files with actual input
+                const dataTransfer = new DataTransfer();
+                selectedFiles.forEach(file => dataTransfer.items.add(file));
+                imageUpload.files = dataTransfer.files;
+            }
         });
-
-        //Function to Open the Image in a Popup
+    
+        // Function to Open the Image in a Popup
         function openImagePopup(imageSrc) {
             const popup = window.open("", "_blank", "width=800,height=600");
             popup.document.write(`<img src="${imageSrc}" style="width: 100%; height: auto; border-radius: 10px;">`);

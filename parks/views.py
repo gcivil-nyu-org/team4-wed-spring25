@@ -10,73 +10,35 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 
-import folium
-from folium.plugins import MarkerCluster
-
-from .utilities import folium_cluster_styling
 from .forms import RegisterForm
 
 import json
+from django.contrib import messages
 
 
 def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()  # Save user
-            login(request, user)  # Log in the user immediately
-            request.session.save()  # Ensure session is updated
-            return redirect("home")  # Redirect to homepage
+            # Save but don't commit yet
+            user = form.save(commit=False)
+            # If they chose Admin, mark them as staff
+            if form.cleaned_data["role"] == "admin":
+                user.is_staff = True
+            user.save()
+
+            # Log the user in immediately
+            login(request, user)
+            request.session.save()
+            return redirect("home")
     else:
         form = RegisterForm()
 
     return render(request, "parks/register.html", {"form": form})
 
 
-def park_list(request):
-    query = request.GET.get("query", "")
-    parks = DogRunNew.objects.all()  # Fetch all dog runs from the database
-
-    if query:
-        parks = parks.filter(
-            Q(name__icontains=query)
-            | Q(google_name__icontains=query)
-            | Q(zip_code__icontains=query)
-        )
-
-    return render(request, "parks/park_list.html", {"parks": parks, "query": query})
-
-
 def home_view(request):
     return render(request, "parks/home.html")
-
-
-def map(request):
-
-    NYC_LAT_AND_LONG = (40.730610, -73.935242)
-    # Create map centered on NYC
-    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
-
-    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
-
-    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
-
-    # Fetch all dog runs from the database
-    parks = DogRunNew.objects.all()
-
-    # Mark every park on the map
-    for park in parks:
-        park_name = park.name
-
-        folium.Marker(
-            location=(park.latitude, park.longitude),
-            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park_name, max_width=200),
-        ).add_to(marker_cluster)
-
-    # represent map as html
-    context = {"map": m._repr_html_()}
-    return render(request, "parks/map.html", context)
 
 
 def park_and_map(request):
@@ -148,27 +110,13 @@ def park_detail(request, slug, id):
     if request.user.is_authenticated and request.method == "POST":
         form_type = request.POST.get("form_type")
 
-        if form_type == "upload_image" and request.FILES.getlist("images"):
-            for image in request.FILES.getlist("images"):
-                ParkImage.objects.create(park=park, image=image, user=request.user)
-            return redirect("park_detail", slug=park.slug, id=park.id)
-
-        elif form_type == "submit_review":
+        if form_type == "submit_review":
             review_text = request.POST.get("text", "").strip()
             rating_value = request.POST.get("rating", "").strip()
 
             if not rating_value.isdigit():
-                return render(
-                    request,
-                    "parks/park_detail.html",
-                    {
-                        "park": park,
-                        "images": images,
-                        "reviews": reviews,
-                        "error_message": "Please select a valid rating!",
-                        "average_rating": average_rating,
-                    },
-                )
+                messages.error(request, "Please select a rating before submitting.")
+                return redirect("park_detail", slug=park.slug, id=park.id)
 
             rating = int(rating_value)
             if rating < 1 or rating > 5:
@@ -184,9 +132,22 @@ def park_detail(request, slug, id):
                     },
                 )
 
-            Review.objects.create(
-                park=park, text=review_text, rating=rating, user=request.user
+            review = Review.objects.create(
+                park=park,
+                text=review_text if review_text else "",
+                rating=rating,
+                user=request.user,
             )
+
+            images = request.FILES.getlist("images")
+
+            if images:
+                for image in images:
+                    ParkImage.objects.create(
+                        park=park, image=image, review=review, user=request.user
+                    )
+
+            messages.success(request, "Your review was submitted successfully!")
             return redirect("park_detail", slug=park.slug, id=park.id)
         # report reviews
         elif form_type == "report_review":
@@ -197,6 +158,9 @@ def park_detail(request, slug, id):
                 review = get_object_or_404(Review, id=review_id)
                 ReviewReport.objects.create(
                     review=review, reported_by=request.user, reason=reason
+                )
+                messages.success(
+                    request, "Your review report was submitted successfully."
                 )
                 return redirect("park_detail", slug=park.slug, id=park.id)
 
@@ -220,6 +184,7 @@ def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if request.user == review.user:
         review.delete()
+        messages.success(request, "You have successfully deleted the review!")
         return redirect("park_detail", slug=review.park.slug, id=review.park.id)
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
@@ -231,6 +196,7 @@ def delete_image(request, image_id):
     if image.user == request.user:
         park_id = image.park.id
         image.delete()
+        messages.success(request, "You have successfully deleted the image!")
         return redirect("park_detail", slug=image.park.slug, id=park_id)
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
@@ -246,5 +212,6 @@ def report_image(request, image_id):
         reason = request.POST.get("reason", "").strip()
         if reason:
             ImageReport.objects.create(user=request.user, image=image, reason=reason)
+            messages.success(request, "You have successfully reported the image!")
             return redirect("park_detail", slug=image.park.slug, id=image.park.id)
     return redirect("park_detail", slug=image.park.slug, id=image.park.id)

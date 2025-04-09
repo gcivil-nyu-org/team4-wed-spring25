@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex flex-column justify-content-center align-items-center text-center" style="flex: 1;">
+    <h1 class="display-4 text-warning">403 - Forbidden</h1>
+    <p class="lead">You don't have permission to access this page.</p>
+    <a class="btn btn-primary mt-3" href="{% url 'home' %}">Return Home</a>
+  </div>
+{% endblock %}

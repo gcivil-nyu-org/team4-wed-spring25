@@ -6,218 +6,38 @@
 {% block extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
 <style>
-    .pets-add-card {
-        font-family: 'Nunito', Arial, sans-serif;
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        background-color: #ffffff;
-        margin-bottom: 2rem;
-    }
-    .pets-add-header {
-        font-family: 'Poppins', sans-serif;
-        background-color: #6D4C41 !important;
-        color: white;
-        border-bottom: none;
-        padding: 1.25rem 1.5rem;
-        text-align: center;
-    }
-    .pets-add-header h2 {
-        margin-bottom: 0;
-        font-size: 1.6rem;
-        font-weight: 600;
-    }
-    .pets-add-card .card-body {
-        padding: 1.5rem;
-    }
-    .form-label {
-        font-weight: 600;
-        color: #555;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
-    }
-    .form-label i {
-        font-size: 1em;
-    }
-    .form-label .text-danger {
-        font-size: 1.1em;
-        margin-left: 2px;
-    }
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-        padding: 0.75rem 1rem;
-        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #a57d6e;
-        box-shadow: 0 0 0 0.25rem rgba(109, 76, 65, 0.2);
-    }
-    textarea.form-control {
-        min-height: 100px;
-    }
-    .pet-picture-preview {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        border: 4px solid #ffffff;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        position: relative;
-        background-color: #e9ecef;
-        cursor: pointer;
-    }
-    .pet-picture-label {
-        display: block;
-        width: 100%;
-        height: 100%;
-        position: relative;
-        cursor: pointer;
-    }
-    .pet-picture-preview img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        background-color: transparent;
-        position: relative;
-        z-index: 1;
-    }
-    .pet-preview-placeholder-icon {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 4rem;
-        color: #adb5bd;
-        background-color: #e9ecef;
-        z-index: 0;
-        pointer-events: none;
-        border-radius: 50%;
-    }
-    .pet-picture-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.35);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        border-radius: 50%;
-        z-index: 2;
-    }
-    .pet-picture-label:hover .pet-picture-overlay {
-        opacity: 1;
-    }
-    .btn-cancel-custom, .btn-add-pet-submit, .btn-outline-primary {
-        padding: 0.7rem 1.3rem;
-        font-weight: 600;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        text-decoration: none !important;
-        text-align: center;
-        vertical-align: middle;
-        cursor: pointer;
-        user-select: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Poppins', sans-serif;
-        margin: 0.25rem;
-        border: 1px solid transparent;
-    }
-    .btn-cancel-custom i, .btn-add-pet-submit i, .btn-outline-primary i {
-        margin-right: 0.5rem;
-        font-size: 0.9em;
-    }
-    .btn-add-pet-submit {
-        background-color: #198754;
-        border-color: #198754;
-        color: white;
-    }
-    .btn-add-pet-submit:hover {
-        background-color: #157347;
-        border-color: #146c43;
-        color: white;
-    }
-    .btn-cancel-custom {
-        color: #6D4C41;
-        background-color: transparent;
-        border: 1px solid #a57d6e;
-    }
-    .btn-cancel-custom:hover {
-        background-color: #f5f0ee;
-        color: #5d4037;
-        border-color: #8d6e63;
-    }
-    .btn-outline-primary {
-        color: #6D4C41;
-        border-color: #a57d6e;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.85rem;
-    }
-    .btn-outline-primary:hover {
-        background-color: #f5f0ee;
-        color: #5d4037;
-        border-color: #8d6e63;
-    }
-    .invalid-feedback.d-block {
-        color: #dc3545;
-        width: 100%;
-        font-size: 0.875em;
-        margin-top: 0.25rem;
-    }
-    .form-control.is-invalid, .was-validated .form-control:invalid {
-        border-color: #dc3545;
-    }
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-on-load {
-        animation: fadeInUp 0.6s ease-out forwards;
-        opacity: 0;
-    }
-    .img-container-modal {
-        max-height: 50vh;
-        width: 100%;
-        margin-bottom: 1rem;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f7f7f7;
-    }
-    .img-container-modal > img {
-        max-width: 100%;
-    }
-    .cropper-container {
-        direction: ltr;
-        font-size: 0;
-        line-height: 0;
-        position: relative;
-        -ms-touch-action: none;
-        touch-action: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    .cropper-bg {
-        background-image: none !important;
-    }
+    .pets-add-card { font-family: 'Nunito', Arial, sans-serif; border: none; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); background-color: #ffffff; margin-bottom: 2rem; }
+    .pets-add-header { font-family: 'Poppins', sans-serif; background-color: #6D4C41 !important; color: white; border-bottom: none; padding: 1.25rem 1.5rem; text-align: center; }
+    .pets-add-header h2 { margin-bottom: 0; font-size: 1.6rem; font-weight: 600; }
+    .pets-add-card .card-body { padding: 1.5rem; }
+    .form-label { font-weight: 600; color: #555; margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .form-label i { font-size: 1em; }
+    .form-label .text-danger { font-size: 1.1em; margin-left: 2px; }
+    .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; padding: 0.75rem 1rem; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; }
+    .form-control:focus, .form-select:focus { border-color: #a57d6e; box-shadow: 0 0 0 0.25rem rgba(109, 76, 65, 0.2); }
+    textarea.form-control { min-height: 100px; }
+    .pet-picture-preview { width: 150px; height: 150px; border-radius: 50%; border: 4px solid #ffffff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); overflow: hidden; position: relative; background-color: #e9ecef; cursor: pointer; }
+    .pet-picture-label { display: block; width: 100%; height: 100%; position: relative; cursor: pointer; }
+    .pet-picture-preview img { display: block; width: 100%; height: 100%; object-fit: cover; background-color: transparent; position: relative; z-index: 1; }
+    .pet-preview-placeholder-icon { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #adb5bd; background-color: #e9ecef; z-index: 0; pointer-events: none; border-radius: 50%; }
+    .pet-picture-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.35); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0; transition: opacity 0.3s ease; border-radius: 50%; z-index: 2; }
+    .pet-picture-label:hover .pet-picture-overlay { opacity: 1; }
+    .btn-cancel-custom, .btn-add-pet-submit, .btn-outline-primary { padding: 0.7rem 1.3rem; font-weight: 600; font-size: 0.9rem; border-radius: 8px; text-decoration: none !important; text-align: center; vertical-align: middle; cursor: pointer; user-select: none; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; margin: 0.25rem; border: 1px solid transparent; }
+    .btn-cancel-custom i, .btn-add-pet-submit i, .btn-outline-primary i { margin-right: 0.5rem; font-size: 0.9em; }
+    .btn-add-pet-submit { background-color: #198754; border-color: #198754; color: white; }
+    .btn-add-pet-submit:hover { background-color: #157347; border-color: #146c43; color: white; }
+    .btn-cancel-custom { color: #6D4C41; background-color: transparent; border: 1px solid #a57d6e; }
+    .btn-cancel-custom:hover { background-color: #f5f0ee; color: #5d4037; border-color: #8d6e63; }
+    .btn-outline-primary { color: #6D4C41; border-color: #a57d6e; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    .btn-outline-primary:hover { background-color: #f5f0ee; color: #5d4037; border-color: #8d6e63; }
+    .invalid-feedback.d-block { color: #dc3545; width: 100%; font-size: 0.875em; margin-top: 0.25rem; }
+    .form-control.is-invalid, .was-validated .form-control:invalid { border-color: #dc3545; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+    .img-container-modal { max-height: 50vh; width: 100%; margin-bottom: 1rem; overflow: hidden; display: flex; justify-content: center; align-items: center; background-color: #f7f7f7; }
+    .img-container-modal > img { max-width: 100%; }
+    .cropper-container { direction: ltr; font-size: 0; line-height: 0; position: relative; -ms-touch-action: none; touch-action: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+    .cropper-bg { background-image: none !important; }
 </style>
 {% endblock %}
 
@@ -230,11 +50,12 @@
                     <h2 class="mb-0">Add a New Pet</h2>
                 </div>
                 <div class="card-body p-4">
-                    <form id="addPetForm" method="POST" enctype="multipart/form-data" action="{% url 'add_pet' %}">
+                    <form id="addPetForm" method="POST" enctype="multipart/form-data" action="{% url 'add_pet' %}" data-profile-url="{% url 'profile' username=user.username %}">
                         {% csrf_token %}
                         {% with pet_picture_field=form.pet_picture %}
                             <input type="file" name="{{ pet_picture_field.html_name }}_original" id="{{ pet_picture_field.id_for_label }}" class="d-none" accept="image/*">
                         {% endwith %}
+
                         {% if form.non_field_errors %}
                             <div class="alert alert-danger mb-4" role="alert">
                                 {% for error in form.non_field_errors %}
@@ -269,6 +90,7 @@
                                         <i class="fas fa-upload me-1"></i> Choose Image
                                     </label>
                                     <span id="petFileNameDisplayAdd" class="d-block small text-muted mt-1"></span>
+
                                     {% if pet_picture_field.help_text %}
                                         <div id="{{ pet_picture_field.id_for_label }}_help" class="form-text small mt-1">{{ pet_picture_field.help_text|safe }}</div>
                                     {% endif %}
@@ -288,7 +110,7 @@
                                             {% if field.name == 'name' %}<i class="fas fa-paw fa-fw me-2 text-secondary"></i>{% elif field.name == 'species' %}<i class="fas fa-dna fa-fw me-2 text-secondary"></i>{% elif field.name == 'breed' %}<i class="fas fa-tag fa-fw me-2 text-secondary"></i>{% elif field.name == 'age' %}<i class="fas fa-birthday-cake fa-fw me-2 text-secondary"></i>{% elif field.name == 'description' %}<i class="fas fa-file-alt fa-fw me-2 text-secondary"></i>{% elif field.name == 'gender' %}<i class="fas fa-venus-mars fa-fw me-2 text-secondary"></i>{% elif field.name == 'personality' %}<i class="fas fa-smile fa-fw me-2 text-secondary"></i>{% elif field.name == 'favorite_food' %}<i class="fas fa-bone fa-fw me-2 text-secondary"></i>{% else %}<i class="fas fa-info-circle fa-fw me-2 text-secondary"></i>{% endif %}
                                             {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                         </label>
-                                        {{ field }}
+                                        {{ field.as_widget }}
                                         {% if field.help_text %}
                                             <div id="{{ field.id_for_label }}_help" class="form-text">{{ field.help_text|safe }}</div>
                                         {% endif %}
@@ -302,7 +124,7 @@
                                 {% endfor %}
 
                                 <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
-                                    <a href="{% url 'profile' %}" class="btn btn-cancel-custom">Cancel</a>
+                                    <a href="{% url 'profile' username=user.username %}" class="btn btn-cancel-custom">Cancel</a>
                                     <button type="submit" class="btn btn-add-pet-submit" id="addPetSubmitBtn">
                                         <i class="fas fa-plus me-2"></i>Add Pet
                                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
@@ -339,7 +161,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 <script>
@@ -360,33 +181,17 @@ document.addEventListener('DOMContentLoaded', function () {
     let croppedImageBlob = null;
     let currentModal = null;
 
-    function showPlaceholder() {
-        if (previewImage) {
-             previewImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-             previewImage.style.display = 'block';
-        }
-        if (placeholderIcon) placeholderIcon.style.display = 'flex';
-    }
-
-    function showImagePreview(src) {
-         if (previewImage) {
-             previewImage.src = src;
-             previewImage.style.display = 'block';
-         }
-         if (placeholderIcon) placeholderIcon.style.display = 'none';
-    }
-
+    function showPlaceholder() { if (previewImage) { previewImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; previewImage.style.display = 'block';} if (placeholderIcon) placeholderIcon.style.display = 'flex'; }
+    function showImagePreview(src) { if (previewImage) { previewImage.src = src; previewImage.style.display = 'block'; } if (placeholderIcon) placeholderIcon.style.display = 'none'; }
     showPlaceholder();
 
     if (cropModalElement) {
-        currentModal = new bootstrap.Modal(cropModalElement);
+        try { currentModal = new bootstrap.Modal(cropModalElement); } catch (e) { console.error("Modal init error:", e); }
     } else {
-        console.error("Modal not found!");
+        console.error("Modal element not found!");
     }
 
-    if (!imageInput) {
-        console.warn("Image input not found!");
-    }
+    if (!imageInput) { console.warn("Image input not found!"); }
 
     if (imageInput) {
         imageInput.addEventListener('change', function (event) {
@@ -403,16 +208,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if(fileNameDisplay) fileNameDisplay.textContent = file.name;
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                     if(imageToCrop) imageToCrop.src = e.target.result;
-                     if(currentModal) currentModal.show();
-                     else console.error("Modal instance not found");
+                    if(imageToCrop) imageToCrop.src = e.target.result;
+                    if(currentModal) currentModal.show(); else console.error("Modal instance not found");
                 };
-                 reader.onerror = function() {
+                reader.onerror = function() {
                     console.error("FileReader error.");
                     alert("Error reading file.");
                     if(fileNameDisplay) fileNameDisplay.textContent = '';
                     showPlaceholder();
-                 };
+                };
                 reader.readAsDataURL(file);
             } else {
                 if(fileNameDisplay) fileNameDisplay.textContent = '';
@@ -422,20 +226,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-     if (cropModalElement) {
+    if (cropModalElement) {
          cropModalElement.addEventListener('shown.bs.modal', function () {
              if(cropperErrorDiv) cropperErrorDiv.classList.add('d-none');
              if (cropper) cropper.destroy();
-
              if (!imageToCrop || !imageToCrop.src || imageToCrop.src === window.location.href || imageToCrop.naturalWidth === 0) {
                  console.error("Image source for cropper invalid.");
                  if(cropperErrorDiv){ cropperErrorDiv.textContent = "Could not load image."; cropperErrorDiv.classList.remove('d-none'); }
                  if(cropAndSaveButton) cropAndSaveButton.disabled = true;
                  return;
              }
-
              if(cropAndSaveButton) cropAndSaveButton.disabled = false;
-
              try {
                  cropper = new Cropper(imageToCrop, { aspectRatio: 1 / 1, viewMode: 1, background: false });
              } catch(e) {
@@ -443,12 +244,11 @@ document.addEventListener('DOMContentLoaded', function () {
                  if(cropperErrorDiv){ cropperErrorDiv.textContent = "Failed init cropper."; cropperErrorDiv.classList.remove('d-none'); }
              }
          });
-     }
+    }
 
-     if (cropAndSaveButton) {
+    if (cropAndSaveButton) {
          cropAndSaveButton.addEventListener('click', function () {
              if (!cropper) return;
-
              let canvas;
              try {
                  canvas = cropper.getCroppedCanvas({ width: 300, height: 300, imageSmoothingEnabled: true, imageSmoothingQuality: 'medium' });
@@ -457,21 +257,18 @@ document.addEventListener('DOMContentLoaded', function () {
                  if(cropperErrorDiv){ cropperErrorDiv.textContent = "Crop failed."; cropperErrorDiv.classList.remove('d-none'); }
                  return;
              }
-
              if (!canvas) {
                  console.error("Canvas null.");
                  if(cropperErrorDiv){ cropperErrorDiv.textContent = "Crop canvas empty."; cropperErrorDiv.classList.remove('d-none'); }
                  return;
              }
-
              const dataUrl = canvas.toDataURL('image/png');
              showImagePreview(dataUrl);
              previewImage.onerror = function() {
-                this.onerror=null;
-                this.src='{% static 'images/img_placeholder.svg' %}';
-                showPlaceholder();
+                 this.onerror=null;
+                 this.src='{% static 'images/img_placeholder.svg' %}';
+                 showPlaceholder();
              };
-
              canvas.toBlob(function (blob) {
                  if (blob) {
                      croppedImageBlob = blob;
@@ -484,18 +281,12 @@ document.addEventListener('DOMContentLoaded', function () {
                  if(currentModal) currentModal.hide();
              }, 'image/png');
          });
-     }
+    }
 
      if (cropModalElement) {
          cropModalElement.addEventListener('hidden.bs.modal', function () {
-             if (cropper) {
-                 cropper.destroy();
-                 cropper = null;
-             }
-             // Clear the file input value to allow re-selecting the same file
+             if (cropper) { cropper.destroy(); cropper = null; }
              if (imageInput) imageInput.value = '';
-
-             // Reset preview only if the modal was closed without saving the crop
              if (!croppedImageBlob) {
                  showPlaceholder();
                  if(fileNameDisplay) fileNameDisplay.textContent = '';
@@ -511,22 +302,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const formData = new FormData(addPetForm);
 
-            // Append cropped image if available, otherwise remove original file input data
             if (croppedImageBlob && imageInput) {
                 let inputName = imageInput.getAttribute('name');
-                // Derive the correct field name ('pet_picture' instead of 'pet_picture_original')
                 if (inputName && inputName.endsWith('_original')) {
                     inputName = inputName.replace('_original', '');
                 } else {
-                    inputName = 'pet_picture'; // Fallback name
+                    inputName = 'pet_picture';
                     console.warn(`Input name defaulting to '${inputName}' for cropped image.`);
                 }
-                // Remove the original file input placeholder from form data
                 formData.delete(imageInput.getAttribute('name'));
-                // Append the cropped blob with the correct field name
-                formData.append(inputName, croppedImageBlob, 'pet_picture.png'); // Use a generic filename
+                formData.append(inputName, croppedImageBlob, 'pet_picture.png');
             } else if (imageInput) {
-                 // Ensure the placeholder file input value isn't sent if no crop happened
                  formData.delete(imageInput.getAttribute('name'));
             }
 
@@ -534,30 +320,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken') // Ensure CSRF token is sent
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
             })
             .then(response => {
                 if (response.ok) {
                     console.log('Pet added successfully!');
                     if (response.redirected) {
-                        window.location.href = response.url; // Follow redirect if provided
+                        window.location.href = response.url;
                     } else {
-                        // Fallback redirect if server doesn't send one
-                        window.location.href = "{% url 'profile' %}";
+                        const profileUrl = addPetForm.dataset.profileUrl;
+                        if (profileUrl) {
+                           window.location.href = profileUrl;
+                        } else {
+                           console.error("Profile URL not found on form data attribute. Cannot redirect.");
+                           alert("Pet added successfully! Redirecting home.");
+                           window.location.href = "/";
+                        }
                     }
                 } else {
                     console.error('Error adding pet:', response.status, response.statusText);
                     response.json().then(errors => {
                         console.error('Server validation errors:', errors);
                         let errorMsg = 'Error saving pet.\nPlease check the form for errors.\n';
-                        // Basic error display - enhance as needed
-                        for (const field in errors) {
-                            errorMsg += `\n${field}: ${errors[field].join(', ')}`;
-                        }
+                        for (const field in errors) { errorMsg += `\n${field}: ${errors[field].join(', ')}`; }
                         alert(errorMsg);
                     }).catch(() => {
-                        // Handle cases where response is not JSON
                         alert(`Error saving pet. Server responded with status ${response.status}.`);
                     });
                     addPetSubmitBtn.disabled = false;
@@ -575,6 +363,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error("Add pet form or submit button not found!");
     }
 
-}); // End DOMContentLoaded
+});
 </script>
 {% endblock %}
