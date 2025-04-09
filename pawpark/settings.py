@@ -47,8 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "parks",
     "homepage",
-    'profiles.apps.ProfilesConfig',
-
+    "profiles.apps.ProfilesConfig",
 ]
 
 MIDDLEWARE = [
