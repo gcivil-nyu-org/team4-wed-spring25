@@ -68,10 +68,10 @@
 
                             {% if img.user == user %}
                             <!-- Delete Button -->
-                            <form method="POST" action="{% url 'delete_image' img.id %}">
+                            <!-- <form method="POST" action="{% url 'delete_image' img.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="delete-btn">Delete</button>
-                            </form>
+                            </form> -->
                             {% else %}
                             <!-- Report Button -->
                             <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}" >Report</a>
