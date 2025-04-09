@@ -2,21 +2,22 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 
-from profiles.models import UserProfile, PetProfile
+from profiles.models import PetProfile
 
 
 class ProfileViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="testuser", password="testpass")
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            location="NYC",
-            phone_number="1234567890",
-            website="https://example.com",
-            bio="I love dogs!",
-            signature="Woof life",
-        )
+        self.profile = self.user.userprofile
+
+        self.profile.location = "NYC"
+        self.profile.phone_number = "1234567890"
+        self.profile.website = "https://example.com"
+        self.profile.bio = "I love dogs!"
+        self.profile.signature = "Woof life"
+        self.profile.save()
+
         self.pet = PetProfile.objects.create(
             owner=self.profile,
             name="Buddy",
@@ -29,7 +30,7 @@ class ProfileViewsTest(TestCase):
         self.other_user = User.objects.create_user(
             username="otheruser", password="otherpass"
         )
-        self.other_user_profile = UserProfile.objects.create(user=self.other_user)
+        self.other_user_profile = self.other_user.userprofile
         self.other_pet = PetProfile.objects.create(
             owner=self.other_user_profile, name="OtherPet", breed="Poodle", age=1
         )

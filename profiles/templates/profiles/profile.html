@@ -224,7 +224,7 @@
                            {% if user_profile.profile_picture and user_profile.profile_picture.url %}
                                <img src="{{ user_profile.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture" class="profile-picture-display">
                            {% else %}
-                               <img src="{% static 'images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display">
+                               <img src="{% static 'static/images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display">
                            {% endif %}
                        </div>
                        <div class="col-md-8">
@@ -298,7 +298,7 @@
                              <p>{% if is_own_profile %}You haven't added any pets yet.{% else %}{{ profile_user.username }} hasn't added any pets yet.{% endif %}</p>
                              {% if is_own_profile %}
                              <a href="{% url 'add_pet' %}" class="btn btn-add-pet">
-                                <i class="fas fa-plus"></i> Add Your First Pet
+                                <i class="fs fa-plus"></i> Add Your First Pet
                              </a>
                              {% endif %}
                          </div>
