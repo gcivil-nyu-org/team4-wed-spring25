@@ -316,7 +316,7 @@
             </div>
           </div>
         </div>
-      </div>
+    </div>
 </div>
 
 
@@ -473,58 +473,6 @@
                 }
             });
         });
-
-
-
-        // Review images modal
-        const modalImage = document.getElementById("modalImage");
-        const modal = new bootstrap.Modal(document.getElementById("imageModal"));
-        const prevBtn = document.getElementById("prevImageBtn");
-        const nextBtn = document.getElementById("nextImageBtn");
-
-        let currentImages = [];
-        let currentIndex = 0;
-
-        document.querySelectorAll(".review-thumbnail").forEach((thumb) => {
-            thumb.addEventListener("click", function () {
-                const reviewId = this.getAttribute("data-review-id");
-
-                // Get images only for this review
-                currentImages = Array.from(
-                    document.querySelectorAll(`.review-thumbnail[data-review-id='${reviewId}']`)
-                );
-                currentIndex = currentImages.indexOf(this);
-
-                showImage();
-                modal.show();
-            });
-        });
-
-        function showImage() {
-            if (currentImages.length > 0) {
-                const fullImageUrl = currentImages[currentIndex].getAttribute("data-full");
-                modalImage.setAttribute("src", fullImageUrl);
-
-                // Show/hide nav buttons
-                prevBtn.style.display = currentIndex > 0 ? "block" : "none";
-                nextBtn.style.display = currentIndex < currentImages.length - 1 ? "block" : "none";
-            }
-        }
-
-        prevBtn.addEventListener("click", () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                showImage();
-            }
-        });
-
-        nextBtn.addEventListener("click", () => {
-            if (currentIndex < currentImages.length - 1) {
-                currentIndex++;
-                showImage();
-            }
-        });
-
     });
 
     
@@ -638,6 +586,59 @@
             }, 2000);
         }
     });
+
+
+    
+    // Review images modal
+    document.addEventListener("lazyloaded", function (e) {
+        const modalImage = document.getElementById("modalImage");
+        const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+        const prevBtn = document.getElementById("prevImageBtn");
+        const nextBtn = document.getElementById("nextImageBtn");
+
+        let currentImages = [];
+        let currentIndex = 0;
+
+        if (e.target.classList.contains("review-thumbnail") && !e.target.dataset.bound) {
+            e.target.addEventListener("click", function () {
+                const reviewId = this.getAttribute("data-review-id");
+
+                currentImages = Array.from(
+                    document.querySelectorAll(`.review-thumbnail[data-review-id='${reviewId}']`)
+                );
+                currentIndex = currentImages.indexOf(this);
+                showImage();
+                modal.show();
+            });
+        }
+
+
+        function showImage() {
+            if (currentImages.length > 0) {
+                const fullImageUrl = currentImages[currentIndex].getAttribute("data-full");
+                modalImage.setAttribute("src", fullImageUrl);
+
+                // Show/hide nav buttons
+                prevBtn.style.display = currentIndex > 0 ? "block" : "none";
+                nextBtn.style.display = currentIndex < currentImages.length - 1 ? "block" : "none";
+            }
+        }
+
+        prevBtn.addEventListener("click", () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                showImage();
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            if (currentIndex < currentImages.length - 1) {
+                currentIndex++;
+                showImage();
+            }
+        });
+    });
+
 
 </script>
 
