@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 {% load display_rating %}
 {% load tz %}
+{% load image_filters %}
 
 {% block content %}
 <div class="container my-4">
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- Park Heading -->
     <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
     <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
@@ -37,25 +49,32 @@
             <div class="carousel-inner">
                 {% for img in images %}
                 <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
-                    <img data-src="{{ img.image.url }}" class="d-block w-100 lazyload" alt="Park Image"
-                         style="height: 400px; object-fit: cover; border-radius: 10px;" loading="lazy">
-                         <!-- show uploader's name -->
-                         <p class="text-end text-white px-2" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">
-                            <small>Uploaded by: <strong>{{ img.user.username }}</strong></small>
-                        </p>
+                    <img 
+                        src="{{ img.image.url|replace:'upload/,upload/w_30,q_10/' }}"
+                        data-src="{{ img.image.url|replace:'upload/,upload/w_1000,q_auto,f_auto/' }}"
+                        class="d-block w-100 lazyload" 
+                        alt="Park Image"
+                        style="height: 400px; object-fit: cover; border-radius: 10px;" 
+                        loading="lazy"
+                    >
+
+                    <!-- show uploader's name -->
+                    <p class="text-end text-white px-2" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">
+                        <small>Uploaded by: <strong>{{ img.user.username }}</strong></small>
+                    </p>
                         
                     {% if user.is_authenticated %}
                     <div class="position-absolute top-0 end-0 mt-2 me-3 no-slide" style="z-index: 1055;">
 
                             {% if img.user == user %}
                             <!-- Delete Button -->
-                            <form method="POST" action="{% url 'delete_image' img.id %}">
+                            <!-- <form method="POST" action="{% url 'delete_image' img.id %}">
                                 {% csrf_token %}
-                                <button type="submit" class="delete-link" >Delete</button>
-                            </form>
+                                <button type="submit" class="delete-btn">Delete</button>
+                            </form> -->
                             {% else %}
                             <!-- Report Button -->
-                            <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}" >Report</a>
+                            <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}" >Report</a>
                             {% endif %}
                         </div>
             
@@ -64,7 +83,7 @@
                         <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
+                                    <form method="POST" action="{% url 'report_image' img.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="form_type" value="report_image">
                                         <input type="hidden" name="image_id" value="{{ img.id }}">
@@ -105,7 +124,8 @@
     </div>
 
     <!-- Map -->
-    <div class="col-md-9 d-flex flex-column mt-3" style="width: 100%; height: 500px;">
+    <div class="col-md-9 d-flex flex-column mt-3 position-relative" style="width: 100%; height: 500px;">
+        <div id="scrollHint" ><p>Hold ⌘ (or Ctrl) + scroll to zoom the map</p></div>
         <div class="map-container flex-grow-1 w-100" style="height: 100%;">
             <!-- id map used in JS for Leaflet -->
             <div id="detail-page-map" style="height: 100%"></div>
@@ -130,127 +150,149 @@
         </table>
     </div>
 
-    <!-- Upload Image Form -->
-    <div class="card mt-5">
+    <!-- Review Form -->
+    <div class="card mt-4">
         <div class="card-header bg-brown text-white">
-            <h4>Upload a Picture</h4>
+            <h4 class="mt-2 mb-2">Leave a Review</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body pt-0 pb-0">
             {% if user.is_authenticated %}
+                {% if error_message %}
+                    <div class="alert alert-danger mt-3">{{ error_message }}</div>
+                {% endif %}
                 <form method="POST" action="{% url 'park_detail' park.slug park.id %}" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input type="hidden" name="form_type" value="upload_image">
-                    <div class="mb-3">
-                        <label class="form-label">Upload Images:</label>
+                    <input type="hidden" name="form_type" value="submit_review">
+
+                    <!-- Star Rating System -->
+                    <div class="stars mt-5 mb-5">
+                        {% for i in "12345" %}
+                            <span class="star" data-value=" {{ i }}">
+                                <svg width="40" height="40">
+                                    <use href="#star-icon" />
+                                </svg>
+                            </span>          
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="rating" id="star-rating" required>
+                    
+                    <!-- Text -->
+                    <div class="mb-5">
+                        <textarea name="text" class="form-control" rows="5" placeholder="Share details of your own experience at this park"></textarea>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="form-label">Add Images:</label>
+                        <small class="text-muted">You can upload multiple images (optional)</small>
                         <input type="file" name="images" accept="image/*" class="form-control" multiple>
                     </div>
-                    <div id="imagePreview" class="d-flex flex-wrap gap-2"></div>
-                    <button type="submit" class="btn btn-brown">Submit Images</button>
+                    <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-4"></div>
+
+                    <div id="submit-review-button-wrapper" class="mt-5 d-flex gap-2" style="align-items: end; width: max-content;">
+                        <button id="submit-review-button" type="submit" class="btn btn-brown" disabled>Submit Review</button>
+                        <small id="submission-requirement-msg" style="display: none; color: #6D4C41;">Select a star rating to submit review</small>
+                    </div>
+
+                    <div class="mb-3"></div>
                 </form>
             {% else %}
-                <p class="text-muted">You must be <a href="{% url 'login' %}?next={{ request.path }}">logged in</a> to upload images.</p>
+                <p class="text-muted mt-3 mb-3" style="margin: 0;">You must be <a href="{% url 'login' %}?next={{ request.path }}">logged in</a> to leave a review.</p>
             {% endif %}
         </div>
     </div>
 
-<!-- Review Form -->
-<div class="card mt-4">
-    <div class="card-header bg-brown text-white">
-        <h4>Leave a Review</h4>
-    </div>
-    <div class="card-body">
-        {% if user.is_authenticated %}
-            {% if error_message %}
-                <div class="alert alert-danger">{{ error_message }}</div>
-        {% endif %}
-        <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="submit_review">
-            
-            <div class="mb-3">
-                <label class="form-label">Your Review:</label>
-                <textarea name="text" class="form-control" rows="4" required></textarea>
-            </div>
-
-            <!-- Star Rating System -->
-            <label class="form-label">Rating:</label>
-            <div class="stars mb-3">
-                {% for i in "12345" %}
-                    <span class="star" data-value=" {{ i }}">
-                        <svg width="40" height="40">
-                            <use href="#star-icon" />
-                        </svg>
-                    </span>          
-                {% endfor %}
-
-            </div>
-            <input type="hidden" name="rating" id="star-rating" required>
-
-            <button type="submit" class="btn btn-brown">Submit Review</button>
-        </form>
-        {% else %}
-        <p class="text-muted">You must be <a href="{% url 'login' %}?next={{ request.path }}">logged in</a> to leave a review.</p>
-    {% endif %}
-    </div>
-</div>
-
-
     <!-- Display Recent Reviews -->
     <div class="card mt-4">
         <div class="card-header bg-brown text-white">
-            <h4>Recent Reviews</h4>
+            <h4 class="m-0">Recent Reviews</h4>
         </div>
         <div class="card-body">
             {% if reviews %}
                 {% for review in reviews %}
-                    <div class="review border-bottom py-2 d-flex justify-content-between align-items-start">
-                        <div class="d-flex flex-column">
-                            <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p>
-                            <p class="d-flex gap-1">
-                                <span class="d-flex gap-0 align-items-center">
-                                    {% render_stars review.rating 17 %}
-                                </span>
-                                <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
-                            </p>
-                            <p>{{ review.text }}</p>
-                        </div>
-    
-                        <div class="ms-3 text-end">
-                            {% if user == review.user %}
-                                <!-- Delete Button for own review -->
-                                <form method="POST" action="{% url 'delete_review' review.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="delete-link">Delete</button>
-                                </form>
-                            {% elif user.is_authenticated %}
-                                <!-- Report Button for others' reviews -->
-                                <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
-    
-                                <!-- Report Modal -->
-                                <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="form_type" value="report_review">
-                                                <input type="hidden" name="review_id" value="{{ review.id }}">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <label for="reason">Reason for report:</label>
-                                                    <textarea name="reason" class="form-control" rows="3" required></textarea>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="submit" class="btn btn-danger">Submit Report</button>
-                                                </div>
-                                            </form>
+                    <div class="border-bottom py-3 d-flex flex-column gap-2">
+                        <div class="review d-flex justify-content-between align-items-start">
+                            <div class="d-flex flex-column">
+                                <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p>
+                                <p class="d-flex gap-1 m-0">
+                                    <span class="d-flex gap-0 align-items-center">
+                                        {% render_stars review.rating 17 %}
+                                    </span>
+                                    <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                                </p>
+                                
+                            </div>
+        
+                            <div class="ms-3 text-end">
+                                {% if user == review.user %}
+                                    <!-- Delete Button for own review -->
+                                    <form method="POST" action="{% url 'delete_review' review.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="delete-link">Delete</button>
+                                    </form>
+                                {% elif user.is_authenticated %}
+                                    <!-- Report Button for others' reviews -->
+                                    <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
+        
+                                    <!-- Report Modal -->
+                                    <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="form_type" value="report_review">
+                                                    <input type="hidden" name="review_id" value="{{ review.id }}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <label for="reason">Reason for report:</label>
+                                                        <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-danger">Submit Report</button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
+
+                        <!-- Review Text -->
+                         {% if review.text %}
+                            <div>{{ review.text }}</div>
+                        {% endif %}
+
+                        <!-- Images Section -->
+                        {% if review.images.all %}
+                            
+
+                            <div class="scrollable-image-wrapper position-relative mt-2">
+                                <button class="scroll-btn scroll-left" type="button" aria-label="Scroll left">&#8249;</button>
+                                                              
+                                <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
+                                  {% for img in review.images.all %}
+                                    <img 
+                                        data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
+                                        data-full="{{ img.image.url }}"
+                                        class="lazyload review-thumbnail"
+                                        data-review-id="{{ review.id }}"
+                                        alt="Review Image" 
+                                        style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                        loading="lazy" 
+                                    />
+                                  {% endfor %}
+                                </div>
+                              
+                                <button class="scroll-btn scroll-right" type="button" aria-label="Scroll right">&#8250;</button>
+                              </div>
+
+
+                        {% endif %}
+
                     </div>
                 {% endfor %}
             {% else %}
@@ -260,30 +302,177 @@
     </div>
 
     <!-- Back Button -->
-    <div class="text-center mt-3 mb-5">
+    <div class="text-center mt-5 mb-5">
         <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
+    </div>
+
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content bg-dark position-relative">
+            <div class="modal-body p-0 text-center">
+              <button id="prevImageBtn" class="scroll-btn" style="left: 10px;">‹</button>
+              <img id="modalImage" src="" class="img-fluid w-100" alt="Expanded Image" />
+              <button id="nextImageBtn" class="scroll-btn" style="right: 10px;">›</button>
+            </div>
+          </div>
+        </div>
     </div>
 </div>
 
-<!-- JavaScript for Star Rating -->
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const stars = document.querySelectorAll('.star');
-        console.log(stars);
         const ratingInput = document.getElementById('star-rating');
-
-        stars.forEach(star => {
+        const submitButton = document.getElementById('submit-review-button');
+        const buttonWrapper = document.getElementById('submit-review-button-wrapper');
+        const submissionRequirementMsg = document.getElementById('submission-requirement-msg');
+        let submitted = false;
+        
+        // Star rating selection
+        stars.forEach((star, index) => {
             star.addEventListener('click', function () {
-                const ratingValue = this.getAttribute('data-value');
-                ratingInput.value = ratingValue;
-
-                stars.forEach(s => s.classList.remove('selected'));
-                for (let i = 0; i < ratingValue; i++) {
-                    stars[i].classList.add('selected');
+                const clickedValue = parseInt(this.getAttribute('data-value'));
+                const currentValue = parseInt(ratingInput.value);
+                
+                if (clickedValue === currentValue) {
+                    // Deselect all if clicked on same star
+                    ratingInput.value = "";
+                    stars.forEach(s => s.classList.remove('selected'));
+                    submitButton.disabled = true;
+                } else {
+                    // Set new rating and highlight
+                    ratingInput.value = clickedValue;
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('selected', i < clickedValue);
+                    });
+                    submitButton.disabled = false;
                 }
             });
         });
 
+
+        // Display message if no stars are selected
+        buttonWrapper.addEventListener('mouseenter', function () {
+            if (submitButton.disabled && !submitted) {
+                submissionRequirementMsg.style.display = 'block';
+            }
+        });
+
+        buttonWrapper.addEventListener('mouseleave', function () {
+            submissionRequirementMsg.style.display = 'none';
+        });
+
+
+
+        // Scrollable container for review images
+        const wrappers = document.querySelectorAll('.scrollable-image-wrapper');
+
+        wrappers.forEach(wrapper => {
+            const container = wrapper.querySelector('.scrollable-image-inner');
+            const leftBtn = wrapper.querySelector('.scroll-left');
+            const rightBtn = wrapper.querySelector('.scroll-right');
+
+            function updateButtons() {
+                // Calculate whether to show buttons
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                leftBtn.style.display = container.scrollLeft > 0 ? 'block' : 'none';
+                rightBtn.style.display = container.scrollLeft < maxScrollLeft ? 'block' : 'none';
+            }
+
+            // Scroll button logic
+            leftBtn.addEventListener('click', () => {
+                container.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+
+            rightBtn.addEventListener('click', () => {
+                container.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+
+
+            // Update buttons when container scrolls
+            container.addEventListener('scroll', updateButtons);
+
+            // Update buttons when then screen resizes
+            window.addEventListener('resize', updateButtons);
+
+            // Run after all images load
+            const imgs = container.querySelectorAll('img');
+            let loaded = 0;
+            imgs.forEach(img => {
+                if (img.complete) 
+                    loaded++;
+                else img.addEventListener('load', () => {
+                    loaded++;
+                    if (loaded === imgs.length) updateButtons();
+                });
+            });
+            if (loaded === imgs.length) 
+                updateButtons();
+        });
+
+
+        // Disable submit button when clicked, prevents double click
+        const reviewForm = document.querySelector("form[method='POST'][enctype='multipart/form-data']");
+        const submitBtn = document.getElementById("submit-review-button");
+        reviewForm.addEventListener("submit", function () {
+            submitted = true;
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Submitting..."; 
+        });
+
+        
+        // Disable delete review button when clicked
+        const deleteForms = document.querySelectorAll("form[action^='/delete_review/']");
+        deleteForms.forEach(form => {
+            form.addEventListener("submit", function (e) {
+                const button = form.querySelector("button[type='submit']");
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Deleting..."; // optional
+                }
+            });
+        });
+
+
+        // Disable Report Review button when clicked
+        const reportForms = document.querySelectorAll("form input[name='form_type'][value='report_review']");
+        reportForms.forEach(input => {
+            const form = input.closest("form");
+            const button = form.querySelector("button[type='submit']");
+            form.addEventListener("submit", function () {
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Submitting...";
+                }
+            });
+        });
+
+
+        // Disable delete image button when clicked
+        const deleteImageForms = document.querySelectorAll("form[action^='/delete_image/']");
+        deleteImageForms.forEach(form => {
+            const button = form.querySelector("button[type='submit']");
+            form.addEventListener("submit", function () {
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Deleting...";
+                }
+            });
+        });
+
+
+        // Disable report image button when clicked
+        const reportImageForms = document.querySelectorAll("form[action^='/report/image/']");
+        reportImageForms.forEach(form => {
+            form.addEventListener("submit", function () {
+                const button = form.querySelector("button[type='submit']");
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Submitting...";
+                }
+            });
+        });
     });
 
     
@@ -291,16 +480,17 @@
     const park = JSON.parse('{{ park_json|escapejs }}');
 
     const nycBounds = L.latLngBounds([
-        [40.45, -74.3],
-        [40.95, -73.65] 
+        [40.40, -74.35],
+        [41.00, -73.60] 
     ]);
-
+    
     const detail_page_map = L.map('detail-page-map', {
         center: [park.latitude, park.longitude],
         zoom: 13,
         minZoom: 10,
         maxBounds: nycBounds,
-        maxBoundsViscosity: 1.0
+        maxBoundsViscosity: 1.0,
+        scrollWheelZoom: false, // Disable scrolling on map to zoom
     });
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -337,7 +527,7 @@
         className: '',
         iconSize: [38, 50],  
         iconAnchor: [19, 53],
-        popupAnchor: [0, -13] // Move popup up to match increased size of icon
+        popupAnchor: [0, -13] 
     });
 
     let marker = L.marker(
@@ -348,15 +538,116 @@
             title: park.display_name
         }
     ).addTo(detail_page_map);
-</script>
 
+
+    // Add functionality to scroll map when cmd/ctrl is pressed
+    let scrollEnabled = false;
+
+    function updateScrollZoom() {
+        if (scrollEnabled) {
+            detail_page_map.scrollWheelZoom.enable();
+        } else {
+            detail_page_map.scrollWheelZoom.disable();
+        }
+    }
+
+    // Listen for key down
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Control" || e.key === "Meta") {  // Meta is command key on Mac
+            scrollEnabled = true;
+            clearTimeout(scrollHintTimeout);
+            scrollHint.classList.remove("show");
+            updateScrollZoom();
+        }
+    });
+
+    // Listen for key up
+    document.addEventListener("keyup", function (e) {
+        if (e.key === "Control" || e.key === "Meta") {
+            scrollEnabled = false;
+            updateScrollZoom();
+        }
+    });
+
+
+    // Show users the message of pressing cmd or ctrl
+    const scrollHint = document.getElementById("scrollHint");
+    let scrollHintTimeout;
+
+    document.getElementById("detail-page-map").addEventListener("wheel", function (e) {
+        if (!scrollEnabled) {
+            // Show the hint
+            scrollHint.classList.add("show");
+
+            // Hide after 2 seconds
+            clearTimeout(scrollHintTimeout);
+            scrollHintTimeout = setTimeout(() => {
+                scrollHint.classList.remove("show");
+            }, 2000);
+        }
+    });
+
+
+    
+    // Review images modal
+    document.addEventListener("lazyloaded", function (e) {
+        const modalImage = document.getElementById("modalImage");
+        const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+        const prevBtn = document.getElementById("prevImageBtn");
+        const nextBtn = document.getElementById("nextImageBtn");
+
+        let currentImages = [];
+        let currentIndex = 0;
+
+        if (e.target.classList.contains("review-thumbnail") && !e.target.dataset.bound) {
+            e.target.addEventListener("click", function () {
+                const reviewId = this.getAttribute("data-review-id");
+
+                currentImages = Array.from(
+                    document.querySelectorAll(`.review-thumbnail[data-review-id='${reviewId}']`)
+                );
+                currentIndex = currentImages.indexOf(this);
+                showImage();
+                modal.show();
+            });
+        }
+
+
+        function showImage() {
+            if (currentImages.length > 0) {
+                const fullImageUrl = currentImages[currentIndex].getAttribute("data-full");
+                modalImage.setAttribute("src", fullImageUrl);
+
+                // Show/hide nav buttons
+                prevBtn.style.display = currentIndex > 0 ? "block" : "none";
+                nextBtn.style.display = currentIndex < currentImages.length - 1 ? "block" : "none";
+            }
+        }
+
+        prevBtn.addEventListener("click", () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                showImage();
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            if (currentIndex < currentImages.length - 1) {
+                currentIndex++;
+                showImage();
+            }
+        });
+    });
+
+
+</script>
 
 
 <!-- Custom Styles -->
 <style>
     .bg-brown { background-color: #6D4C41; }
     .btn-brown { background-color: #6D4C41; color: white; }
-    .btn-brown:hover { background-color: #5D4037; }
+    .btn-brown:hover { background-color: #986b5c; color: white;}
     .stars { display: flex; justify-content: center; font-size: 30px; cursor: pointer; }
     .star { 
         color: #ccc;
@@ -387,6 +678,12 @@
         color: #0056b3;
     }
 
+    .delete-link:disabled {
+        color: #888;              
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
     .delete-form-image {
         position: absolute;
         top: 10px;
@@ -405,5 +702,117 @@
     .report-link:hover {
         color: #a71d2a;
     }
+
+    .delete-btn {
+        border: none;
+        background-color: #007BFF;
+        color: white;
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 3px;
+        border-radius: 5px;
+    }
+
+    .delete-btn:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    .delete-btn:disabled {
+        background-color: #ccc;   
+        color: #888;              
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .report-image-btn {
+        border: none;
+        background-color: rgb(220, 53, 69);
+        color: white;
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 3px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .report-image-btn:hover {
+        background-color: #a71d2a;
+        color: white;
+    }
+
+    #submit-review-button:disabled {
+        background-color: #ccc;   
+        color: #888;              
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .scrollable-image-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .scrollable-image-inner {
+        scroll-behavior: smooth;
+        overflow-x: auto;
+        scrollbar-width: none;       
+        -ms-overflow-style: none;    
+    }
+
+    .scrollable-image-inner::-webkit-scrollbar {
+        display: none;         
+    }
+
+    .scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        background-color: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;         
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        line-height: 32px;
+        text-align: center;
+        cursor: pointer;
+        display: none;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+        padding: 0;
+    }
+
+    .scroll-left {
+        left: 0;
+    }
+
+    .scroll-right {
+        right: 0;
+    }
+
+    #scrollHint {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 5px;
+        font-size: 20px;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    #scrollHint.show {
+        opacity: 1;
+    }
+
 </style>
 {% endblock %}
