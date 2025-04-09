@@ -10,10 +10,6 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 
-import folium
-from folium.plugins import MarkerCluster
-
-from .utilities import folium_cluster_styling
 from .forms import RegisterForm
 
 import json
@@ -41,50 +37,8 @@ def register_view(request):
     return render(request, "parks/register.html", {"form": form})
 
 
-def park_list(request):
-    query = request.GET.get("query", "")
-    parks = DogRunNew.objects.all()  # Fetch all dog runs from the database
-
-    if query:
-        parks = parks.filter(
-            Q(name__icontains=query)
-            | Q(google_name__icontains=query)
-            | Q(zip_code__icontains=query)
-        )
-
-    return render(request, "parks/park_list.html", {"parks": parks, "query": query})
-
-
 def home_view(request):
     return render(request, "parks/home.html")
-
-
-def map(request):
-
-    NYC_LAT_AND_LONG = (40.730610, -73.935242)
-    # Create map centered on NYC
-    m = folium.Map(location=NYC_LAT_AND_LONG, zoom_start=11)
-
-    icon_create_function = folium_cluster_styling("rgb(0, 128, 0)")
-
-    marker_cluster = MarkerCluster(icon_create_function=icon_create_function).add_to(m)
-
-    # Fetch all dog runs from the database
-    parks = DogRunNew.objects.all()
-
-    # Mark every park on the map
-    for park in parks:
-        park_name = park.name
-
-        folium.Marker(
-            location=(park.latitude, park.longitude),
-            icon=folium.Icon(icon="dog", prefix="fa", color="green"),
-            popup=folium.Popup(park_name, max_width=200),
-        ).add_to(marker_cluster)
-
-    # represent map as html
-    context = {"map": m._repr_html_()}
-    return render(request, "parks/map.html", context)
 
 
 def park_and_map(request):
