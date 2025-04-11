@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Announcements</h2>
+    {% for ann in announcements %}
+      <div class="card mb-3 {% if ann.pinned %}border-primary{% endif %}">
+        <div class="card-body">
+          <h5 class="card-title">
+            {% if ann.pinned %}<span class="badge bg-primary">Pinned</span>{% endif %}
+            {{ ann.title }}
+          </h5>
+          <p class="card-text">{{ ann.content }}</p>
+          <p class="text-muted" style="font-size: 0.8rem;">
+            Posted on {{ ann.created_at|date:"M d, Y h:i A" }}
+          </p>
+          {% if request.user.is_staff %}
+            <a href="{% url 'edit_announcement' ann.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+            <a href="{% url 'delete_announcement' ann.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <p>No announcements available.</p>
+    {% endfor %}
+    {% if request.user.is_staff %}
+      <a href="{% url 'create_announcement' %}" class="btn btn-success">Create Announcement</a>
+    {% endif %}
+</div>
+{% endblock %}

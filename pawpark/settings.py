@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "parks",
     "homepage",
     "profiles.apps.ProfilesConfig",
+    "announcements",
 ]
 
 MIDDLEWARE = [
