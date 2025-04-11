@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from .models import Announcement
 
+
 class AnnouncementModelTest(TestCase):
     def setUp(self):
         self.admin_user = User.objects.create_user(
@@ -14,12 +15,13 @@ class AnnouncementModelTest(TestCase):
             content="This is a test announcement.",
             author=self.admin_user,
             pinned=True,
-            expiry_date=timezone.now() + timezone.timedelta(days=7)
+            expiry_date=timezone.now() + timezone.timedelta(days=7),
         )
 
     def test_announcement_str(self):
         """Ensure the string representation returns the title."""
         self.assertEqual(str(self.announcement), "Test Announcement")
+
 
 class AnnouncementViewTests(TestCase):
     def setUp(self):
@@ -37,7 +39,7 @@ class AnnouncementViewTests(TestCase):
             content="Announcement content",
             author=self.admin_user,
             pinned=False,
-            expiry_date=timezone.now() + timezone.timedelta(days=2)
+            expiry_date=timezone.now() + timezone.timedelta(days=2),
         )
 
     def test_announcements_list_view_as_anonymous(self):
@@ -55,7 +57,9 @@ class AnnouncementViewTests(TestCase):
         """
         self.client.login(username="adminuser", password="AdminPass123")
         url = reverse("create_announcement")
-        expiry = (timezone.now() + timezone.timedelta(days=3)).strftime("%Y-%m-%dT%H:%M")
+        expiry = (timezone.now() + timezone.timedelta(days=3)).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         data = {
             "title": "New Announcement",
             "content": "New announcement content",
@@ -73,7 +77,6 @@ class AnnouncementViewTests(TestCase):
         self.client.login(username="normaluser", password="NormalPass123")
         url = reverse("create_announcement")
         response = self.client.get(url)
-        # With the user_passes_test decorator, non-staff users usually get a 403 Forbidden.
         self.assertEqual(response.status_code, 403)
 
     def test_edit_announcement_view(self):
@@ -82,7 +85,9 @@ class AnnouncementViewTests(TestCase):
         """
         self.client.login(username="adminuser", password="AdminPass123")
         url = reverse("edit_announcement", args=[self.announcement.id])
-        new_expiry = (timezone.now() + timezone.timedelta(days=5)).strftime("%Y-%m-%dT%H:%M")
+        new_expiry = (timezone.now() + timezone.timedelta(days=5)).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         data = {
             "title": "Edited Announcement",
             "content": "Edited content",

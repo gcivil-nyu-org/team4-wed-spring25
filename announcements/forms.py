@@ -1,6 +1,7 @@
 from django import forms
 from .models import Announcement
 
+
 class AnnouncementForm(forms.ModelForm):
     class Meta:
         model = Announcement
@@ -9,9 +10,9 @@ class AnnouncementForm(forms.ModelForm):
             "expiry_date": forms.DateTimeInput(
                 attrs={
                     "type": "datetime-local",
-                    "class": "form-control",   # optional styling via Bootstrap, etc.
+                    "class": "form-control",  # optional styling via Bootstrap, etc.
                 },
-                format="%Y-%m-%dT%H:%M"
+                format="%Y-%m-%dT%H:%M",
             ),
         }
 
@@ -19,4 +20,6 @@ class AnnouncementForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.expiry_date:
-            self.fields["expiry_date"].initial = self.instance.expiry_date.strftime("%Y-%m-%dT%H:%M")
+            self.fields["expiry_date"].initial = self.instance.expiry_date.strftime(
+                "%Y-%m-%dT%H:%M"
+            )
