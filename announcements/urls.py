@@ -7,4 +7,3 @@ urlpatterns = [
     path("<int:pk>/edit/", views.edit_announcement, name="edit_announcement"),
     path("<int:pk>/delete/", views.delete_announcement, name="delete_announcement"),
 ]
-
