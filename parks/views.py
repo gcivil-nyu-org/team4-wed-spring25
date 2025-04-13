@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import (  # noqa: F401  # Ignore "imported but unused"
     HttpResponseForbidden,
     HttpResponse,
+    HttpResponsePermanentRedirect,
 )
+from django.urls import reverse
 from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
@@ -103,6 +105,12 @@ def park_and_map(request):
 
 def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
+
+    # Check slug, if incorrect, redirect to correct one
+    if slug != park.slug:
+        correct_url = reverse("park_detail", kwargs={"slug": park.slug, "id": park.id})
+        return HttpResponsePermanentRedirect(correct_url)
+
     images = ParkImage.objects.filter(park=park)
     reviews = park.reviews.all()
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
