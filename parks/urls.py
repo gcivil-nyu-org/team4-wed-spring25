@@ -5,7 +5,6 @@ from .views import register_view
 
 urlpatterns = [
     path("parks/", views.park_and_map, name="park_and_map"),
-    # path("park/<int:id>/", views.park_detail, name="park_detail"),
     path("parks/<slug:slug>-<int:id>/", views.park_detail, name="park_detail"),
     path("delete_review/<int:review_id>/", views.delete_review, name="delete_review"),
     path("delete_image/<int:image_id>/", views.delete_image, name="delete_image"),
