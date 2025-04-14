@@ -88,13 +88,15 @@ def park_and_map(request):
     # Convert parks to JSON (for JS use)
     # parks_json = json.dumps(list(parks.values()))
 
-    parks_json = json.dumps([
-        {
-            **model_to_dict(park),
-            "url": park.detail_page_url(),
-        }
-        for park in parks
-    ])
+    parks_json = json.dumps(
+        [
+            {
+                **model_to_dict(park),
+                "url": park.detail_page_url(),
+            }
+            for park in parks
+        ]
+    )
 
     # Render the template
     return render(
@@ -178,7 +180,7 @@ def park_detail(request, slug, id):
                     request, "Your review report was submitted successfully."
                 )
                 return redirect(park.detail_page_url())
-    
+
     park_json = json.dumps(model_to_dict(park))
 
     return render(
