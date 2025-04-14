@@ -4,6 +4,7 @@ from django.db import models
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=True, null=True)
     profile_picture = models.ImageField(
         upload_to="profile_pics/", blank=True, null=True
     )
