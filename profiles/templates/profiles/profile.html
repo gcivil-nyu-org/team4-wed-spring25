@@ -214,9 +214,11 @@
                        </div>
                        <div class="col-md-8">
                             <div class="profile-details d-flex flex-column gap-4">
-                                {% if user_profile.name %}
+                                {% if user_profile.name or profile_user.date_joined %}
                                 <div class="profile-detail-field d-flex flex-column gap-2 justify-content-between mb-3">
+                                    {% if user_profile.name %}
                                     <h3 class="m-0" style="font-weight: bold;">{{ user_profile.name }}</h3>
+                                    {% endif %}
 
                                     {% if profile_user.date_joined %}    
                                     <div id="joined-date" class="profile-detail-field d-flex gap-2 align-items-center">
