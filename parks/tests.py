@@ -726,10 +726,17 @@ class ParkPresenceTests(TestCase):
 @patch(
     "cloudinary.uploader.upload",
     return_value={
-        "secure_url": "https://dummy.cloudinary.com/image.jpg",
+        "asset_id": "dummy_asset_id",
         "public_id": "dummy_id",
         "version": "1234567890",
+        "signature": "dummy_signature",
+        "width": 800,
+        "height": 600,
+        "format": "jpg",
         "resource_type": "image",
+        "type": "upload",
+        "secure_url": "https://dummy.cloudinary.com/image.jpg",
+        "url": "http://dummy.cloudinary.com/image.jpg",
     },
 )
 class ImageUploadTests(TestCase):
