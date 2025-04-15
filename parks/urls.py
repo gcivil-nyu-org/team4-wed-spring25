@@ -13,6 +13,7 @@ urlpatterns = [
     path("report_reply/<int:reply_id>/", views.report_reply, name="report_reply"),
     path("home/", views.home_view, name="home"),
     path("contact/", views.contact_view, name="contact"),
+    path("", views.home_view, name="home"),
     path("register/", register_view, name="register"),
     path(
         "login/",

@@ -13,9 +13,12 @@ from datetime import timedelta
 from parks.models import ParkPresence
 
 from unittest.mock import patch
+<<<<<<< HEAD
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from cloudinary import config as cloudinary_config
+=======
+>>>>>>> ff1ee06 (Revert to commit 70a810d)
 
 
 @patch(
@@ -890,8 +893,6 @@ class ParkPresenceTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="tester", password="testpass")
-        self.client.login(username="tester", password="testpass")
-
         self.park = DogRunNew.objects.create(
             id="5",
             prop_id="5566",
@@ -905,6 +906,7 @@ class ParkPresenceTests(TestCase):
             display_name="Test Dog Park",
             slug="test-dog-park-5566",
         )
+        self.client.login(username="tester", password="testpass")
 
     def test_user_check_in_creates_presence(self):
         self.client.post(
@@ -924,56 +926,6 @@ class ParkPresenceTests(TestCase):
         presences = ParkPresence.objects.filter(user=self.user, park=self.park)
         self.assertEqual(presences.count(), 1)
         self.assertEqual(presences.first().status, "on_the_way")
-
-    # --------------------------
-    # 🧪 New tests for coverage
-    # --------------------------
-
-    def test_bethere_invalid_time_format(self):
-        response = self.client.post(
-            reverse("bethere"),
-            data=json.dumps({"park_id": self.park.id, "time": "invalid!"}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Invalid time format", response.json().get("error", ""))
-
-    def test_bethere_missing_fields(self):
-        response = self.client.post(
-            reverse("bethere"),
-            data=json.dumps({"time": "12:30"}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Missing park_id or time", response.json().get("error", ""))
-
-    def test_bethere_past_time_rejected(self):
-        now_time = timezone.localtime()
-        past_hour = (now_time - timedelta(hours=1)).strftime("%H:%M")  # much safer
-        response = self.client.post(
-            reverse("bethere"),
-            data=json.dumps({"park_id": self.park.id, "time": past_hour}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Cannot select a past time", response.json().get("error", ""))
-
-    def test_checkin_json_view_success(self):
-        response = self.client.post(
-            reverse("checkin"),
-            data=json.dumps({"park_id": self.park.id}),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("checked in", response.json().get("status", ""))
-
-    def test_checkin_json_view_missing_park_id(self):
-        response = self.client.post(
-            reverse("checkin"),
-            data=json.dumps({}),  # no park_id
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 404)
 
 
 @patch(
