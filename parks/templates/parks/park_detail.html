@@ -48,14 +48,15 @@
             </div>
             <div class="carousel-inner">
                 {% for img in images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative">
+                <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative" style="background-color: #f5f2ef;">
                     <img 
-                        src="{{ img.image.url|replace:'upload/,upload/w_30,q_10/' }}"
-                        data-src="{{ img.image.url|replace:'upload/,upload/w_1000,q_auto,f_auto/' }}"
-                        class="d-block w-100 lazyload" 
+                    src="{{ img.image.url|replace:'upload/,upload/c_pad,w_800,h_400,q_auto,f_auto/' }}"
+                        data-full="{{ img.image.url|replace:'upload/,upload/w_1200,q_auto,f_auto/' }}"
+                        class="d-block w-100"
                         alt="Park Image"
-                        style="height: 400px; object-fit: cover; border-radius: 10px;" 
+                        style="height: 400px; object-fit: cover; border-radius: 10px; cursor: zoom-in;" 
                         loading="lazy"
+                        onclick="openCarouselImageModal(this)"
                     >
 
                     <!-- show uploader's name -->
@@ -308,6 +309,7 @@
         <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
     </div>
 
+    <!-- Image Modal -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content bg-dark position-relative">
@@ -317,6 +319,16 @@
               <button id="nextImageBtn" class="scroll-btn" style="right: 10px;">›</button>
             </div>
           </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-body p-0">
+            <img id="modalPreviewImg" src="" alt="Full Preview" class="img-fluid w-100" style="border-radius: 8px;">
+            </div>
+        </div>
         </div>
     </div>
 </div>
@@ -641,6 +653,16 @@
         });
     });
 
+    function openCarouselImageModal(img) {
+        const fullSrc = img.getAttribute('data-full');
+        const modalImg = document.getElementById("modalPreviewImg");
+        modalImg.src = fullSrc;
+
+        const imageModal = new bootstrap.Modal(document.getElementById("imagePreviewModal"));
+        imageModal.show();
+    }
+ 
+
 
 </script>
 
@@ -816,5 +838,8 @@
         opacity: 1;
     }
 
+    .carousel-inner, .carousel-item {
+        background-color: #f5f2ef !important; /* soft warm beige */
+    }
 </style>
 {% endblock %}

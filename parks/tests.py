@@ -6,24 +6,35 @@ from parks.templatetags.display_rating import render_stars
 from django.utils.text import slugify
 from django.core import mail
 
+from django.utils import timezone
+from datetime import timedelta
+from parks.models import ParkPresence
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+import io
+from PIL import Image
+
 
 class ErrorPageTests(TestCase):
     def test_trigger_400(self):
         response = self.client.get("/test400/")
         self.assertEqual(response.status_code, 400)
+        self.assertTemplateUsed(response, "400.html")
 
     def test_trigger_403(self):
         response = self.client.get("/test403/")
         self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed(response, "403.html")
 
     def test_trigger_404(self):
         response = self.client.get("/test404/")
         self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, "404.html")
 
     def test_trigger_500(self):
-        with self.assertRaises(Exception) as context:
-            self.client.get("/test500/")
-        self.assertIn("Intentional server error", str(context.exception))
+        response = self.client.get("/test500/")
+        self.assertEqual(response.status_code, 500)
+        self.assertTemplateUsed(response, "500.html")
 
 
 class UniqueEmailTests(TestCase):
@@ -673,3 +684,109 @@ class RenderStarsTests(TestCase):
         self.assertEqual(result["half_stars"], 0)
         self.assertEqual(result["empty_stars"], 0)
         self.assertEqual(result["size"], size)
+
+
+class ParkPresenceTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="tester", password="testpass")
+        self.park = DogRunNew.objects.create(
+            id="5",
+            prop_id="5566",
+            name="Test Dog Park",
+            address="Test Location",
+            dogruns_type="All",
+            accessible="Yes",
+            formatted_address="Test Address",
+            latitude=40.0,
+            longitude=-73.0,
+            display_name="Test Dog Park",
+            slug="test-dog-park-5566",
+        )
+        self.client.login(username="tester", password="testpass")
+
+    def test_user_check_in_creates_presence(self):
+        self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {"form_type": "check_in"},
+        )
+        presences = ParkPresence.objects.filter(user=self.user, park=self.park)
+        self.assertEqual(presences.count(), 1)
+        self.assertEqual(presences.first().status, "here")
+
+    def test_user_be_there_at_creates_presence(self):
+        future_time = (timezone.now() + timedelta(minutes=20)).strftime("%H:%M")
+        self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {"form_type": "be_there_at", "time": future_time},
+        )
+        presences = ParkPresence.objects.filter(user=self.user, park=self.park)
+        self.assertEqual(presences.count(), 1)
+        self.assertEqual(presences.first().status, "on_the_way")
+
+
+class ImageUploadTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="imageuser", password="testpass")
+        self.park = DogRunNew.objects.create(
+            id="6",
+            prop_id="9991",
+            name="Upload Park",
+            address="Imageville",
+            dogruns_type="All",
+            accessible="Yes",
+            formatted_address="Image Address",
+            latitude=41.0,
+            longitude=-74.0,
+            display_name="Upload Park",
+            slug="upload-park-9991",
+        )
+        self.client.login(username="imageuser", password="testpass")
+
+    def create_test_image_file(self):
+        image = Image.new("RGB", (100, 100), color="red")
+        byte_arr = io.BytesIO()
+        image.save(byte_arr, format="JPEG")
+        byte_arr.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", byte_arr.read(), content_type="image/jpeg"
+        )
+
+    def test_upload_image_with_review(self):
+        test_img = self.create_test_image_file()
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {
+                "form_type": "submit_review",
+                "text": "Test with image",
+                "rating": "5",
+                "images": test_img,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            ParkImage.objects.filter(user=self.user, park=self.park).exists()
+        )
+
+
+class ModalInteractionTests(TestCase):
+    def test_modal_js_is_present(self):
+        client = Client()
+        park = DogRunNew.objects.create(
+            id="7",
+            prop_id="3344",
+            name="Modal Park",
+            address="JSville",
+            dogruns_type="Small",
+            accessible="Yes",
+            formatted_address="JS Road",
+            latitude=42.0,
+            longitude=-75.0,
+            display_name="Modal Park",
+            slug="modal-park-3344",
+        )
+        response = client.get(reverse("park_detail", args=[park.slug, park.id]))
+        self.assertContains(response, "function openCarouselImageModal")
+        self.assertContains(response, "imagePreviewModal")
+        self.assertContains(response, "modalImage")

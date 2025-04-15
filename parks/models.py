@@ -114,6 +114,7 @@ class ImageReport(models.Model):
     def __str__(self):
         return f"Report by {self.user.username} on Image {self.image.id}"
 
+
 class ParkPresence(models.Model):
     STATUS_CHOICES = [
         ("Current", "Current"),
@@ -127,7 +128,10 @@ class ParkPresence(models.Model):
         DogRunNew, on_delete=models.CASCADE, related_name="presences"
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    time = models.TimeField(null=True, blank=True)
+
+    # This is now the proper datetime for scheduled arrival
+    time = models.DateTimeField(null=True, blank=True)
+
     checked_in_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
