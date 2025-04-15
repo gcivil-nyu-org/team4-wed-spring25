@@ -9,10 +9,8 @@ from django.core import mail
 from django.utils import timezone
 from datetime import timedelta
 from parks.models import ParkPresence
-from django.core.files.uploadedfile import SimpleUploadedFile
 
-import io
-from PIL import Image
+from unittest.mock import patch
 
 
 class ErrorPageTests(TestCase):
@@ -725,49 +723,46 @@ class ParkPresenceTests(TestCase):
         self.assertEqual(presences.first().status, "on_the_way")
 
 
+@patch(
+    "cloudinary.uploader.upload",
+    return_value={"secure_url": "https://dummy.cloudinary.com/image.jpg"},
+)
 class ImageUploadTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username="imageuser", password="testpass")
+        self.user = User.objects.create_user(username="uploader", password="pass123")
+        self.client.login(username="uploader", password="pass123")
         self.park = DogRunNew.objects.create(
-            id="6",
-            prop_id="9991",
-            name="Upload Park",
-            address="Imageville",
+            id="20",
+            prop_id="8888",
+            name="Mock Park",
+            address="123",
             dogruns_type="All",
             accessible="Yes",
-            formatted_address="Image Address",
-            latitude=41.0,
-            longitude=-74.0,
-            display_name="Upload Park",
-            slug="upload-park-9991",
-        )
-        self.client.login(username="imageuser", password="testpass")
-
-    def create_test_image_file(self):
-        image = Image.new("RGB", (100, 100), color="red")
-        byte_arr = io.BytesIO()
-        image.save(byte_arr, format="JPEG")
-        byte_arr.seek(0)
-        return SimpleUploadedFile(
-            "test_image.jpg", byte_arr.read(), content_type="image/jpeg"
+            formatted_address="123",
+            latitude=40.0,
+            longitude=-73.0,
+            slug="mock-park-8888",
+            display_name="Mock Park",
         )
 
-    def test_upload_image_with_review(self):
-        test_img = self.create_test_image_file()
+    def test_upload_image_with_review(self, mock_upload):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        image = SimpleUploadedFile(
+            "test.jpg", b"file_content", content_type="image/jpeg"
+        )
         response = self.client.post(
             reverse("park_detail", args=[self.park.slug, self.park.id]),
             {
                 "form_type": "submit_review",
-                "text": "Test with image",
+                "text": "Nice park!",
                 "rating": "5",
-                "images": test_img,
+                "images": image,
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(
-            ParkImage.objects.filter(user=self.user, park=self.park).exists()
-        )
+        self.assertEqual(ParkImage.objects.count(), 1)
 
 
 class ModalInteractionTests(TestCase):
