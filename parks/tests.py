@@ -958,7 +958,6 @@ class ParkPresenceTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Cannot select a past time", response.json().get("error", ""))
 
-
     def test_checkin_json_view_success(self):
         response = self.client.post(
             reverse("checkin"),
