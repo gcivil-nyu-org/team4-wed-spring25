@@ -3,6 +3,7 @@ from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
+from django.urls import reverse
 
 
 class DogRun(models.Model):
@@ -50,6 +51,10 @@ class DogRunNew(models.Model):
         combined = f"{self.display_name}-{self.prop_id}"
         self.slug = slugify(combined)
         super().save(*args, **kwargs)
+
+    # function to easily get url of park_detail
+    def detail_page_url(self):
+        return reverse("park_detail", kwargs={"slug": self.slug, "id": self.id})
 
 
 class Review(models.Model):
