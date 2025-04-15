@@ -113,10 +113,6 @@ def register_view(request):
     return render(request, "parks/register.html", {"form": form})
 
 
-def home_view(request):
-    return render(request, "parks/home.html")
-
-
 @never_cache
 def park_and_map(request):
     # Get filter values from GET request
