@@ -11,16 +11,11 @@ from django.contrib.messages import get_messages
 from django.utils import timezone
 from datetime import timedelta
 from parks.models import ParkPresence
-<<<<<<< HEAD
 
 from unittest.mock import patch
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from cloudinary import config as cloudinary_config
-=======
-
-from unittest.mock import patch
->>>>>>> c371429 (test)
 
 
 @patch(
@@ -932,7 +927,6 @@ class ParkPresenceTests(TestCase):
 
 @patch(
     "cloudinary.uploader.upload",
-<<<<<<< HEAD
     return_value={
         "asset_id": "dummy_asset_id",
         "public_id": "dummy_id",
@@ -946,10 +940,8 @@ class ParkPresenceTests(TestCase):
         "secure_url": "https://dummy.cloudinary.com/image.jpg",
         "url": "http://dummy.cloudinary.com/image.jpg",
     },
-=======
-    return_value={"secure_url": "https://dummy.cloudinary.com/image.jpg"},
->>>>>>> c371429 (test)
 )
+
 class ImageUploadTests(TestCase):
     def setUp(self):
         self.client = Client()
