@@ -1,0 +1,21 @@
+[run]
+omit =
+    */migrations/*
+    */tests/*
+    */admin.py
+    */settings.py
+    */wsgi.py
+    */asgi.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __str__
+    def get_absolute_url
+    if self\.debug
+    if settings\.DEBUG:
+    raise NotImplementedError
+    except Exception as
+
+[html]
+directory = coverage_html_report
