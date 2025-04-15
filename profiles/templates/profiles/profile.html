@@ -209,7 +209,7 @@
                            {% if user_profile.profile_picture and user_profile.profile_picture.url %}
                                <img src="{{ user_profile.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture" class="profile-picture-display">
                            {% else %}
-                               <img src="{% static 'static/images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display">
+                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png" alt="Default Profile Picture" class="profile-picture-display"></img>
                            {% endif %}
                        </div>
                        <div class="col-md-8">
@@ -257,20 +257,6 @@
                                 </div>
                                 {% endif %}
                             </div>
-
-                           <!-- <h3 class="mt-5 mb-3 text-center text-md-start">{{ profile_user.username }}</h3>
-                           <div class="profile-details mt-3">
-                               <dl>
-                                    <dt><i class="fas fa-user fa-fw"></i>Name:</dt><dd>{{ profile_user.name|default:"Not provided" }}</dd>
-                                    <dt><i class="fas fa-envelope fa-fw"></i>Email:</dt><dd>{{ profile_user.email }}</dd>
-                                    <dt><i class="fas fa-calendar-alt fa-fw"></i>Joined:</dt><dd>{{ profile_user.date_joined|date:"Y-m-d" }}</dd>
-                                    <dt><i class="fas fa-map-marker-alt fa-fw"></i>Location:</dt><dd>{{ user_profile.location|default:"Not provided" }}</dd>
-                                    <dt><i class="fas fa-phone fa-fw"></i>Phone:</dt><dd>{{ user_profile.phone_number|default:"Not provided" }}</dd>
-                                    <dt><i class="fas fa-link fa-fw"></i>Website:</dt><dd>{% if user_profile.website %}<a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer">{{ user_profile.website }}</a>{% else %}None{% endif %}</dd>
-                                    <dt><i class="fas fa-info-circle fa-fw"></i>Bio:</dt><dd>{{ user_profile.bio|default:"No bio available"|linebreaksbr }}</dd>
-                                    <dt><i class="fas fa-signature fa-fw"></i>Signature:</dt><dd>"{{ user_profile.signature|default:"-"|linebreaksbr }}"</dd>
-                               </dl>
-                           </div> -->
                            {% if is_own_profile %}
                            <div class="text-center mt-4">
                                <a href="{% url 'edit_profile' %}" class="btn btn-profile-action btn-edit-profile">
