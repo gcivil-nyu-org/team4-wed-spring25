@@ -712,7 +712,7 @@ class ParkPresenceTests(TestCase):
         )
         presences = ParkPresence.objects.filter(user=self.user, park=self.park)
         self.assertEqual(presences.count(), 1)
-        self.assertEqual(presences.first().status, "here")
+        self.assertEqual(presences.first().status, "current")
 
     def test_user_be_there_at_creates_presence(self):
         future_time = (timezone.now() + timedelta(minutes=20)).strftime("%H:%M")
