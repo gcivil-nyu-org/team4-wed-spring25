@@ -725,7 +725,10 @@ class ParkPresenceTests(TestCase):
 
 @patch(
     "cloudinary.uploader.upload",
-    return_value={"secure_url": "https://dummy.cloudinary.com/image.jpg"},
+    return_value={
+        "secure_url": "https://dummy.cloudinary.com/image.jpg",
+        "public_id": "dummy_id",
+    },
 )
 class ImageUploadTests(TestCase):
     def setUp(self):
