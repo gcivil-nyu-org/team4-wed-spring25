@@ -354,7 +354,7 @@ def park_detail(request, slug, id):
             ParkPresence.objects.create(
                 user=request.user,
                 park=park,
-                status="here",
+                status="current",
                 time=now,
             )
 
