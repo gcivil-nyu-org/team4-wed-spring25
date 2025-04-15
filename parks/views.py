@@ -131,7 +131,9 @@ def bethere_view(request):
         today = current_datetime.date()
         arrival_datetime = timezone.make_aware(
             datetime.datetime.combine(today, arrival_time)
-        )
+        ).replace(second=0, microsecond=0)
+
+        current_datetime = now().replace(second=0, microsecond=0)
 
         if arrival_datetime < current_datetime:
             return JsonResponse({"error": "Cannot select a past time"}, status=400)
