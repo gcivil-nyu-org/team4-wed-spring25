@@ -728,6 +728,8 @@ class ParkPresenceTests(TestCase):
     return_value={
         "secure_url": "https://dummy.cloudinary.com/image.jpg",
         "public_id": "dummy_id",
+        "version": "1234567890",
+        "resource_type": "image",
     },
 )
 class ImageUploadTests(TestCase):
