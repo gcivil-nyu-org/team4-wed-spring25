@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Messages</h2>
+
+    {% if grouped_messages %}
+        <p>DEBUG: grouped_messages exists</p>
+        {% for sender_username, msgs in grouped_messages.items %}
+            <div class="mb-4">
+                <h5>From: {{ sender_username }}</h5>
+                {% for msg in msgs %}
+                    <p>{{ msg.content }}<br>
+                    <small class="text-muted">{{ msg.timestamp }}</small></p>
+                {% endfor %}
+                <hr>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No messages yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

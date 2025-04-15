@@ -77,21 +77,7 @@
                 {% for park in parks %}
                 <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
                     <!-- Park Image (Left) -->
-                    <div class="me-3">
-                        {% if park.images.all %}
-                            <img src="{{ park.images.first.image.url }}" 
-                                class="rounded-circle" 
-                                alt="{{ park.display_name }} image" 
-                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
-                            >
-                        {% else %}
-                            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
-                                class="rounded-circle" 
-                                alt="{{ park.display_name }}" 
-                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
-                            >
-                        {% endif %}
-                    </div>
+
     
                     <!-- Park Details (Middle) -->
                     <div class="d-flex flex-column gap-2 flex-grow-1">

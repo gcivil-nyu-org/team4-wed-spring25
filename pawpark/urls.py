@@ -36,6 +36,7 @@ urlpatterns = [
     path("test403/", error_views.trigger_403),
     path("test404/", error_views.trigger_404),
     path("test500/", error_views.trigger_500),
+
 ]
 
 if settings.DEBUG:

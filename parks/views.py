@@ -15,6 +15,42 @@ from .forms import RegisterForm
 import json
 from django.contrib import messages
 
+from django.contrib.auth.models import User
+from .models import Message
+
+@login_required
+def user_list_view(request):
+    users = User.objects.exclude(id=request.user.id)
+    return render(request, "parks/user_list.html", {"users": users})
+
+@login_required
+def chat_view(request, username):
+    recipient = get_object_or_404(User, username=username)
+    messages = Message.objects.filter(
+        sender__in=[request.user, recipient],
+        recipient__in=[request.user, recipient]
+    )
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            Message.objects.create(sender=request.user, recipient=recipient, content=content)
+            return redirect("chat", username=username)
+    return render(request, "parks/chat.html", {
+        "recipient": recipient,
+        "messages": messages
+    })
+
+from collections import defaultdict
+
+@login_required
+def all_messages_view(request):
+    messages = Message.objects.filter(recipient=request.user).select_related('sender').order_by('-timestamp')
+    grouped = defaultdict(list)
+    for msg in messages:
+        grouped[msg.sender.username].append(msg)  # Use username as key
+    return render(request, "parks/all_messages.html", {"grouped_messages": dict(grouped)})
+
+
 
 def register_view(request):
     if request.method == "POST":

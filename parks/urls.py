@@ -50,4 +50,7 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
+	path("users/", views.user_list_view, name="user_list"),
+    path("messages/", views.all_messages_view, name="all_messages"),
+	path("<str:username>/", views.chat_view, name="chat"),
 ]
