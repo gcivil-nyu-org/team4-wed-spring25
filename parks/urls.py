@@ -11,7 +11,6 @@ urlpatterns = [
     path("delete_image/<int:image_id>/", views.delete_image, name="delete_image"),
     path("report/image/<int:image_id>/", views.report_image, name="report_image"),
     path("contact/", views.contact_view, name="contact"),
-    path("", views.home_view, name="home"),
     path("register/", register_view, name="register"),
     path(
         "login/",
