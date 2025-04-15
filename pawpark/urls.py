@@ -25,11 +25,14 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     # path("", include("homepage.urls")),
     path("health_check/", homepage_views.health_check),
     path("dbtest/", homepage_views.test_db_connection),
 >>>>>>> c024c40 (parkpresence function)
+=======
+>>>>>>> 4f5b72e (bug fix and added features for checkin)
     path("profiles/", include("profiles.urls")),
     path("test400/", error_views.trigger_400),
     path("test403/", error_views.trigger_403),

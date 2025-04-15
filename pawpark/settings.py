@@ -35,6 +35,11 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 
+# Custom handlers
+HANDLER400 = "pawpark.error_views.trigger_400"
+HANDLER403 = "pawpark.error_views.trigger_403"
+HANDLER404 = "pawpark.error_views.trigger_404"
+HANDLER500 = "pawpark.error_views.trigger_500"
 
 # Application definition
 
@@ -46,7 +51,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "parks",
-    "homepage",
     "profiles.apps.ProfilesConfig",
     "announcements",
 ]

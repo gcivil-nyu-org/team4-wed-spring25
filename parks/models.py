@@ -1,4 +1,3 @@
-
 from django.db import models
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
@@ -144,6 +143,7 @@ class ImageReport(models.Model):
         return f"Report by {self.user.username} on Image {self.image.id}"
 
 
+
 class Reply(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="replies")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -182,7 +182,10 @@ class ParkPresence(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
 
     # This is now the proper datetime for scheduled arrival
-    time = models.DateTimeField(null=True, blank=True)
+
+    # This is now the proper datetime for scheduled arrival
+    time = models.DateDateTimeField(null=True, blank=True)
+
 
     checked_in_at = models.DateTimeField(auto_now_add=True)
 
@@ -192,4 +195,21 @@ class ParkPresence(models.Model):
         ordering = ["-checked_in_at"]
 
     def __str__(self):
+        return f"{self.user.username} - {self.park.display_name} ({self.status})"
+    
+class Message(models.Model):
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="received_messages"
+    )
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["timestamp"]
+
+    def __str__(self):
+        return f"From {self.sender} to {self.recipient} at {self.timestamp}"
         return f"{self.user.username} - {self.park.display_name} ({self.status})"
