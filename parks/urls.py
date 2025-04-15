@@ -51,12 +51,9 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
-<<<<<<< HEAD
 	path("users/", views.user_list_view, name="user_list"),
     path("messages/", views.all_messages_view, name="all_messages"),
 	path("<str:username>/", views.chat_view, name="chat"),
-=======
     path("api/checkin/", views.checkin_view, name="checkin"),
     path("api/bethere/", views.bethere_view, name="bethere"),
->>>>>>> c024c40 (parkpresence function)
 ]
