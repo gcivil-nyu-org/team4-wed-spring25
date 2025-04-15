@@ -84,9 +84,9 @@
                                     <div class="profile-picture-preview mx-auto mb-3" id="profilePreviewContainer">
                                         <label for="{{ profile_picture_field.id_for_label }}" class="profile-picture-label">
                                             {% if object.profile_picture and object.profile_picture.url %}
-                                                <img src="{{ object.profile_picture.url }}" alt="Current profile picture" id="profileImagePreview" onerror="this.onerror=null; this.src='{% static 'images/default_profile.png' %}';">
+                                                <img src="{{ object.profile_picture.url }}" alt="Current profile picture" id="profileImagePreview" onerror="this.onerror=null; this.src='https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png';">
                                             {% else %}
-                                                 <img src="{% static 'images/default_user.png' %}" alt="Default profile picture" id="profileImagePreview" class="default-preview" onerror="this.onerror=null; this.src='{% static 'images/img_placeholder.svg' %}';">
+                                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png" alt="Default Profile Picture" id="profileImagePreview" class="default-preview"></img>
                                             {% endif %}
                                             <div class="profile-picture-overlay">
                                                 <i class="fas fa-camera"></i>
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   previewImage.src = canvas.toDataURL('image/png');
                   previewImage.onerror = function() {
                       this.onerror=null;
-                      this.src='{% static 'images/img_placeholder.svg' %}';
+                      this.src='https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png';
                   };
               }
               canvas.toBlob(function (blob) {
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const fields = profileForm.querySelectorAll("input, textarea, select");
             
             fields.forEach(field => {
-                if (field.name !== "profile_picture_original" && field.value.trim() !== (originalData[field.name] || "").trim()) {
+                if (field.name !== "profile_picture_original" && field.name !== "profile_picture-clear" && field.value.trim() !== (originalData[field.name] || "").trim()) {
                     formChanged = true;
                 }
             });
