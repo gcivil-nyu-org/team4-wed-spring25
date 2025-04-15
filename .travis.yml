@@ -31,6 +31,9 @@ after_success:
   - coverage report
   - coveralls --service=travis-pro
 
+before_deploy:
+  - gem install dpl -v 1.10.16
+
 deploy:
   - provider: elasticbeanstalk
     bucket_name: elasticbeanstalk-us-east-1-783764589295
