@@ -4,6 +4,10 @@
 {% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
 {% block content %}
+{% csrf_token %}
+<script>
+    const userIsLoggedIn = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+</script>
 <!-- Full-width container for layout consistency -->
 <div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
@@ -139,9 +143,6 @@
         </div>
     </div>
 </div>
-
-
-
 <script>
 
     const boroughCharToBorough = {
@@ -400,6 +401,10 @@
                             </p>
                         </div>
                     </a>
+                    <div class="d-flex gap-2 mt-2" style="justify-content: center;">
+                        <button class="btn btn-sm btn-outline-success" onclick="checkIn(${park.id})">Check In</button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="beThereAt(${park.id})">Be There At</button>
+                    </div>
                 </div>
             `;
 
@@ -543,7 +548,62 @@
         return clusterLayer !== marker ? clusterLayer : null;
     }
 
+    function getCSRFToken() {
+        // Extract from cookie (for safety)
+        const name = 'csrftoken';
+        const cookieValue = document.cookie
+            .split('; ')
+            .find(row => row.startsWith(name + '='))
+            ?.split('=')[1];
+        return cookieValue;
+    }
 
+    function requireLoginThen(callback) {
+        if (typeof userIsLoggedIn !== 'undefined' && userIsLoggedIn === false) {
+            alert("Please log in to use this feature.");
+            window.location.href = "/login/?next=" + window.location.pathname;
+            return;
+        }
+        callback();
+    }
+
+    function checkIn(parkId) {
+        requireLoginThen(() => {
+            fetch("/api/checkin/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ park_id: parkId })
+            }).then(res => res.json())
+            .then(data => alert("✅ " + data.status))
+            .catch(err => alert("❌ Something went wrong!"));
+        });
+    }
+
+    function beThereAt(parkId) {
+        requireLoginThen(() => {
+            const time = prompt("⏰ What time will you be there? (24hr format, e.g., 18:45)");
+            if (!time) return;
+
+            fetch("/api/bethere/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ park_id: parkId, time: time })
+            }).then(res => res.json())
+            .then(data => {
+                if (data.status) {
+                    alert("✅ " + data.status + " at " + data.time);
+                } else {
+                    alert("❌ " + (data.error || "Invalid input"));
+                }
+            }).catch(err => alert("❌ Something went wrong!"));
+        });
+    }
     // Event listeners for park cards
     document.addEventListener("DOMContentLoaded", function () {
         let parkCards = document.querySelectorAll(".park-card");

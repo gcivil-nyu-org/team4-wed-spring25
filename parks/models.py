@@ -113,3 +113,27 @@ class ImageReport(models.Model):
 
     def __str__(self):
         return f"Report by {self.user.username} on Image {self.image.id}"
+
+class ParkPresence(models.Model):
+    STATUS_CHOICES = [
+        ("Current", "Current"),
+        ("On their way", "On their way"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="park_presences"
+    )
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="presences"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    time = models.TimeField(null=True, blank=True)
+    checked_in_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "park_presence"
+        unique_together = ("user", "park")
+        ordering = ["-checked_in_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.park.display_name} ({self.status})"
