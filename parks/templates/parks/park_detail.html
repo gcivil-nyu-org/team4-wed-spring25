@@ -149,6 +149,8 @@
             {% if park.notes %}
                 <tr><th>Notes</th><td>{{ park.notes|safe }}</td></tr>
             {% endif %}
+            <tr><th>Users Checked In</th><td>{{ current_count }}</td></tr>
+            <tr><th>On Their Way</th><td>{{ on_the_way_count }}</td></tr>
         </table>
     </div>
 

@@ -1,12 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import (  # noqa: F401  # Ignore "imported but unused"
     HttpResponseForbidden,
+<<<<<<< HEAD
     HttpResponse,
     HttpResponsePermanentRedirect,
+=======
+    HttpResponse, JsonResponse
+>>>>>>> c024c40 (parkpresence function)
 )
 from django.urls import reverse  # noqa: F401  # Ignore "imported but unused"
 from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
+<<<<<<< HEAD
 from .models import (
     DogRunNew,
     Review,
@@ -16,15 +21,18 @@ from .models import (
     Reply,
     ReplyReport,
 )
+=======
+from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport, ParkPresence
+>>>>>>> c024c40 (parkpresence function)
 from django.forms.models import model_to_dict
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-
 from .forms import RegisterForm
 
 import json
 from django.contrib import messages
 
+<<<<<<< HEAD
 from django.contrib.auth.models import User
 from .models import Message
 
@@ -61,6 +69,49 @@ def all_messages_view(request):
     return render(request, "parks/all_messages.html", {"grouped_messages": dict(grouped)})
 
 
+=======
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def checkin_view(request):
+    data = json.loads(request.body)
+    park_id = data.get("park_id")
+    park = get_object_or_404(DogRunNew, id=park_id)
+
+    # Either update or create a new check-in record
+    presence, created = ParkPresence.objects.update_or_create(
+        user=request.user,
+        park=park,
+        defaults={"status": "current", "time": None}
+    )
+
+    return JsonResponse({"status": "checked in"})
+
+
+@login_required
+@require_POST
+def bethere_view(request):
+    data = json.loads(request.body)
+    park_id = data.get("park_id")
+    time_str = data.get("time")  # Expecting "HH:MM"
+    
+    try:
+        time_obj = datetime.datetime.strptime(time_str, "%H:%M").time()
+    except ValueError:
+        return JsonResponse({"error": "Invalid time format"}, status=400)
+
+    park = get_object_or_404(DogRunNew, id=park_id)
+
+    # Update or create record
+    presence, created = ParkPresence.objects.update_or_create(
+        user=request.user,
+        park=park,
+        defaults={"status": "on_the_way", "time": time_obj}
+    )
+
+    return JsonResponse({"status": "on their way", "time": time_str})
+>>>>>>> c024c40 (parkpresence function)
 
 def register_view(request):
     if request.method == "POST":
@@ -166,6 +217,10 @@ def park_detail(request, slug, id):
     reviews = park.reviews.prefetch_related("replies", "images").all()
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
 
+    # Count presences
+    current_count = ParkPresence.objects.filter(park=park, status="current").count()
+    on_the_way_count = ParkPresence.objects.filter(park=park, status="on_the_way").count()
+
     if request.user.is_authenticated and request.method == "POST":
         form_type = request.POST.get("form_type")
 
@@ -188,6 +243,8 @@ def park_detail(request, slug, id):
                         "reviews": reviews,
                         "error_message": "Rating must be between 1 and 5 stars!",
                         "average_rating": average_rating,
+                        "current_count": current_count,
+                        "on_the_way_count": on_the_way_count,
                     },
                 )
 
@@ -259,6 +316,8 @@ def park_detail(request, slug, id):
             "reviews": reviews,
             "park_json": park_json,
             "average_rating": average_rating,
+            "current_count": current_count,
+            "on_the_way_count": on_the_way_count,
         },
     )
 

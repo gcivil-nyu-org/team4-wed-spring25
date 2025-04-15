@@ -24,6 +24,12 @@ from pawpark import error_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
+<<<<<<< HEAD
+=======
+    # path("", include("homepage.urls")),
+    path("health_check/", homepage_views.health_check),
+    path("dbtest/", homepage_views.test_db_connection),
+>>>>>>> c024c40 (parkpresence function)
     path("profiles/", include("profiles.urls")),
     path("test400/", error_views.trigger_400),
     path("test403/", error_views.trigger_403),
