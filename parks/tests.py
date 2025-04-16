@@ -982,10 +982,6 @@ class ImageUploadTests(TestCase):
             },
             follow=True,
         )
-<<<<<<< HEAD
-
-=======
->>>>>>> 8d5a608 (merge)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ParkImage.objects.count(), 1)
 
