@@ -39,7 +39,7 @@ def edit_profile(request):
         form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             form.save()
-            return redirect("profile", username=request.user.username)
+            return redirect("profiles:profile", username=request.user.username)
     else:
         form = UserProfileForm(instance=user_profile)
 
@@ -61,7 +61,7 @@ def add_pet(request):
             pet = form.save(commit=False)
             pet.owner = user_profile
             pet.save()
-            return redirect("profile", username=request.user.username)
+            return redirect("profiles:profile", username=request.user.username)
     else:
         form = PetProfileForm()
 
@@ -79,7 +79,7 @@ def edit_pet(request, pet_id):
         form = PetProfileForm(request.POST, request.FILES, instance=pet)
         if form.is_valid():
             form.save()
-            return redirect("profile", username=request.user.username)
+            return redirect("profiles:profile", username=request.user.username)
     else:
         form = PetProfileForm(instance=pet)
 
@@ -105,9 +105,9 @@ def delete_pet(request, pet_id):
         if is_ajax:
             return HttpResponse(status=204)
         else:
-            return redirect("profile", username=pet_owner_username)
+            return redirect("profiles:profile", username=pet_owner_username)
 
-    return redirect("profile", username=pet.owner.user.username)
+    return redirect("profiles:profile", username=pet.owner.user.username)
 
 
 @login_required
@@ -126,3 +126,38 @@ def pet_detail(request, username, pet_id):
         "is_owner_viewing": is_owner_viewing,
     }
     return render(request, "profiles/pet_detail.html", context)
+
+
+@login_required
+def search_view(request):
+
+    query = request.GET.get("q", "")
+    search_type = request.GET.get("type", "users")
+    selected_breed = request.GET.get("breed", "")
+
+    user_results = []
+    pet_results = []
+
+    breeds = (
+        PetProfile.objects.values_list("breed", flat=True).distinct().order_by("breed")
+    )
+
+    if search_type == "users":
+        user_results = User.objects.filter(username__icontains=query)
+    elif search_type == "pets":
+        pet_results = PetProfile.objects.filter(name__icontains=query)
+        if selected_breed:
+            pet_results = pet_results.filter(breed=selected_breed)
+
+    return render(
+        request,
+        "profiles/search.html",
+        {
+            "query": query,
+            "search_type": search_type,
+            "selected_breed": selected_breed,
+            "user_results": user_results,
+            "pet_results": pet_results,
+            "breeds": breeds,
+        },
+    )

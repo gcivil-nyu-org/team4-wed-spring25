@@ -35,14 +35,16 @@ class ProfileViewsTest(TestCase):
             owner=self.other_user_profile, name="OtherPet", breed="Poodle", age=1
         )
 
-        self.profile_url = reverse("profile", args=[self.user.username])
-        self.edit_profile_url = reverse("edit_profile")
-        self.add_pet_url = reverse("add_pet")
-        self.edit_pet_url = reverse("edit_pet", args=[self.pet.id])
-        self.delete_pet_url = reverse("delete_pet", args=[self.pet.id])
-        self.other_delete_pet_url = reverse("delete_pet", args=[self.other_pet.id])
+        self.profile_url = reverse("profiles:profile", args=[self.user.username])
+        self.edit_profile_url = reverse("profiles:edit_profile")
+        self.add_pet_url = reverse("profiles:add_pet")
+        self.edit_pet_url = reverse("profiles:edit_pet", args=[self.pet.id])
+        self.delete_pet_url = reverse("profiles:delete_pet", args=[self.pet.id])
+        self.other_delete_pet_url = reverse(
+            "profiles:delete_pet", args=[self.other_pet.id]
+        )
         self.pet_detail_url = reverse(
-            "pet_detail", args=[self.user.username, self.pet.id]
+            "profiles:pet_detail", args=[self.user.username, self.pet.id]
         )
         self.login_url = reverse("login")
 
