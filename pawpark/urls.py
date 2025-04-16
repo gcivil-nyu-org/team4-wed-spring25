@@ -30,6 +30,7 @@ urlpatterns = [
     path("test404/", error_views.trigger_404),
     path("test500/", error_views.trigger_500),
     path("announcements/", include("announcements.urls")),
+    path("moderation/", include("moderation.urls")),
 ]
 
 if settings.DEBUG:
