@@ -22,9 +22,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    signature = models.CharField(
-        max_length=255, blank=True, null=True, default="Live, Love, Bark!"
-    )
+    signature = models.CharField(max_length=255, blank=True, null=True, default="")
 
     def __str__(self):
         return self.user.username
@@ -40,6 +38,13 @@ class PetProfile(models.Model):
     pet_picture = models.ImageField(upload_to="pet_pics/", blank=True, null=True)
     personality = models.CharField(max_length=200, blank=True, null=True)
     favorite_food = models.CharField(max_length=200, blank=True, null=True)
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+    ]
+    gender = models.CharField(
+        max_length=10, choices=GENDER_CHOICES, blank=True, null=True
+    )
 
     def __str__(self):
         return self.name
