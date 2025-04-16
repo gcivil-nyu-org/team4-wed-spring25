@@ -93,6 +93,7 @@ from django.utils.timezone import now, localtime
 >>>>>>> 4f5b72e (bug fix and added features for checkin)
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
+from datetime import timedelta
 
 
 @login_required
@@ -102,12 +103,19 @@ def checkin_view(request):
     park_id = data.get("park_id")
     park = get_object_or_404(DogRunNew, id=park_id)
 
-    # Either update or create a new check-in record
+    # Remove existing 'current' check-ins from other parks
+    ParkPresence.objects.filter(user=request.user, status="current").exclude(
+        park=park
+    ).delete()
+
+    # Check in to this park
     presence, created = ParkPresence.objects.update_or_create(
-        user=request.user, park=park, defaults={"status": "current", "time": None}
+        user=request.user,
+        park=park,
+        defaults={"status": "current", "time": timezone.now()},
     )
 
-    return JsonResponse({"status": "checked in"})
+    return JsonResponse({"status": "checked in", "new": created})
 
 
 @login_required
@@ -159,6 +167,11 @@ def bethere_view(request):
 >>>>>>> c024c40 (parkpresence function)
 =======
 >>>>>>> 4f5b72e (bug fix and added features for checkin)
+
+def expire_old_checkins():
+    expiration_time = timezone.now() - timedelta(hours=1)
+    ParkPresence.objects.filter(status="current", time__lt=expiration_time).delete()
+
 
 def register_view(request):
     if request.method == "POST":
@@ -266,8 +279,10 @@ def park_detail(request, slug, id):
     reviews = park.reviews.prefetch_related("replies", "images").all()
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
 
-    # 🧹 Clean up expired "On their way" entries
+    # Clean up expired "On their way" entries
     now = localtime()
+    # Call the function to expire old check-ins
+    expire_old_checkins()
 
     ParkPresence.objects.filter(park=park, status="On their way", time__lt=now).delete()
 

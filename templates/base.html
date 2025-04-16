@@ -359,21 +359,40 @@
     
             if (!imageUpload || !imagePreview) return;
             const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
             imageUpload.addEventListener("change", function () {
                 const newFiles = Array.from(this.files);
 
-                const oversizedFiles = newFiles.filter(f => f.size > MAX_FILE_SIZE);
-                if (oversizedFiles.length > 0) {
+                const validFiles = [];
+                const errorMessages = [];
+
+                newFiles.forEach(file => {
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                        errorMessages.push(`${file.name} is not a supported format.`);
+                        return;
+                    }
+                    if (file.size > MAX_FILE_SIZE) {
+                        errorMessages.push(`${file.name} exceeds the 5MB limit.`);
+                        return;
+                    }
+                    validFiles.push(file);
+                });
+
+                if (errorMessages.length > 0) {
                     const warningMsg = document.createElement("div");
                     warningMsg.className = "alert alert-danger mt-3";
-                    warningMsg.textContent = "One or more images exceed the 5MB limit. Please choose smaller files.";
+                    warningMsg.innerHTML = errorMessages.join("<br>");
                     imagePreview.insertAdjacentElement("beforebegin", warningMsg);
-                    setTimeout(() => warningMsg.remove(), 5000);
+                    setTimeout(() => warningMsg.remove(), 6000);
+                }
+
+                if (validFiles.length === 0) {
+                    this.value = "";
                     return;
                 }
 
-                selectedFiles = selectedFiles.concat(newFiles);
+                selectedFiles = selectedFiles.concat(validFiles);
                 this.value = "";
                 renderPreviews();
             });
