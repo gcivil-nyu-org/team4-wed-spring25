@@ -5,6 +5,7 @@ from django.http import HttpResponseForbidden, HttpResponse, Http404
 
 from .models import UserProfile, PetProfile
 from .forms import UserProfileForm, PetProfileForm
+from parks.models import Review, Reply, ParkImage
 
 
 @login_required
@@ -14,11 +15,18 @@ def profile_view(request, username):
     pets = PetProfile.objects.filter(owner=user_profile)
     is_own_profile = request.user == profile_user
 
+    user_reviews = Review.objects.filter(user=profile_user, is_removed=False)
+    user_replies = Reply.objects.filter(user=profile_user)
+    user_images = ParkImage.objects.filter(user=profile_user, is_removed=False)
+
     context = {
         "profile_user": profile_user,
         "user_profile": user_profile,
         "pets": pets,
         "is_own_profile": is_own_profile,
+        "user_reviews": user_reviews,
+        "user_replies": user_replies,
+        "user_images": user_images,
     }
     return render(request, "profiles/profile.html", context)
 

@@ -66,6 +66,17 @@ class Review(models.Model):
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Soft Delete fields
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="removed_reviews",
+    )
+
     class Meta:
         db_table = "park_reviews"
         ordering = ["-created_at"]
@@ -89,6 +100,18 @@ class ParkImage(models.Model):
         "Review", on_delete=models.CASCADE, null=True, blank=True, related_name="images"
     )
     image = CloudinaryField("image")
+
+    # Soft deletion fields:
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="removed_images",
+        help_text="Admin who removed the image",
+    )
 
     def __str__(self):
         return f"Image for {self.park.name}"
@@ -119,14 +142,69 @@ class ImageReport(models.Model):
     def __str__(self):
         return f"Report by {self.user.username} on Image {self.image.id}"
 
+
+class Reply(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="replies")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_reply = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Reply by {self.user.username} on review {self.review.id}"
+
+
+class ReplyReport(models.Model):
+    reply = models.ForeignKey(Reply, on_delete=models.CASCADE, related_name="reports")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ParkPresence(models.Model):
+    STATUS_CHOICES = [
+        ("Current", "Current"),
+        ("On their way", "On their way"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="park_presences"
+    )
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="presences"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+    # This is now the proper datetime for scheduled arrival
+    time = models.DateTimeField(null=True, blank=True)
+
+    checked_in_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "park_presence"
+        unique_together = ("user", "park")
+        ordering = ["-checked_in_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.park.display_name} ({self.status})"
+    
 class Message(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="received_messages"
+    )
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ["timestamp"]
 
     def __str__(self):
         return f"From {self.sender} to {self.recipient} at {self.timestamp}"

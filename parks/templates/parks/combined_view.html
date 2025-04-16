@@ -4,6 +4,30 @@
 {% block title %}PAWPARK - NYC Dog Parks{% endblock %}
 
 {% block content %}
+{% csrf_token %}
+<script>
+    const userIsLoggedIn = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+</script>
+<div id="checkin-message-container"></div>
+<!-- time input modal -->
+<div class="modal fade" id="timeModal" tabindex="-1" aria-labelledby="timeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="timeModalLabel">⏰ Set Arrival Time</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+            <input type="time" class="form-control rounded-pill text-center" id="arrivalTimeInput">
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success" id="confirmTimeBtn">Confirm</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+
 <!-- Full-width container for layout consistency -->
 <div id="map-search-container" class="container-fluid mt-3 gap-3">
     <!-- Filter Section (Full Width) -->
@@ -77,8 +101,21 @@
                 {% for park in parks %}
                 <div class="park-card card mb-2 p-2 d-flex flex-row align-items-center" id="{{ park.id }}">
                     <!-- Park Image (Left) -->
-
-    
+                    <div class="me-3">
+                        {% if park.images.all %}
+                            <img src="{{ park.images.first.image.url }}" 
+                                class="rounded-circle" 
+                                alt="{{ park.display_name }} image" 
+                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            >
+                        {% else %}
+                        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png" 
+                            class="rounded-circle" 
+                            alt="{{ park.display_name }}" 
+                            style="width: 75px; height: 75px; object-fit: contain; border: 2px solid #6D4C41; background-color: #fff;">
+                    
+                        {% endif %}
+                    </div>
                     <!-- Park Details (Middle) -->
                     <div class="d-flex flex-column gap-2 flex-grow-1">
                         <!-- Park name and rating container -->
@@ -125,9 +162,6 @@
         </div>
     </div>
 </div>
-
-
-
 <script>
 
     const boroughCharToBorough = {
@@ -339,14 +373,11 @@
                         aspect-ratio: 2 / 1;
                     ">
                         <img 
-                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
+                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png'}"
                             alt="${park.display_name}" 
-                            style="
-                                height: 100%;
-                                width: 100%;
-                                object-fit: cover;
-                            "
+                            style="height: 100%; width: 100%; object-fit: contain; background-color: #fff; border-radius: 10px;"
                         >
+
                     </div>
 
 
@@ -386,6 +417,10 @@
                             </p>
                         </div>
                     </a>
+                    <div class="d-flex gap-2 mt-2 mb-3" style="justify-content: center;">
+                        <button class="btn btn-sm btn-outline-success" onclick="checkIn(${park.id})">Check In</button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="beThereAt(${park.id})">Be There At</button>
+                    </div>
                 </div>
             `;
 
@@ -529,6 +564,80 @@
         return clusterLayer !== marker ? clusterLayer : null;
     }
 
+    // Users Checkin functions
+
+    function getCSRFToken() {
+        // Extract from cookie (for safety)
+        const name = 'csrftoken';
+        const cookieValue = document.cookie
+            .split('; ')
+            .find(row => row.startsWith(name + '='))
+            ?.split('=')[1];
+        return cookieValue;
+    }
+
+    function requireLoginThen(callback) {
+    if (userIsLoggedIn === "false") {
+        showLoginMessage();
+        return;
+    }
+    callback();
+}
+
+    function showLoginMessage() {
+        const container = document.getElementById("checkin-message-container");
+        container.innerHTML = "";
+
+        const loginUrl = `/login/?next=${encodeURIComponent(window.location.pathname)}`;
+
+        const message = document.createElement("div");
+        message.className = "alert-error alert-dismissible";
+        message.innerHTML = `
+            <span>
+                Please <a href="${loginUrl}" style="color: #0d6efd; text-decoration: underline;">log in</a> to use this feature.
+            </span>
+            <button class="close-btn-alert" onclick="this.parentElement.remove()" title="Dismiss">&times;</button>
+        `;
+        container.appendChild(message);
+    }
+
+    function checkIn(parkId) {
+        requireLoginThen(() => {
+            fetch("/api/checkin/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ park_id: parkId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById("checkin-message-container");
+                container.innerHTML = ""; 
+                const message = document.createElement("div");
+                message.className = "alert-success alert-dismissible";
+                message.innerHTML = `
+                    <span>You have checked in successfully!</span>
+                    <button class="close-btn-alert" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+                `;
+                container.appendChild(message);
+            })
+            .catch(err => {
+                console.error("Check-in failed:", err);
+            });
+        }); 
+    }
+
+    let selectedParkId = null;
+    function beThereAt(parkId) {
+        requireLoginThen(() => {
+            selectedParkId = parkId;
+            document.getElementById("arrivalTimeInput").value = "";  // Clear previous input
+            const timeModal = new bootstrap.Modal(document.getElementById("timeModal"));
+            timeModal.show();
+        });
+    }   
 
     // Event listeners for park cards
     document.addEventListener("DOMContentLoaded", function () {
@@ -609,6 +718,46 @@
         document.querySelectorAll('#details-button').forEach(button => {
             button.addEventListener('click', function (e) {
                 e.stopPropagation(); 
+            });
+        });
+
+        document.getElementById("confirmTimeBtn").addEventListener("click", function () {
+            const time = document.getElementById("arrivalTimeInput").value;
+            if (!time) return;
+
+            fetch("/api/bethere/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ park_id: selectedParkId, time: time })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById("checkin-message-container");
+                container.innerHTML = "";
+
+                const message = document.createElement("div");
+                if (data.status) {
+                    message.className = "alert-success alert-dismissible";
+                    message.innerHTML = `
+                        <span>Success! We look forward to seeing you at ${data.time}</span>
+                        <button class="close-btn-alert" onclick="this.parentElement.remove()" title="Dismiss">&times;</button>
+                    `;
+                } else {
+                    message.className = "alert-error alert-dismissible";
+                    message.innerHTML = `
+                        <span>${data.error || "Invalid input"}</span>
+                        <button class="close-btn-alert" onclick="this.parentElement.remove()" title="Dismiss">&times;</button>
+                    `;
+                }
+
+                container.appendChild(message);
+                bootstrap.Modal.getInstance(document.getElementById("timeModal")).hide();
+            })
+            .catch(err => {
+                console.error("Be There At failed:", err);
             });
         });
     });
