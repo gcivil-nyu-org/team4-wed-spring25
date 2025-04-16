@@ -207,7 +207,7 @@
                 <ul class="results-list">
                     {% for pet in pet_results %}
                         <li>
-                            <a href="{% url 'profiles:pet_detail' pet.owner.user.username pet.id %}">
+                            <a href="{% url 'profiles:pet_detail' username=pet.owner.user.username pet_id=pet.id %}?from_search=1">
                                 {{ pet.name }}{% if pet.breed %} ({{ pet.breed }}){% endif %}
                             </a>
                         </li>

@@ -51,7 +51,7 @@
             <div class="card shadow-sm profile-edit-card animate-on-load">
                 <div class="card-header profile-card-header text-center position-relative">
                     <h2 class="mb-0">Edit Your Profile</h2>
-                    <a href="{% url 'profile' username=user.username %}" class="btn btn-back position-absolute end-0 top-50 translate-middle-y me-3">
+                    <a href="{% url 'profiles:profile' username=user.username %}" class="btn btn-back position-absolute end-0 top-50 translate-middle-y me-3">
                         Back
                     </a>
                 </div>

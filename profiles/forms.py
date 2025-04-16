@@ -73,11 +73,19 @@ class PetProfileForm(forms.ModelForm):
 
     class Meta:
         model = PetProfile
-        fields = ["name", "breed", "age", "pet_picture", "personality", "favorite_food"]
+        fields = [
+            "name",
+            "breed",
+            "age",
+            "gender",
+            "pet_picture",
+            "personality",
+            "favorite_food",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "breed": forms.TextInput(attrs={"class": "form-control"}),
+            "pet_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "personality": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "favorite_food": forms.TextInput(attrs={"class": "form-control"}),
-            "pet_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "gender": forms.Select(attrs={"class": "form-select"}),
         }
