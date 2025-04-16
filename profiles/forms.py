@@ -11,23 +11,6 @@ class UserProfileForm(forms.ModelForm):
         ("Queens", "Queens"),
         ("Bronx", "Bronx"),
         ("Staten Island", "Staten Island"),
-        ("Harlem", "Harlem"),
-        ("Upper East Side", "Upper East Side"),
-        ("Upper West Side", "Upper West Side"),
-        ("Midtown", "Midtown"),
-        ("Chelsea", "Chelsea"),
-        ("Lower Manhattan", "Lower Manhattan"),
-        ("Financial District", "Financial District"),
-        ("Williamsburg", "Williamsburg"),
-        ("Bushwick", "Bushwick"),
-        ("Park Slope", "Park Slope"),
-        ("DUMBO", "DUMBO"),
-        ("Flushing", "Flushing"),
-        ("Long Island City", "Long Island City"),
-        ("Astoria", "Astoria"),
-        ("Fordham", "Fordham"),
-        ("Riverdale", "Riverdale"),
-        ("St. George", "St. George"),
     ]
 
     website = forms.URLField(
