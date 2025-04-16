@@ -385,6 +385,64 @@ class ParkDetailViewTest(TestCase):
                     },
                 }
             },
+            display_name="Central Park",
+            slug="central-park-1234",
+        )
+
+        self.park2 = DogRunNew.objects.create(
+            id="2",
+            prop_id="4321",
+            name="Allison Pond Park",
+            address="Staten Island",
+            dogruns_type="Small",
+            accessible="Yes",
+            notes="Test park notes",
+            google_name="Allison Pond Park",
+            borough="Q",
+            zip_code="United States",
+            formatted_address="Allison Pond Park, Staten Island, NY 10301, USA",
+            latitude=40.7987768,
+            longitude=-73.9537196,
+            display_name="Allison Pond Park",
+            slug="allison-pond-park-4321",
+        )
+
+    def test_park_detail_page_loads(self):
+        url = self.park.detail_page_url()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "parks/park_detail.html")
+        self.assertContains(response, "Central Park")
+
+    def test_redirect_on_wrong_slug(self):
+        url = reverse("park_detail", kwargs={"slug": "wrong-slug", "id": self.park.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 301)
+
+        correct_response = url = reverse(
+            "park_detail", kwargs={"slug": self.park.slug, "id": self.park.id}
+        )
+
+        self.assertRedirects(response, correct_response, status_code=301)
+
+    def test_404_on_nonexistent_id(self):
+        url = reverse("park_detail", kwargs={"slug": "central-park", "id": "-4"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_redirect_on_wrong_id_right_slug(self):
+        url = reverse(
+            "park_detail", kwargs={"slug": "central-park", "id": self.park2.id}
+        )
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 301)
+
+        expected_url = reverse(
+            "park_detail", kwargs={"slug": self.park2.slug, "id": self.park2.id}
+        )
+        self.assertRedirects(
+            response, expected_url, status_code=301, target_status_code=200
         )
 
 

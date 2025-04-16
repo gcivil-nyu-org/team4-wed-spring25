@@ -5,7 +5,9 @@ from django.http import (  # noqa: F401  # Ignore "imported but unused"
     HttpResponseForbidden,
     HttpResponse,
     JsonResponse,
+    HttpResponsePermanentRedirect,
 )
+from django.urls import reverse  # noqa: F401  # Ignore "imported but unused"
 from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
 from django.db.models.functions import Cast
 from .models import (
@@ -172,7 +174,17 @@ def park_and_map(request):
         parks = parks.filter(borough=borough_value)
 
     # Convert parks to JSON (for JS use)
-    parks_json = json.dumps(list(parks.values()))
+    # parks_json = json.dumps(list(parks.values()))
+
+    parks_json = json.dumps(
+        [
+            {
+                **model_to_dict(park),
+                "url": park.detail_page_url(),
+            }
+            for park in parks
+        ]
+    )
 
     # Render the template
     return render(
@@ -192,6 +204,11 @@ def park_and_map(request):
 @never_cache
 def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
+
+    # Check slug, if incorrect, redirect to correct one
+    if slug != park.slug:
+        return HttpResponsePermanentRedirect(park.detail_page_url())
+
     images = ParkImage.objects.filter(park=park)
     reviews = park.reviews.all()
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
@@ -218,7 +235,7 @@ def park_detail(request, slug, id):
 
             if not rating_value.isdigit():
                 messages.error(request, "Please select a rating before submitting.")
-                return redirect("park_detail", slug=park.slug, id=park.id)
+                return redirect(park.detail_page_url())
 
             rating = int(rating_value)
             if rating < 1 or rating > 5:
@@ -270,7 +287,6 @@ def park_detail(request, slug, id):
                 )
 
             messages.success(request, "Your review was submitted successfully!")
-            return redirect("park_detail", slug=park.slug, id=park.id)
 
         elif form_type == "check_in":
             ParkPresence.objects.create(
@@ -299,11 +315,13 @@ def park_detail(request, slug, id):
                     status="on_the_way",
                     time=arrival_time,
                 )
-
+            
+        # report reviews
         elif form_type == "report_review":
             if request.user.is_authenticated:
                 review_id = request.POST.get("review_id")
                 reason = request.POST.get("reason", "").strip()
+
                 if review_id and reason:
                     review = get_object_or_404(Review, id=review_id)
                     ReviewReport.objects.create(
@@ -312,8 +330,9 @@ def park_detail(request, slug, id):
                     messages.success(
                         request, "Your review report was submitted successfully."
                     )
-                    return redirect("park_detail", slug=park.slug, id=park.id)
-
+                return redirect(park.detail_page_url())
+        return redirect(park.detail_page_url())
+    
     park_json = json.dumps(model_to_dict(park))
 
     return render(
@@ -337,7 +356,7 @@ def delete_review(request, review_id):
     if request.user == review.user:
         review.delete()
         messages.success(request, "You have successfully deleted the review!")
-        return redirect("park_detail", slug=review.park.slug, id=review.park.id)
+        return redirect(review.park.detail_page_url())
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
 
@@ -346,10 +365,9 @@ def delete_review(request, review_id):
 def delete_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
     if image.user == request.user:
-        park_id = image.park.id
         image.delete()
         messages.success(request, "You have successfully deleted the image!")
-        return redirect("park_detail", slug=image.park.slug, id=park_id)
+        return redirect(image.park.detail_page_url())
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
 
@@ -365,5 +383,5 @@ def report_image(request, image_id):
         if reason:
             ImageReport.objects.create(user=request.user, image=image, reason=reason)
             messages.success(request, "You have successfully reported the image!")
-            return redirect("park_detail", slug=image.park.slug, id=image.park.id)
-    return redirect("park_detail", slug=image.park.slug, id=image.park.id)
+            return redirect(image.park.detail_page_url())
+    return redirect(image.park.detail_page_url())

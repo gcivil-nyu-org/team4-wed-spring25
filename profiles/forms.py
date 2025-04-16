@@ -4,6 +4,15 @@ from .models import UserProfile, PetProfile
 
 
 class UserProfileForm(forms.ModelForm):
+    BOROUGH_CHOICES = [
+        ("", "Choose your location"),
+        ("Manhattan", "Manhattan"),
+        ("Brooklyn", "Brooklyn"),
+        ("Queens", "Queens"),
+        ("Bronx", "Bronx"),
+        ("Staten Island", "Staten Island"),
+    ]
+
     website = forms.URLField(
         required=False,
         widget=forms.URLInput(
@@ -21,19 +30,25 @@ class UserProfileForm(forms.ModelForm):
             }
         ),
     )
+    location = forms.ChoiceField(
+        choices=BOROUGH_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
 
     class Meta:
         model = UserProfile
         fields = [
+            "name",
+            "bio",
             "profile_picture",
             "location",
-            "phone_number",
             "website",
-            "bio",
+            "phone_number",
             "signature",
         ]
         widgets = {
-            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
             "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "signature": forms.TextInput(attrs={"class": "form-control"}),
             "profile_picture": forms.ClearableFileInput(
