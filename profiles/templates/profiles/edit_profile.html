@@ -51,12 +51,12 @@
             <div class="card shadow-sm profile-edit-card animate-on-load">
                 <div class="card-header profile-card-header text-center position-relative">
                     <h2 class="mb-0">Edit Your Profile</h2>
-                    <a href="{% url 'profile' username=user.username %}" class="btn btn-back position-absolute end-0 top-50 translate-middle-y me-3">
+                    <a href="{% url 'profiles:profile' username=user.username %}" class="btn btn-back position-absolute end-0 top-50 translate-middle-y me-3">
                         Back
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <form id="profileEditForm" method="POST" enctype="multipart/form-data" action="{% url 'edit_profile' %}">
+                    <form id="profileEditForm" method="POST" enctype="multipart/form-data" action="{% url 'profiles:edit_profile' %}">
                         {% csrf_token %}
 
                         {% with profile_picture_field=form.profile_picture %}
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (response.redirected) {
                     window.location.href = response.url;
                 } else {
-                    const profileUrl = "{% url 'profile' username=user.username %}";
+                    const profileUrl = "{% url 'profiles:profile' username=user.username %}";
                     if (profileUrl) {
                         window.location.href = profileUrl;
                     } else {
