@@ -8,9 +8,9 @@
     {% if messages %}
         <div class="mt-3">
             {% for message in messages %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ message }}
-                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         </div>
@@ -267,14 +267,14 @@
                         {% endif %}
 
                         <!-- Images Section -->
-                        {% if review.images.all %}
+                        {% if review.visible_images %}
                             
 
                             <div class="scrollable-image-wrapper position-relative mt-2">
                                 <button class="scroll-btn scroll-left" type="button" aria-label="Scroll left">&#8249;</button>
                                                               
                                 <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
-                                  {% for img in review.images.all %}
+                                  {% for img in review.visible_images %}
                                     <img 
                                         data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
                                         data-full="{{ img.image.url }}"
