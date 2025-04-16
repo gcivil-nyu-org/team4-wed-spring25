@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "parks",
     "profiles.apps.ProfilesConfig",
     "announcements",
+    "moderation",
 ]
 
 MIDDLEWARE = [

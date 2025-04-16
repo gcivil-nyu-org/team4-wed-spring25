@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% load display_rating %}
+{% load tz %}
+{% load image_filters %}
+
+{% block title %}Moderation Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Dashboard</h2>
+
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Summary -->
+    <!-- <div class="alert alert-info">
+        Total reported reviews: {{ reported_reviews|length }} | Total reported images: {{ image_reports|length }}
+    </div> -->
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" id="moderationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="true">
+                Reported Reviews
+                <span class="p-1" style="background-color: #806056; color: white; border-radius: 50%; ">{{ reported_reviews|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab" aria-controls="images" aria-selected="false">
+                Reported Images
+                <span class="p-1" style="background-color: #806056; color: white; border-radius: 50%; ">{{ image_reports|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="removed-tab" data-bs-toggle="tab" data-bs-target="#removed" type="button" role="tab" aria-controls="removed" aria-selected="false">Removed Content</button>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content mt-3">
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade show active" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+            {% if reported_reviews %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Reported Reviews</h4>
+                    <select id="sortSelector" class="form-select w-auto">
+                        <option value="latest">Most Recent</option> 
+                        <option value="recent">Newest First Report</option>
+                        <option value="most-reported">Most Reported</option>
+                        <option value="oldest">Oldest First Report</option>
+                    </select>
+                </div>
+
+                {% for review in reported_reviews %}
+                    <div class="review-card card mb-3" 
+                         data-reported-at="{{ review.first_reported|date:'U' }}" 
+                         data-latest-reported="{{ review.latest_reported|date:'U' }}" 
+                         data-report-count="{{ review.report_count }}">
+                         <div class="card-body py-4 px-3">
+
+                            <!-- Report Content Area -->
+                            <div class="d-flex flex-column gap-3">
+
+                                <!-- Reported Stats -->
+                                <div class="d-flex flex-column gap-2 border-bottom">
+                                    <div class="d-flex gap-3">
+                                        <span style="font-weight: bold; color: red;"> {{ review.report_count }} {% if review.report_count == 1 %} Report {% else %} Reports {% endif %} </span>
+                                        <span style="font-weight: bold;"> | </span>
+                                        <span class="text-dark fw-semibold">First Reported:</span>
+                                        <span class="text-secondary">{{ review.first_reported|date:"F j, Y, h:i a" }}</span>
+                                    </div>
+                                    
+                                    <div class="">
+                                        <strong>Reasons:</strong>
+                                        <ul class="">
+                                            {% for report in review.reports.all %}
+                                                <li class="reasons list-group-item px-0 py-1">
+                                                    <div class="d-flex">
+                                                        <div style="min-width: max-content;">
+                                                            <small class="text-muted me-2">
+                                                                {{ report.reported_at|date:"M d, Y, h:i A" }}
+                                                            </small>
+                                                        </div>
+
+                                                        <div class="d-flex gap-2">
+                                                            <span>
+                                                                <strong class="text-primary">{{ report.reported_by.username }}
+                                                                    {% if report.reported_by.is_staff %}
+                                                                        <span class="badge bg-danger">Admin</span>
+                                                                    {% endif %}
+                                                                </strong>
+                                                            </span>
+                                                            <span>{{ report.reason }}</span>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- Preview of Reported Review -->
+                                <div class="pb-4 border-bottom">
+                                    <strong >Reported Review:</strong>
+                                    <!-- Review Card -->
+                                    <div class="border p-3 d-flex flex-column gap-2 mt-2 bg-light">
+                                        <h6 class="card-title mb-1">Review by <span class="text-danger fw-bold">{{ review.user.username }}</span> 
+                                            in <a href="{{ review.park.detail_page_url }}" style="color: #6D4C41; font-weight: bold;">{{ review.park.display_name }}</a> 
+                                        </h6>
+                                        
+                                        <div class="p-3 pt-0 d-flex flex-column gap-2 py-3 ">
+                                            <div class="review d-flex justify-content-between align-items-start">
+                                                <div class="d-flex flex-column">
+                                                    <!-- <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p> -->
+                                                    <p class="d-flex gap-1 m-0">
+                                                        <span class="d-flex gap-0 align-items-center">
+                                                            {% render_stars review.rating 17 %}
+                                                        </span>
+                                                        <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                                                    </p>
+                                                    
+                                                </div>
+                                            </div>
+                                            {% if review.text %}
+                                                <div>{{ review.text }}</div>
+                                            {% endif %}
+                    
+                                            {% if review.images.all %}
+                                                <div class="scrollable-image-wrapper position-relative mt-2">
+                                                    <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
+                                                    {% for img in review.images.all %}
+                                                        <img 
+                                                            data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
+                                                            data-full="{{ img.image.url }}"
+                                                            class="lazyload review-thumbnail"
+                                                            data-review-id="{{ review.id }}"
+                                                            alt="Review Image" 
+                                                            style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                                            loading="lazy" 
+                                                        />
+                                                    {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                        
+                                <!-- Action Buttons -->
+                                <div class="pt-2">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                                        <form method="post" action="{% url 'moderation_action' %}" class="prevent-double-submit">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_review">
+                                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm action-button">Remove Review</button>
+                                        </form>
+
+                                        <form method="post" action="{% url 'moderation_action' %}" class="prevent-double-submit">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="dismiss_report">
+                                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                                            <button type="submit" class="btn btn-success btn-sm action-button">Dismiss Report</button>
+                                        </form>
+
+                                        <!-- <a href="#" class="btn btn-outline-primary btn-sm">View Profile</a> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No reported reviews.</p>
+                {% endfor %}
+            {% else %}
+                <p>No review reports.</p>
+            {% endif %}
+        </div>
+
+        <!-- Images Tab -->
+        <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">
+            Coming Soon
+            <!-- {% if image_reports %}
+                {% for report in image_reports %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Reported by {{ report.user.username }}</h5>
+                            <p class="card-text"><strong>Reason:</strong> {{ report.reason }}</p>
+                            <p class="card-text"><strong>Image Uploaded by:</strong> {{ report.image.user.username }}</p>
+                            <img src="{{ report.image.image.url }}" class="img-thumbnail mt-2" width="200" alt="Reported Image">
+                            <p class="text-muted"><small>Reported on {{ report.created_at|date:"M d, Y H:i" }}</small></p>
+
+                            <div class="mt-3 d-flex gap-2 flex-wrap">
+                                <a class="btn btn-outline-danger btn-sm" href="#">Remove Image</a>
+                                <a class="btn btn-outline-secondary btn-sm" href="#">Dismiss</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No image reports.</p>
+            {% endif %} -->
+        </div>
+
+        <!-- Removed Content Tab -->
+        <div class="tab-pane fade" id="removed" role="tabpanel" aria-labelledby="removed-tab">
+            Coming Soon
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect = document.getElementById("sortSelector");
+        const container = document.getElementById("reviews");
+        const reviewCards = Array.from(container.querySelectorAll(".review-card"));
+
+        function sortReviews() {
+            const sortBy = sortSelect.value;
+
+            const sorted = [...reviewCards].sort((a, b) => {
+                if (sortBy === "most-reported") {
+                    return b.dataset.reportCount - a.dataset.reportCount;
+                } else if (sortBy === "oldest") {
+                    return a.dataset.reportedAt - b.dataset.reportedAt;
+                } else if (sortBy === "latest") {
+                    return b.dataset.latestReported - a.dataset.latestReported;  // NEW
+                } else {
+                    return b.dataset.reportedAt - a.dataset.reportedAt;
+                }
+            });
+
+            sorted.forEach(card => container.appendChild(card));
+        }
+
+        // Run sort immediately on page load
+        sortReviews();
+
+        // Re-sort when selection changes
+        sortSelect.addEventListener("change", sortReviews);
+    });
+</script>
+
+<style>
+    .nav-tabs .nav-link {
+        color: #6D4C41 !important;
+        font-weight: 600 !important;
+        background-color: transparent !important;
+        border: 1px solid #dee2e6 !important;
+
+        margin-right: 5px !important;
+        border-top-left-radius: 0.5rem !important;
+        border-top-right-radius: 0.5rem !important;
+        transition: background-color 0.3s, color 0.3s !important;
+    }
+
+    .nav-tabs .nav-link.active {
+        background-color: #6D4C41 !important;
+        color: white !important;
+        font-weight: 700 !important;
+        border: 1px solid #6D4C41 !important;
+        z-index: 1 !important;
+        position: relative !important;
+    }
+
+    .nav-tabs {
+        border-bottom: 1px solid #dee2e6 !important;
+    }
+
+    .review-card {
+        border-left: 5px solid #6D4C41;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* lighter default shadow */
+        transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+
+    .review-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); 
+        transform: translateY(-2px); 
+    }
+
+    ul {
+        list-style-type: disc; /* or circle/square */
+        padding-left: 1.5rem;  /* ensures the bullets aren't flush against the edge */
+    }
+
+    .report-reasons {
+        display: block;
+        margin-left: 2rem;
+    }
+
+    .report-list li {
+        margin-left: 2rem;  /* or padding-left: 2rem; */
+    }
+
+    .action-button {
+        height: 40px;
+        border-radius: 8px;
+    }
+</style>
+
+
+<script>
+    // Disable buttons on click
+    document.addEventListener("DOMContentLoaded", function () {
+        const forms = document.querySelectorAll("form.prevent-double-submit");
+
+        forms.forEach(form => {
+            form.addEventListener("submit", function (e) {
+                const clickedButton = form.querySelector("button[type='submit']");
+
+                // Disable all submit buttons
+                document.querySelectorAll("button[type='submit']").forEach(btn => {
+                    btn.disabled = true;
+                });
+
+                // Change text only for the one that was clicked
+                if (clickedButton) {
+                    clickedButton.innerText = "Processing...";
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
