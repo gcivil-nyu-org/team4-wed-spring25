@@ -315,7 +315,6 @@ def park_detail(request, slug, id):
                     status="on_the_way",
                     time=arrival_time,
                 )
-            
         # report reviews
         elif form_type == "report_review":
             if request.user.is_authenticated:
@@ -332,7 +331,6 @@ def park_detail(request, slug, id):
                     )
                 return redirect(park.detail_page_url())
         return redirect(park.detail_page_url())
-    
     park_json = json.dumps(model_to_dict(park))
 
     return render(
