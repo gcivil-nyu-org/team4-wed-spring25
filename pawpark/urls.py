@@ -17,20 +17,13 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from homepage import views as homepage_views
-from homepage import error_views
 from django.conf import settings
 from django.conf.urls.static import static
-
-
-# from homepage.views import test_db_connection
+from pawpark import error_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
-    path("", include("homepage.urls")),
-    path("health_check/", homepage_views.health_check),
-    path("dbtest/", homepage_views.test_db_connection),
     path("profiles/", include("profiles.urls")),
     path("test400/", error_views.trigger_400),
     path("test403/", error_views.trigger_403),

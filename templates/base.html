@@ -235,6 +235,41 @@
             margin: 0;
             padding: 0;
         }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 12px 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;     /* soft red background */
+            color: #721c24;                /* deep red text */
+            border: 1px solid #f5c6cb;     /* red border */
+            padding: 12px 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn-alert {
+            background: none;
+            border: none;
+            color: #525252;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 
@@ -316,10 +351,41 @@
             let selectedFiles = [];
     
             if (!imageUpload || !imagePreview) return;
-    
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
             imageUpload.addEventListener("change", function () {
                 const newFiles = Array.from(this.files);
-                selectedFiles = selectedFiles.concat(newFiles); // Overwrite current selection
+
+                const validFiles = [];
+                const errorMessages = [];
+
+                newFiles.forEach(file => {
+                    if (!ALLOWED_TYPES.includes(file.type)) {
+                        errorMessages.push(`${file.name} is not a supported format.`);
+                        return;
+                    }
+                    if (file.size > MAX_FILE_SIZE) {
+                        errorMessages.push(`${file.name} exceeds the 5MB limit.`);
+                        return;
+                    }
+                    validFiles.push(file);
+                });
+
+                if (errorMessages.length > 0) {
+                    const warningMsg = document.createElement("div");
+                    warningMsg.className = "alert alert-danger mt-3";
+                    warningMsg.innerHTML = errorMessages.join("<br>");
+                    imagePreview.insertAdjacentElement("beforebegin", warningMsg);
+                    setTimeout(() => warningMsg.remove(), 6000);
+                }
+
+                if (validFiles.length === 0) {
+                    this.value = "";
+                    return;
+                }
+
+                selectedFiles = selectedFiles.concat(validFiles);
                 this.value = "";
                 renderPreviews();
             });
@@ -367,8 +433,11 @@
     
         // Function to Open the Image in a Popup
         function openImagePopup(imageSrc) {
-            const popup = window.open("", "_blank", "width=800,height=600");
-            popup.document.write(`<img src="${imageSrc}" style="width: 100%; height: auto; border-radius: 10px;">`);
+            const modalImg = document.getElementById("modalPreviewImg");
+            modalImg.src = imageSrc;
+
+            const imageModal = new bootstrap.Modal(document.getElementById("imagePreviewModal"));
+            imageModal.show();
         }
     </script>
     {% block extra_scripts %}{% endblock %}
