@@ -57,43 +57,28 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
 
-    .profile-details dl {
-        margin-bottom: 0;
-        text-align: left;
+    .profile-detail-field a {
+        color: #6D4C41;
+        text-decoration: none;
     }
-    .profile-details dt {
-        font-weight: 600;
-        color: #333;
-        padding-right: 0.5em;
-        margin-bottom: 1rem;
-        float: left;
-        clear: left;
-        width: 110px;
-        display: flex;
-        align-items: center;
+    .profile-detail-field a:hover {
+        text-decoration: underline;
     }
-     .profile-details dt i.fa-fw {
-        margin-right: 8px;
+
+    .profile-details {
+        color: #555;
+    }
+
+    .profile-details i.fa-fw {
         color: #888;
         font-size: 0.95em;
         width: 1.2em;
         text-align: center;
     }
-    .profile-details dd {
-        margin-left: 120px;
-        margin-bottom: 1rem;
-        color: #555;
-        word-wrap: break-word;
-        padding-top: 0.1em;
-    }
-    .profile-details dd a {
-        color: #6D4C41;
-        text-decoration: none;
-    }
-    .profile-details dd a:hover {
-        text-decoration: underline;
-    }
 
+    #joined-date {
+        font-size: 12px;
+    }
 
     .pet-list-card {
         border: 1px solid #eee;
@@ -216,7 +201,7 @@
         <div class="col-lg-10 col-xl-9">
             <div class="card shadow-sm profile-card animate-on-load">
                 <div class="card-header profile-card-header text-center">
-                    <h2 class="mb-0">{% if is_own_profile %}My Profile{% else %}{{ profile_user.username }}'s Profile{% endif %}</h2>
+                    <h2 class="mb-0">{{ profile_user.username }}</h2>
                 </div>
                 <div class="card-body p-4">
                    <div class="row align-items-center">
@@ -224,22 +209,54 @@
                            {% if user_profile.profile_picture and user_profile.profile_picture.url %}
                                <img src="{{ user_profile.profile_picture.url }}" alt="{{ profile_user.username }}'s profile picture" class="profile-picture-display">
                            {% else %}
-                               <img src="{% static 'static/images/default_user.png' %}" alt="Default profile picture" class="profile-picture-display">
+                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png" alt="Default Profile Picture" class="profile-picture-display"></img>
                            {% endif %}
                        </div>
                        <div class="col-md-8">
-                           <h3 class="mb-3 text-center text-md-start">{{ profile_user.username }}</h3>
-                           <div class="profile-details mt-3">
-                               <dl>
-                                   <dt><i class="fas fa-envelope fa-fw"></i>Email:</dt><dd>{{ profile_user.email }}</dd>
-                                   <dt><i class="fas fa-calendar-alt fa-fw"></i>Joined:</dt><dd>{{ profile_user.date_joined|date:"Y-m-d" }}</dd>
-                                   <dt><i class="fas fa-map-marker-alt fa-fw"></i>Location:</dt><dd>{{ user_profile.location|default:"Not provided" }}</dd>
-                                   <dt><i class="fas fa-phone fa-fw"></i>Phone:</dt><dd>{{ user_profile.phone_number|default:"Not provided" }}</dd>
-                                   <dt><i class="fas fa-link fa-fw"></i>Website:</dt><dd>{% if user_profile.website %}<a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer">{{ user_profile.website }}</a>{% else %}None{% endif %}</dd>
-                                   <dt><i class="fas fa-info-circle fa-fw"></i>Bio:</dt><dd>{{ user_profile.bio|default:"No bio available"|linebreaksbr }}</dd>
-                                   <dt><i class="fas fa-signature fa-fw"></i>Signature:</dt><dd>"{{ user_profile.signature|default:"-"|linebreaksbr }}"</dd>
-                               </dl>
-                           </div>
+                            <div class="profile-details d-flex flex-column gap-4">
+                                {% if user_profile.name or profile_user.date_joined %}
+                                <div class="profile-detail-field d-flex flex-column gap-2 justify-content-between mb-3">
+                                    {% if user_profile.name %}
+                                    <h3 class="m-0" style="font-weight: bold;">{{ user_profile.name }}</h3>
+                                    {% endif %}
+
+                                    {% if profile_user.date_joined %}    
+                                    <div id="joined-date" class="profile-detail-field d-flex gap-2 align-items-center">
+                                        <i class="fas fa-calendar-alt fa-fw"></i>
+                                        <span>Joined: {{ profile_user.date_joined|date:"Y-m-d" }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                {% if user_profile.bio %}   
+                                <div class="profile-detail-field d-flex gap-3 align-items-center">
+                                    <i class="fas fa-info-circle fa-fw"></i>
+                                    <span>{{ user_profile.bio }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if user_profile.website %}    
+                                <div class="profile-detail-field d-flex gap-3 align-items-center">
+                                    <i class="fas fa-link fa-fw"></i>
+                                    <a href="{{ user_profile.website }}">{{ user_profile.website }}</a>
+                                </div>
+                                {% endif %}
+                                
+                                {% if user_profile.location %}    
+                                <div class="profile-detail-field d-flex gap-3 align-items-center">
+                                    <i class="fas fa-map-marker-alt fa-fw"></i>
+                                    <span>{{ user_profile.location }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if user_profile.signature %}    
+                                <div class="profile-detail-field d-flex gap-3 align-items-center">
+                                    <i class="fas fa-signature fa-fw"></i>
+                                    <em>{{ user_profile.signature }}</em>
+                                </div>
+                                {% endif %}
+                            </div>
                            {% if is_own_profile %}
                            <div class="text-center mt-4">
                                <a href="{% url 'edit_profile' %}" class="btn btn-profile-action btn-edit-profile">

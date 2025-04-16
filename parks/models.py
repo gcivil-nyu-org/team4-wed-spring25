@@ -3,6 +3,7 @@ from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
+from django.urls import reverse
 
 
 class DogRun(models.Model):
@@ -51,6 +52,10 @@ class DogRunNew(models.Model):
         self.slug = slugify(combined)
         super().save(*args, **kwargs)
 
+    # function to easily get url of park_detail
+    def detail_page_url(self):
+        return reverse("park_detail", kwargs={"slug": self.slug, "id": self.id})
+
 
 class Review(models.Model):
     park = models.ForeignKey(
@@ -60,6 +65,17 @@ class Review(models.Model):
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Soft Delete fields
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="removed_reviews",
+    )
 
     class Meta:
         db_table = "park_reviews"
@@ -84,6 +100,18 @@ class ParkImage(models.Model):
         "Review", on_delete=models.CASCADE, null=True, blank=True, related_name="images"
     )
     image = CloudinaryField("image")
+
+    # Soft deletion fields:
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="removed_images",
+        help_text="Admin who removed the image",
+    )
 
     def __str__(self):
         return f"Image for {self.park.name}"

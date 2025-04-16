@@ -2,8 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import (  # noqa: F401  # Ignore "imported but unused"
     HttpResponseForbidden,
     HttpResponse,
+    HttpResponsePermanentRedirect,
 )
-from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count
+from django.urls import reverse  # noqa: F401  # Ignore "imported but unused"
+from django.db.models import OuterRef, Subquery, CharField, Q, Avg, Count, Prefetch
 from django.db.models.functions import Cast
 from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
 from django.forms.models import model_to_dict
@@ -48,7 +50,9 @@ def park_and_map(request):
     accessible_value = request.GET.get("accessible", "").strip()
     borough_value = request.GET.get("borough", "").strip().upper()
 
-    thumbnail = ParkImage.objects.filter(park_id=OuterRef("pk")).values("image")[:1]
+    thumbnail = ParkImage.objects.filter(
+        park_id=OuterRef("pk"), is_removed=False, review__is_removed=False
+    ).values("image")[:1]
 
     # Fetch all dog runs from the database
     parks = (
@@ -57,8 +61,8 @@ def park_and_map(request):
         .prefetch_related("images")
         .annotate(
             thumbnail_url=Cast(Subquery(thumbnail), output_field=CharField()),
-            average_rating=Avg("reviews__rating"),
-            review_count=Count("reviews"),
+            average_rating=Avg("reviews__rating", filter=Q(reviews__is_removed=False)),
+            review_count=Count("reviews", filter=Q(reviews__is_removed=False)),
         )
     )
 
@@ -84,7 +88,20 @@ def park_and_map(request):
         parks = parks.filter(borough=borough_value)
 
     # Convert parks to JSON (for JS use)
-    parks_json = json.dumps(list(parks.values()))
+    # parks_json = json.dumps(list(parks.values()))
+
+    parks_json = json.dumps(
+        [
+            {
+                **model_to_dict(park),
+                "thumbnail_url": park.thumbnail_url,
+                "average_rating": park.average_rating,
+                "review_count": park.review_count,
+                "url": park.detail_page_url(),
+            }
+            for park in parks
+        ]
+    )
 
     # Render the template
     return render(
@@ -103,8 +120,23 @@ def park_and_map(request):
 
 def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
-    images = ParkImage.objects.filter(park=park)
-    reviews = park.reviews.all()
+
+    # Check slug, if incorrect, redirect to correct one
+    if slug != park.slug:
+        return HttpResponsePermanentRedirect(park.detail_page_url())
+
+    images = ParkImage.objects.filter(
+        park=park, is_removed=False, review__is_removed=False
+    )
+
+    # Prefetch only non-removed images for each review
+    visible_images = Prefetch(
+        "images",
+        queryset=ParkImage.objects.filter(is_removed=False),
+        to_attr="visible_images",
+    )
+    reviews = park.reviews.filter(is_removed=False).prefetch_related(visible_images)
+
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
 
     if request.user.is_authenticated and request.method == "POST":
@@ -116,7 +148,7 @@ def park_detail(request, slug, id):
 
             if not rating_value.isdigit():
                 messages.error(request, "Please select a rating before submitting.")
-                return redirect("park_detail", slug=park.slug, id=park.id)
+                return redirect(park.detail_page_url())
 
             rating = int(rating_value)
             if rating < 1 or rating > 5:
@@ -148,7 +180,7 @@ def park_detail(request, slug, id):
                     )
 
             messages.success(request, "Your review was submitted successfully!")
-            return redirect("park_detail", slug=park.slug, id=park.id)
+            return redirect(park.detail_page_url())
         # report reviews
         elif form_type == "report_review":
             if request.user.is_authenticated:
@@ -156,13 +188,23 @@ def park_detail(request, slug, id):
                 reason = request.POST.get("reason", "").strip()
             if review_id and reason:
                 review = get_object_or_404(Review, id=review_id)
-                ReviewReport.objects.create(
-                    review=review, reported_by=request.user, reason=reason
-                )
-                messages.success(
-                    request, "Your review report was submitted successfully."
-                )
-                return redirect("park_detail", slug=park.slug, id=park.id)
+
+                # prevent duplicate reports by the same user
+                exists = ReviewReport.objects.filter(
+                    review=review, reported_by=request.user
+                ).exists()
+                if exists:
+                    messages.error(
+                        request, "You have already reported this review before."
+                    )
+                else:
+                    ReviewReport.objects.create(
+                        review=review, reported_by=request.user, reason=reason
+                    )
+                    messages.success(
+                        request, "Your review report was submitted successfully."
+                    )
+                return redirect(park.detail_page_url())
 
     park_json = json.dumps(model_to_dict(park))
 
@@ -185,7 +227,7 @@ def delete_review(request, review_id):
     if request.user == review.user:
         review.delete()
         messages.success(request, "You have successfully deleted the review!")
-        return redirect("park_detail", slug=review.park.slug, id=review.park.id)
+        return redirect(review.park.detail_page_url())
     else:
         return HttpResponseForbidden("You are not allowed to delete this review.")
 
@@ -194,10 +236,9 @@ def delete_review(request, review_id):
 def delete_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
     if image.user == request.user:
-        park_id = image.park.id
         image.delete()
         messages.success(request, "You have successfully deleted the image!")
-        return redirect("park_detail", slug=image.park.slug, id=park_id)
+        return redirect(image.park.detail_page_url())
     return HttpResponseForbidden("You are not allowed to delete this image.")
 
 
@@ -208,10 +249,21 @@ def contact_view(request):
 @login_required
 def report_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
+
     if request.method == "POST":
         reason = request.POST.get("reason", "").strip()
         if reason:
-            ImageReport.objects.create(user=request.user, image=image, reason=reason)
-            messages.success(request, "You have successfully reported the image!")
-            return redirect("park_detail", slug=image.park.slug, id=image.park.id)
-    return redirect("park_detail", slug=image.park.slug, id=image.park.id)
+            # Check if this user already reported this image
+            already_reported = ImageReport.objects.filter(
+                user=request.user, image=image
+            ).exists()
+            if already_reported:
+                messages.error(request, "You have already reported this image before.")
+            else:
+                ImageReport.objects.create(
+                    user=request.user, image=image, reason=reason
+                )
+                messages.success(request, "You have successfully reported the image!")
+        return redirect(image.park.detail_page_url())
+
+    return redirect(image.park.detail_page_url())

@@ -31,8 +31,12 @@ after_success:
   - coverage report
   - coveralls --service=travis-pro
 
+before_deploy:
+  - gem install dpl -v 1.10.16
+
 deploy:
   - provider: elasticbeanstalk
+    edge: true
     bucket_name: elasticbeanstalk-us-east-1-783764589295
     bucket_path: pawpark
     access_key_id: $AWS_ACCESS_KEY_ID_DEV
@@ -46,6 +50,7 @@ deploy:
     skip_cleanup: 'true'
 
   - provider: elasticbeanstalk
+    edge: true
     bucket_name: elasticbeanstalk-us-east-1-940482403872
     region: us-east-1
     bucket_path: pawpark-prod
