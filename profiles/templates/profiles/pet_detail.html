@@ -2,13 +2,29 @@
 {% load static %}
 
 {% block title %}{{ pet.name }} - Pet Profile{% endblock %}
-
 {% block extra_head %}
 <style>
     .pet-detail-card { font-family: 'Nunito', Arial, sans-serif; border: none; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); background-color: #ffffff; margin-bottom: 2.5rem; }
     .pet-detail-header { font-family: 'Poppins', sans-serif; background-color: #6D4C41 !important; color: white; border-bottom: none; padding: 1.25rem 1.5rem; text-align: center; }
     .pet-detail-header h1 { margin-bottom: 0; font-size: 1.8rem; font-weight: 600; }
     .pet-detail-card .card-body { padding: 2rem; }
+    .btn-back {
+    background-color: #6D4C41;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease-in-out;
+    margin-bottom: 1rem;
+}
+    .btn-back:hover {
+        background-color: #5a3b32;
+        text-decoration: none;
+        color: white;
+    }
     .pet-picture-display { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; margin-bottom: 1.5rem; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); display: block; margin-left: auto; margin-right: auto; }
     .pet-detail-image-placeholder { width: 200px; height: 200px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #f0f0f0; color: #ccc; font-size: 5rem; margin-bottom: 1.5rem; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); margin-left: auto; margin-right: auto; }
     .pet-details dl { margin-bottom: 1.5rem; text-align: left; }
@@ -27,10 +43,17 @@
     .btn-back-profile:hover { background-color: #5d4037; border-color: #5d4037; color: white; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .animate-on-load { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
+
 </style>
 {% endblock %}
 
 {% block content %}
+    <div class="container mt-4 mb-3">
+    <a href="{% url 'profiles:search' %}" class="btn-back">
+        ← Back to Search
+    </a>
+</div>
+
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8 col-xl-7">
@@ -48,9 +71,19 @@
                     </div>
                     <div class="pet-details">
                         <dl>
-                            <dt><i class="fas fa-tag fa-fw"></i>Breed:</dt> <dd>{{ pet.breed }}</dd>
-                            <dt><i class="fas fa-birthday-cake fa-fw"></i>Age:</dt> <dd>{{ pet.age }}</dd>
-                            {% if pet.gender %} <dt><i class="fas fa-venus-mars fa-fw"></i>Gender:</dt> <dd>{{ pet.get_gender_display|default:pet.gender }}</dd> {% endif %}
+                            <dt><i class="fas fa-tag fa-fw"></i>Breed:</dt> <dd>{{ pet.breed|default:"Not specified" }}</dd>
+                            <dt><i class="fas fa-birthday-cake fa-fw"></i>Age:</dt> <dd>{{ pet.age|default:"Not specified" }}</dd>
+                            {% if pet.gender %}
+                                <dt><i class="fas fa-venus-mars fa-fw"></i>Gender:</dt> <dd>{{ pet.get_gender_display }}</dd>
+                            {% endif %}
+
+                            <dt><i class="fas fa-user fa-fw"></i>Owner:</dt>
+                            <dd>
+                                <a href="{% url 'profiles:profile' username=pet.owner.user.username %}">
+                                    {{ pet.owner.user.username }}
+                                </a>
+                            </dd>
+
                             {% if pet.species %} <dt><i class="fas fa-dna fa-fw"></i>Species:</dt> <dd>{{ pet.species }}</dd> {% endif %}
                             <dt><i class="fas fa-smile fa-fw"></i>Personality:</dt> <dd>{{ pet.personality|default:"Not specified" }}</dd>
                             <dt><i class="fas fa-bone fa-fw"></i>Favorite Food:</dt> <dd>{{ pet.favorite_food|default:"Not specified" }}</dd>
@@ -59,10 +92,14 @@
                     </div>
                     <div class="text-center mt-4 pt-3 border-top">
                         {% if is_owner_viewing %}
-                            <a href="{% url 'edit_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-edit-pet-detail"> <i class="fas fa-edit"></i> Edit </a>
-                            <a href="{% url 'delete_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-delete-pet-detail"> <i class="fas fa-trash-alt"></i> Delete </a>
+                            <a href="{% url 'profiles:edit_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-edit-pet-detail"> <i class="fas fa-edit"></i> Edit </a>
+                            <a href="{% url 'profiles:delete_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-delete-pet-detail"> <i class="fas fa-trash-alt"></i> Delete </a>
                         {% endif %}
-                        <a href="{% url 'profile' username=profile_user.username %}" class="btn btn-pet-action btn-back-profile"> <i class="fas fa-arrow-left"></i> Back to Profile </a>
+                        {% if not request.GET.from_search %}
+                        <a href="{% url 'profiles:profile' username=profile_user.username %}" class="btn btn-pet-action btn-back-profile">
+                            <i class="fas fa-arrow-left"></i> Back to Profile
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
