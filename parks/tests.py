@@ -841,6 +841,7 @@ class RenderStarsTests(TestCase):
         self.assertEqual(result["empty_stars"], 0)
         self.assertEqual(result["size"], size)
 
+
 class ParkPresenceTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -955,6 +956,7 @@ class ModalInteractionTests(TestCase):
         self.assertContains(response, "imagePreviewModal")
         self.assertContains(response, "modalImage")
 
+
 class ReplaceFilterTests(TestCase):
     def test_replace_basic(self):
         result = image_filters.replace("hello world", "world,there")
@@ -975,4 +977,3 @@ class ReplaceFilterTests(TestCase):
     def test_replace_no_match(self):
         result = image_filters.replace("hello", "z,x")
         self.assertEqual(result, "hello")
-
