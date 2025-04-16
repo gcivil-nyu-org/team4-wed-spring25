@@ -330,6 +330,11 @@
                             <a class="nav-link" href="{% url 'register' %}">Sign Up</a>
                         </li>
                     {% endif %}
+                    {% if user.is_authenticated and user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'moderation_dashboard' %}">Dashboard</a>
+                        </li>
+                    {% endif %}
                 </ul>
 
             </div>
