@@ -352,7 +352,7 @@ def park_detail(request, slug, id):
                     messages.success(
                         request, "Your review report was submitted successfully."
                     )
-                    return redirect(park.detail_page_url())
+        # return redirect(park.detail_page_url())
 
         elif form_type == "submit_reply":
             if request.user.is_authenticated:
@@ -378,7 +378,7 @@ def park_detail(request, slug, id):
                     )
 
                     messages.success(request, "Reply submitted successfully!")
-            return redirect(park.detail_page_url())
+        return redirect(park.detail_page_url())
 
     park_json = json.dumps(model_to_dict(park))
 

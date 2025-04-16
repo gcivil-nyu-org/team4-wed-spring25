@@ -76,12 +76,14 @@
                             </form> -->
                             {% else %}
                             <!-- Report Button -->
-                            <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}" >Report</a>
+                                {% if img.id %}
+                                <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">Report</a>
+                                {% endif %}
                             {% endif %}
                         </div>
             
                         <!-- Modal -->
-                        {% if img.user != user %}
+                        {% if img.user != user and img.id %}
                         <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">

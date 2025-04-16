@@ -953,10 +953,11 @@ class ImageUploadTests(TestCase):
                 "form_type": "submit_review",
                 "text": "Nice park!",
                 "rating": "5",
-                "images": image,
+                "images": [image],
             },
+            follow=True,
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(ParkImage.objects.count(), 1)
 
 
