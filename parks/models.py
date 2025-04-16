@@ -65,6 +65,8 @@ class Review(models.Model):
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # Soft Delete fields
     is_removed = models.BooleanField(default=False)
     removed_at = models.DateTimeField(null=True, blank=True)
     removed_by = models.ForeignKey(
@@ -72,7 +74,7 @@ class Review(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="reviews_removed_by",
+        related_name="removed_reviews",
     )
 
     class Meta:
@@ -99,6 +101,7 @@ class ParkImage(models.Model):
     )
     image = CloudinaryField("image")
 
+    # Soft deletion fields:
     is_removed = models.BooleanField(default=False)
     removed_at = models.DateTimeField(null=True, blank=True)
     removed_by = models.ForeignKey(
@@ -106,7 +109,8 @@ class ParkImage(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="removed_parkimages",
+        related_name="removed_images",
+        help_text="Admin who removed the image",
     )
 
     def __str__(self):
@@ -160,3 +164,31 @@ class ReplyReport(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     reason = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ParkPresence(models.Model):
+    STATUS_CHOICES = [
+        ("Current", "Current"),
+        ("On their way", "On their way"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="park_presences"
+    )
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="presences"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+    # This is now the proper datetime for scheduled arrival
+    time = models.DateTimeField(null=True, blank=True)
+
+    checked_in_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "park_presence"
+        unique_together = ("user", "park")
+        ordering = ["-checked_in_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.park.display_name} ({self.status})"

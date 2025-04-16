@@ -51,4 +51,6 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
+    path("api/checkin/", views.checkin_view, name="checkin"),
+    path("api/bethere/", views.bethere_view, name="bethere"),
 ]
