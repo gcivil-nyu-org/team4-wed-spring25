@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filters %}
+
 
 {% block title %}
     {% if is_own_profile %}My Profile{% else %}{{ profile_user.username }}'s Profile{% endif %} - PAWPARK
@@ -326,6 +328,75 @@
         </div>
     </div>
 
+    <div class="card shadow-sm pets-section-card mt-5 animate-on-load">
+        <div class="card-header pets-section-header">
+            <h2 class="mb-0">My Reviews</h2>
+        </div>    
+        <div class="card-body">
+            {% if user_reviews %}
+                {% for review in user_reviews %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <p><strong>Park:</strong> {{ review.park.name }}</p>
+                        <p><strong>Rating:</strong> {{ review.rating }} stars</p>
+                        <p>{{ review.text }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"Y-m-d H:i" }}</small>
+                        <form method="POST" action="{% url 'delete_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-link">Delete</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">You haven't posted any reviews yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card shadow-sm pets-section-card mt-4 animate-on-load">
+        <div class="card-header pets-section-header">
+            <h2 class="mb-0">My Replies</h2>
+        </div>
+        <div class="card-body">
+            {% if user_replies %}
+                {% for reply in user_replies %}
+                    <div class="border-bottom pb-3 mb-3 ps-3 border-start">
+                        <p><strong>On {{ reply.review.park.name }}</strong></p>
+                        <p style="text-indent: 1rem;">{{ reply.text }}</p>
+                        <small class="text-muted">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+                        <form method="POST" action="{% url 'delete_reply' reply.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-link">Delete</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">You haven't replied to any reviews yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card shadow-sm pets-section-card mt-4 animate-on-load">
+        <div class="card-header pets-section-header">
+            <h2 class="mb-0">My Uploaded Images</h2>
+        </div>    
+        <div class="card-body">
+            {% if user_images %}
+                <div class="d-flex flex-wrap gap-3">
+                    {% for img in user_images %}
+                        <div class="position-relative" style="width: 180px;">
+                            <img src="{{ img.image.url|replace:'upload/,upload/w_300,q_auto,f_auto/' }}" class="img-thumbnail" style="height: 150px; object-fit: cover;">
+                            <form method="POST" action="{% url 'delete_image' img.id %}" class="position-absolute top-0 end-0">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-link">Delete</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">You haven't uploaded any images yet.</p>
+            {% endif %}
+        </div>
+    </div>    
 </div>
 
 

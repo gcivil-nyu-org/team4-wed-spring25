@@ -85,10 +85,10 @@
                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% else %}
-                            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
-                                class="rounded-circle" 
-                                alt="{{ park.display_name }}" 
-                                style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
+                            <img src="/media/park_default/park_default.png" 
+                                 class="rounded-circle" 
+                                 alt="{{ park.display_name }}" 
+                                 style="width: 75px; height: 75px; object-fit: cover; border: 2px solid #6D4C41;"
                             >
                         {% endif %}
                     </div>
@@ -353,13 +353,9 @@
                         aspect-ratio: 2 / 1;
                     ">
                         <img 
-                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : 'https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp'}"
+                            src="${park.thumbnail_url ? `https://res.cloudinary.com/depkyxqbe/${ park.thumbnail_url }` : '/media/park_default/park_default.png'}"
                             alt="${park.display_name}" 
-                            style="
-                                height: 100%;
-                                width: 100%;
-                                object-fit: cover;
-                            "
+                            style="height: 100%; width: 100%; object-fit: cover;"
                         >
                     </div>
 

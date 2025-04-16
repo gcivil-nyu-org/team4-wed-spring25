@@ -1,10 +1,11 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport
+from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport, Reply
 from parks.templatetags.display_rating import render_stars
 from django.utils.text import slugify
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class ErrorPageTests(TestCase):
@@ -436,6 +437,35 @@ class ParkDetailViewTest(TestCase):
             response, expected_url, status_code=301, target_status_code=200
         )
 
+    def test_submit_review_non_integer_rating(self):
+        self.client.login(username="reporter", password="testpass123")
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {"form_type": "submit_review", "text": "Oops", "rating": "bad"},
+            follow=True,
+        )
+        self.assertContains(response, "Please select a rating before submitting.")
+        self.assertEqual(
+            Review.objects.filter(park=self.park).count(), 1
+        )  # no new review
+
+    def test_submit_review_with_images(self):
+        self.client.login(username="reporter", password="testpass123")
+        image = SimpleUploadedFile(
+            "test.jpg", b"file_content", content_type="image/jpeg"
+        )
+        response = self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {
+                "form_type": "submit_review",
+                "text": "Here's a photo!",
+                "rating": "5",
+                "images": image,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ParkImage.objects.filter(park=self.park).count(), 1)
+
 
 class ReportFunctionalityTests(TestCase):
     def setUp(self):
@@ -731,3 +761,142 @@ class RenderStarsTests(TestCase):
         self.assertEqual(result["half_stars"], 0)
         self.assertEqual(result["empty_stars"], 0)
         self.assertEqual(result["size"], size)
+
+
+class ReplyViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.park = DogRunNew.objects.create(
+            id="99",
+            prop_id="9999",
+            name="Reply Park",
+            address="Somewhere",
+            dogruns_type="All",
+            accessible="Yes",
+            formatted_address="Reply Address",
+            latitude=40.0,
+            longitude=-73.0,
+            slug="reply-park-9999",
+        )
+        self.review = Review.objects.create(
+            park=self.park, text="Original Review", rating=4, user=self.user
+        )
+        self.park_detail_url = reverse(
+            "park_detail", args=[self.park.slug, self.park.id]
+        )
+
+    def test_submit_reply_to_review(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            self.park_detail_url,
+            {
+                "form_type": "submit_reply",
+                "parent_review_id": self.review.id,
+                "reply_text": "This is a reply to a review.",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            Reply.objects.filter(
+                review=self.review, text="This is a reply to a review."
+            ).exists()
+        )
+
+    def test_submit_nested_reply_to_reply(self):
+        parent_reply = Reply.objects.create(
+            review=self.review, user=self.user, text="Parent reply"
+        )
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            self.park_detail_url,
+            {
+                "form_type": "submit_reply",
+                "parent_review_id": self.review.id,
+                "parent_reply_id": parent_reply.id,
+                "reply_text": "Child reply",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            Reply.objects.filter(parent_reply=parent_reply, text="Child reply").exists()
+        )
+
+    def test_submit_reply_with_invalid_parent_reply_id(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            self.park_detail_url,
+            {
+                "form_type": "submit_reply",
+                "parent_review_id": self.review.id,
+                "parent_reply_id": 9999,
+                "reply_text": "Fallback to review",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        reply = Reply.objects.get(text="Fallback to review")
+        self.assertIsNone(reply.parent_reply)
+
+    def test_submit_reply_without_text(self):
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            self.park_detail_url,
+            {
+                "form_type": "submit_reply",
+                "parent_review_id": self.review.id,
+                "reply_text": "   ",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Reply.objects.filter(review=self.review).count(), 0)
+
+    def test_submit_reply_unauthenticated(self):
+        response = self.client.post(
+            self.park_detail_url,
+            {
+                "form_type": "submit_reply",
+                "parent_review_id": self.review.id,
+                "reply_text": "Unauthorized reply",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.url)
+        self.assertFalse(Reply.objects.filter(text="Unauthorized reply").exists())
+
+    def test_delete_own_reply(self):
+        self.client.login(username="testuser", password="testpass")
+        reply = Reply.objects.create(
+            review=self.review, user=self.user, text="To be deleted"
+        )
+        response = self.client.post(reverse("delete_reply", args=[reply.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Reply.objects.filter(id=reply.id).exists())
+
+    def test_delete_others_reply_forbidden(self):
+        other = User.objects.create_user(username="other", password="pass")
+        reply = Reply.objects.create(review=self.review, user=other, text="Not yours")
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(reverse("delete_reply", args=[reply.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Reply.objects.filter(id=reply.id).exists())
+
+    def test_report_reply_success(self):
+        other = User.objects.create_user(username="other", password="pass")
+        reply = Reply.objects.create(review=self.review, user=other, text="Report me")
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            reverse("report_reply", args=[reply.id]), {"reason": "Spam"}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(reply.reports.exists())
+
+    def test_report_own_reply_fails(self):
+        reply = Reply.objects.create(
+            review=self.review, user=self.user, text="Self report"
+        )
+        self.client.login(username="testuser", password="testpass")
+        response = self.client.post(
+            reverse("report_reply", args=[reply.id]), {"reason": "Oops"}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(reply.reports.count(), 0)

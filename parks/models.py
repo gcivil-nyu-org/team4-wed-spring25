@@ -65,6 +65,15 @@ class Review(models.Model):
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviews_removed_by",
+    )
 
     class Meta:
         db_table = "park_reviews"
@@ -89,6 +98,16 @@ class ParkImage(models.Model):
         "Review", on_delete=models.CASCADE, null=True, blank=True, related_name="images"
     )
     image = CloudinaryField("image")
+
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="removed_parkimages",
+    )
 
     def __str__(self):
         return f"Image for {self.park.name}"
@@ -118,3 +137,26 @@ class ImageReport(models.Model):
 
     def __str__(self):
         return f"Report by {self.user.username} on Image {self.image.id}"
+
+
+class Reply(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="replies")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_reply = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Reply by {self.user.username} on review {self.review.id}"
+
+
+class ReplyReport(models.Model):
+    reply = models.ForeignKey(Reply, on_delete=models.CASCADE, related_name="reports")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
