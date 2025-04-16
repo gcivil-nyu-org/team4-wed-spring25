@@ -13,12 +13,9 @@ from datetime import timedelta
 from parks.models import ParkPresence
 
 from unittest.mock import patch
-<<<<<<< HEAD
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from cloudinary import config as cloudinary_config
-=======
->>>>>>> ff1ee06 (Revert to commit 70a810d)
 
 
 @patch(
