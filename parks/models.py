@@ -66,6 +66,17 @@ class Review(models.Model):
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Soft Delete fields
+    is_removed = models.BooleanField(default=False) 
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="removed_reviews"
+    )
+
     class Meta:
         db_table = "park_reviews"
         ordering = ["-created_at"]
@@ -89,6 +100,18 @@ class ParkImage(models.Model):
         "Review", on_delete=models.CASCADE, null=True, blank=True, related_name="images"
     )
     image = CloudinaryField("image")
+
+    # Soft deletion fields:
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="removed_images",
+        help_text="Admin who removed the image",
+    )
 
     def __str__(self):
         return f"Image for {self.park.name}"
