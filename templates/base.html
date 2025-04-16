@@ -277,10 +277,13 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'contact' %}">Contact</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profiles:search' %}">Search</a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' username=user.username %}"> Profile </a>
-                         </li>
+                            <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">Profile</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>
@@ -293,6 +296,7 @@
                         </li>
                     {% endif %}
                 </ul>
+
 
             </div>
         </div>

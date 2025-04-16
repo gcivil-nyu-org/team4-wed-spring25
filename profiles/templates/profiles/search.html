@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search - PAWPARK{% endblock %}
+
+{% block extra_head %}
+<style>
+    .results-card {
+        font-family: 'Nunito', Arial, sans-serif;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .results-card h4 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #6D4C41;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+    }
+
+    .results-card ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .results-card li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .results-card li a {
+        color: #6D4C41;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .results-card li a:hover {
+        text-decoration: underline;
+    }
+
+    .results-empty {
+        font-style: italic;
+        color: #999;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .search-wrapper {
+        max-width: 900px;
+        margin: 4rem auto;
+    }
+
+    .section-card {
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+        min-height: 400px;
+    }
+
+    .section-header {
+        background-color: #6D4C41;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: -2rem -2rem 1rem;
+    }
+
+    .results-list li {
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #eee;
+        list-style: none;
+    }
+
+    .results-list li a {
+        text-decoration: none;
+        color: #6D4C41;
+        font-weight: 500;
+    }
+
+    .results-list li a:hover {
+        text-decoration: underline;
+    }
+
+    .form-select,
+    .form-control {
+        border-radius: 8px 0 0 8px;
+    }
+
+    .btn-primary {
+        border-radius: 0 8px 8px 0;
+    }
+
+    .search-form-wrapper .form-label {
+        font-size: 0.95rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .search-form-wrapper .form-control,
+    .search-form-wrapper .form-select {
+        min-width: 160px;
+    }
+
+    .form-check-input {
+        margin-top: 8px;
+    }
+
+    .form-check-label {
+        margin-left: 0.4rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container search-wrapper">
+    <div class="section-card">
+        <div class="section-header">Search for Users or Pets</div>
+
+        <form method="get" action="{% url 'profiles:search' %}" class="search-form-wrapper mt-4">
+            <div class="d-flex flex-wrap gap-3 align-items-end justify-content-start">
+
+                <div>
+                    <label class="form-label fw-bold mb-1">Search</label>
+                    <input type="text" name="q" class="form-control" placeholder="Name..." value="{{ request.GET.q }}">
+                </div>
+
+                <div>
+                    <label class="form-label fw-bold mb-1">Type</label>
+                    <select class="form-select" name="type" onchange="this.form.submit()">
+                        <option value="users" {% if request.GET.type == "users" %}selected{% endif %}>Users</option>
+                        <option value="pets" {% if request.GET.type == "pets" %}selected{% endif %}>Pets</option>
+                    </select>
+                </div>
+
+                {% if request.GET.type == "pets" %}
+                    <div>
+                        <label class="form-label fw-bold mb-1">Breed</label>
+                        <select name="breed" class="form-select">
+                            <option value="">All Breeds</option>
+                            {% for breed in breeds %}
+                                <option value="{{ breed }}" {% if request.GET.breed == breed %}selected{% endif %}>{{ breed }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-bold mb-1">Min Age</label>
+                        <input type="number" class="form-control" name="min_age" min="0" value="{{ request.GET.min_age }}">
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-bold mb-1">Max Age</label>
+                        <input type="number" class="form-control" name="max_age" min="0" value="{{ request.GET.max_age }}">
+                    </div>
+
+                    <div>
+                        <label class="form-label fw-bold mb-1">Gender</label>
+                        <select class="form-select" name="gender">
+                            <option value="">All</option>
+                            <option value="male" {% if request.GET.gender == "male" %}selected{% endif %}>Male</option>
+                            <option value="female" {% if request.GET.gender == "female" %}selected{% endif %}>Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" name="has_photo" value="1" id="has_photo"
+                            {% if request.GET.has_photo %}checked{% endif %}>
+                        <label class="form-check-label fw-bold" for="has_photo">With Photo</label>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <button type="submit" class="btn btn-primary px-4 mt-2">Search</button>
+                </div>
+            </div>
+        </form>
+
+        {% if query %}
+            <h4 class="text-center mt-4">Search results for "<strong>{{ query }}</strong>"</h4>
+
+            {% if search_type == "users" %}
+                <h5 class="mt-4">👤 Users</h5>
+                <ul class="results-list">
+                    {% for user in user_results %}
+                        <li><a href="{% url 'profiles:profile' username=user.username %}">{{ user.username }}</a></li>
+                    {% empty %}
+                        <li class="results-empty">No matching users found.</li>
+                    {% endfor %}
+                </ul>
+            {% elif search_type == "pets" %}
+                <h5 class="mt-4">🐶 Pets</h5>
+                <ul class="results-list">
+                    {% for pet in pet_results %}
+                        <li>
+                            <a href="{% url 'profiles:pet_detail' pet.owner.user.username pet.id %}">
+                                {{ pet.name }}{% if pet.breed %} ({{ pet.breed }}){% endif %}
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="results-empty">No matching pets found.</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

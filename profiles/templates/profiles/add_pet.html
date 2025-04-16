@@ -50,7 +50,7 @@
                     <h2 class="mb-0">Add a New Pet</h2>
                 </div>
                 <div class="card-body p-4">
-                    <form id="addPetForm" method="POST" enctype="multipart/form-data" action="{% url 'add_pet' %}" data-profile-url="{% url 'profile' username=user.username %}">
+                    <form id="addPetForm" method="POST" enctype="multipart/form-data" action="{% url 'profiles:add_pet' %}" data-profile-url="{% url 'profiles:profile' username=user.username %}">
                         {% csrf_token %}
                         {% with pet_picture_field=form.pet_picture %}
                             <input type="file" name="{{ pet_picture_field.html_name }}_original" id="{{ pet_picture_field.id_for_label }}" class="d-none" accept="image/*">
@@ -124,7 +124,7 @@
                                 {% endfor %}
 
                                 <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
-                                    <a href="{% url 'profile' username=user.username %}" class="btn btn-cancel-custom">Cancel</a>
+                                    <a href="{% url 'profiles:profile' username=user.username %}" class="btn btn-cancel-custom">Cancel</a>
                                     <button type="submit" class="btn btn-add-pet-submit" id="addPetSubmitBtn">
                                         <i class="fas fa-plus me-2"></i>Add Pet
                                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>

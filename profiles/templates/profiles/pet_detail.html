@@ -59,10 +59,12 @@
                     </div>
                     <div class="text-center mt-4 pt-3 border-top">
                         {% if is_owner_viewing %}
-                            <a href="{% url 'edit_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-edit-pet-detail"> <i class="fas fa-edit"></i> Edit </a>
-                            <a href="{% url 'delete_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-delete-pet-detail"> <i class="fas fa-trash-alt"></i> Delete </a>
+                            <a href="{% url 'profiles:edit_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-edit-pet-detail"> <i class="fas fa-edit"></i> Edit </a>
+                            <a href="{% url 'profiles:delete_pet' pet_id=pet.id %}" class="btn btn-pet-action btn-delete-pet-detail"> <i class="fas fa-trash-alt"></i> Delete </a>
                         {% endif %}
-                        <a href="{% url 'profile' username=profile_user.username %}" class="btn btn-pet-action btn-back-profile"> <i class="fas fa-arrow-left"></i> Back to Profile </a>
+                        <a href="{% url 'profiles:profile' username=profile_user.username %}?from_search=1" class="btn btn-pet-action btn-back-profile">
+                        <i class="fas fa-arrow-left"></i> Back to Profile
+                        </a>
                     </div>
                 </div>
             </div>
