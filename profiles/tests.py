@@ -1,5 +1,4 @@
-from django.test import TestCase, Client, TestCase
-from profiles.templatetags import custom_filters
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from profiles.templatetags.custom_filters import replace
@@ -216,10 +215,6 @@ class ProfileViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "profiles/edit_pet.html")
         self.assertContains(response, "form")
-
-
-from django.test import TestCase
-from profiles.templatetags.custom_filters import replace
 
 
 class CustomFilterTests(TestCase):
