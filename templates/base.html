@@ -280,6 +280,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'profiles:search' %}">Search</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'announcements_list' %}">Announcements</a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">Profile</a>

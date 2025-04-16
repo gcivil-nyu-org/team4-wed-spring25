@@ -160,7 +160,7 @@
                 {% if error_message %}
                     <div class="alert alert-danger mt-3">{{ error_message }}</div>
                 {% endif %}
-                <form method="POST" action="{% url 'park_detail' park.slug park.id %}" enctype="multipart/form-data">
+                <form method="POST" action="{{ park.detail_page_url }}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="form_type" value="submit_review">
 
@@ -238,7 +238,7 @@
                                     <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form method="POST" action="{% url 'park_detail' park.slug park.id %}">
+                                                <form method="POST" action="{{ park.detail_page_url }}">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="form_type" value="report_review">
                                                     <input type="hidden" name="review_id" value="{{ review.id }}">
