@@ -67,14 +67,14 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Soft Delete fields
-    is_removed = models.BooleanField(default=False) 
+    is_removed = models.BooleanField(default=False)
     removed_at = models.DateTimeField(null=True, blank=True)
     removed_by = models.ForeignKey(
         User,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="removed_reviews"
+        related_name="removed_reviews",
     )
 
     class Meta:
