@@ -302,6 +302,8 @@ def park_detail(request, slug, id):
                 )
 
             messages.success(request, "Your review was submitted successfully!")
+            return redirect(park.detail_page_url())
+
         elif form_type == "check_in":
             ParkPresence.objects.create(
                 user=request.user,
@@ -334,25 +336,30 @@ def park_detail(request, slug, id):
             if request.user.is_authenticated:
                 review_id = request.POST.get("review_id")
                 reason = request.POST.get("reason", "").strip()
-            if review_id and reason:
-                review = get_object_or_404(Review, id=review_id)
 
-                # prevent duplicate reports by the same user
-                exists = ReviewReport.objects.filter(
-                    review=review, reported_by=request.user
-                ).exists()
-                if exists:
-                    messages.error(
-                        request, "You have already reported this review before."
-                    )
-                else:
-                    ReviewReport.objects.create(
-                        review=review, reported_by=request.user, reason=reason
-                    )
-                    messages.success(
-                        request, "Your review report was submitted successfully."
-                    )
-        # return redirect(park.detail_page_url())
+                if review_id and reason:
+                    review = get_object_or_404(Review, id=review_id)
+
+                    # prevent duplicate reports by the same user
+                    exists = ReviewReport.objects.filter(
+                        review=review, reported_by=request.user
+                    ).exists()
+
+                    if exists:
+                        messages.error(
+                            request, "You have already reported this review before."
+                        )
+                    else:
+                        ReviewReport.objects.create(
+                            review=review, reported_by=request.user, reason=reason
+                        )
+                        messages.success(
+                            request, "Your review report was submitted successfully."
+                        )
+            else:
+                messages.error(request, "You must be logged in to report a review.")
+
+            return redirect(park.detail_page_url())
 
         elif form_type == "submit_reply":
             if request.user.is_authenticated:

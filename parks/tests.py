@@ -13,8 +13,27 @@ from datetime import timedelta
 from parks.models import ParkPresence
 
 from unittest.mock import patch
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from cloudinary import config as cloudinary_config
 
 
+@patch(
+    "cloudinary.uploader.upload",
+    return_value={
+        "asset_id": "dummy_asset_id",
+        "public_id": "dummy_id",
+        "version": "1234567890",
+        "signature": "dummy_signature",
+        "width": 800,
+        "height": 600,
+        "format": "jpg",
+        "resource_type": "image",
+        "type": "upload",
+        "secure_url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+        "url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+    },
+)
 class ErrorPageTests(TestCase):
     def test_trigger_400(self):
         response = self.client.get("/test400/")
@@ -942,21 +961,27 @@ class ImageUploadTests(TestCase):
         )
 
     def test_upload_image_with_review(self, mock_upload):
-        from django.core.files.uploadedfile import SimpleUploadedFile
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
 
         image = SimpleUploadedFile(
             "test.jpg", b"file_content", content_type="image/jpeg"
         )
+
         response = self.client.post(
             reverse("park_detail", args=[self.park.slug, self.park.id]),
             {
                 "form_type": "submit_review",
                 "text": "Nice park!",
                 "rating": "5",
-                "images": [image],
+                "images": image,
             },
             follow=True,
         )
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ParkImage.objects.count(), 1)
 
