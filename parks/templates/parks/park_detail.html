@@ -2,6 +2,7 @@
 {% load display_rating %}
 {% load tz %}
 {% load image_filters %}
+{% load reply_tags %}
 
 {% block content %}
 <div class="container my-4">
@@ -75,12 +76,14 @@
                             </form> -->
                             {% else %}
                             <!-- Report Button -->
-                            <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}" >Report</a>
+                                {% if img.id %}
+                                <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">Report</a>
+                                {% endif %}
                             {% endif %}
                         </div>
             
                         <!-- Modal -->
-                        {% if img.user != user %}
+                        {% if img.user != user and img.id %}
                         <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -119,8 +122,12 @@
         </div>
         
         {% else %}
-            <img src="https://www.miracle-recreation.com/content/uploads/2018/11/Image-Header_Park.jpg.webp" 
-                 alt="Dog Park Image" class="img-fluid rounded shadow" loading="lazy">
+        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png" 
+            alt="Dog Park Image"
+            class="d-block mx-auto shadow"
+            style="max-width: 100%; height: 250px; object-fit: contain; border-radius: 10px;"
+            loading="lazy">
+
         {% endif %}
     </div>
 
@@ -223,21 +230,15 @@
                                     </span>
                                     <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
                                 </p>
-                                
                             </div>
-        
                             <div class="ms-3 text-end">
                                 {% if user == review.user %}
-                                    <!-- Delete Button for own review -->
                                     <form method="POST" action="{% url 'delete_review' review.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="delete-link">Delete</button>
                                     </form>
                                 {% elif user.is_authenticated %}
-                                    <!-- Report Button for others' reviews -->
                                     <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
-        
-                                    <!-- Report Modal -->
                                     <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -264,8 +265,7 @@
                             </div>
                         </div>
 
-                        <!-- Review Text -->
-                         {% if review.text %}
+                        {% if review.text %}
                             <div>{{ review.text }}</div>
                         {% endif %}
 
@@ -275,7 +275,6 @@
 
                             <div class="scrollable-image-wrapper position-relative mt-2">
                                 <button class="scroll-btn scroll-left" type="button" aria-label="Scroll left">&#8249;</button>
-                                                              
                                 <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
                                   {% for img in review.visible_images %}
                                     <img 
@@ -289,16 +288,49 @@
                                     />
                                   {% endfor %}
                                 </div>
-                              
                                 <button class="scroll-btn scroll-right" type="button" aria-label="Scroll right">&#8250;</button>
-                              </div>
-
-
+                            </div>
                         {% endif %}
 
+                        {% for reply in review.replies.all %}
+                            {% if not reply.parent_reply %}
+                                {% render_replies reply %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Reply Button (bottom-left Reddit style) -->
+                        {% if user.is_authenticated %}
+                        <div class="ms-2 mt-2">
+                            <button class="btn btn-sm btn-reply" data-bs-toggle="modal" data-bs-target="#replyModal{{ review.id }}">
+                                💬 Reply
+                            </button>
+                        </div>
+
+                        <div class="modal fade" id="replyModal{{ review.id }}" tabindex="-1" aria-labelledby="replyModalLabel{{ review.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form method="POST" action="{{ park.detail_page_url }}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_type" value="submit_reply">
+                                        <input type="hidden" name="parent_review_id" value="{{ review.id }}">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="replyModalLabel{{ review.id }}">Reply to Review</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <textarea name="reply_text" class="form-control" rows="3" placeholder="Write your reply here" required></textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">Submit Reply</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 {% endfor %}
-            {% else %}
+                {% else %}
                 <p class="text-muted">No reviews yet. Be the first to leave one!</p>
             {% endif %}
         </div>
@@ -841,5 +873,22 @@
     .carousel-inner, .carousel-item {
         background-color: #f5f2ef !important; /* soft warm beige */
     }
+
+    /* reply button */
+    .btn-reply {
+        background-color: transparent;
+        color: #6c757d;
+        font-size: 0.85rem;
+        padding: 2px 8px;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .btn-reply:hover {
+        background-color: #f0f0f0;
+        color: #495057;
+    }
+
 </style>
 {% endblock %}

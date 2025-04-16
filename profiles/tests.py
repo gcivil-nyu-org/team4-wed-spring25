@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-
+from profiles.templatetags.custom_filters import replace
 from profiles.models import PetProfile
 
 
@@ -219,3 +219,29 @@ class ProfileViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "profiles/edit_pet.html")
         self.assertContains(response, "form")
+
+
+class CustomFilterTests(TestCase):
+    def test_replace_filter_basic(self):
+        result = replace("upload/image.jpg", "upload/,upload/w_300/")
+        self.assertEqual(result, "upload/w_300/image.jpg")
+
+    def test_replace_filter_with_extra_path(self):
+        result = replace("upload/abc/xyz.jpg", "upload/,upload/w_600,q_auto/")
+        self.assertEqual(result, "upload/w_600,q_auto/abc/xyz.jpg")
+
+    def test_replace_filter_with_missing_comma(self):
+        with self.assertRaises(ValueError):
+            replace("upload/a", "justonevalue")  # missing comma
+
+    def test_replace_filter_with_multiple_commas(self):
+        result = replace("upload/a", "upload/,upload/w_300,q_auto,f_auto/")
+        self.assertEqual(result, "upload/w_300,q_auto,f_auto/a")
+
+    def test_replace_filter_with_empty_string(self):
+        result = replace("", "upload/,upload/w_300/")
+        self.assertEqual(result, "")
+
+    def test_replace_filter_no_match(self):
+        result = replace("media/a", "upload/,upload/w_300/")
+        self.assertEqual(result, "media/a")  # nothing to replace

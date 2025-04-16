@@ -17,6 +17,8 @@ from .models import (
     ReviewReport,
     ImageReport,
     ParkPresence,
+    Reply,
+    ReplyReport,
 )
 from django.forms.models import model_to_dict
 from django.contrib.auth import login
@@ -209,8 +211,6 @@ def park_and_map(request):
 @never_cache
 def park_detail(request, slug, id):
     park = get_object_or_404(DogRunNew, id=id)
-
-    # Check slug, if incorrect, redirect to correct one
     if slug != park.slug:
         return HttpResponsePermanentRedirect(park.detail_page_url())
 
@@ -302,6 +302,7 @@ def park_detail(request, slug, id):
                 )
 
             messages.success(request, "Your review was submitted successfully!")
+            return redirect(park.detail_page_url())
 
         elif form_type == "check_in":
             ParkPresence.objects.create(
@@ -335,6 +336,7 @@ def park_detail(request, slug, id):
             if request.user.is_authenticated:
                 review_id = request.POST.get("review_id")
                 reason = request.POST.get("reason", "").strip()
+
                 if review_id and reason:
                     review = get_object_or_404(Review, id=review_id)
 
@@ -342,6 +344,7 @@ def park_detail(request, slug, id):
                     exists = ReviewReport.objects.filter(
                         review=review, reported_by=request.user
                     ).exists()
+
                     if exists:
                         messages.error(
                             request, "You have already reported this review before."
@@ -353,7 +356,37 @@ def park_detail(request, slug, id):
                         messages.success(
                             request, "Your review report was submitted successfully."
                         )
+            else:
+                messages.error(request, "You must be logged in to report a review.")
+
+            return redirect(park.detail_page_url())
+
+        elif form_type == "submit_reply":
+            if request.user.is_authenticated:
+                parent_review_id = request.POST.get("parent_review_id")
+                reply_text = request.POST.get("reply_text", "").strip()
+                parent_reply_id = request.POST.get("parent_reply_id")
+
+                if parent_review_id and reply_text:
+                    parent_review = get_object_or_404(Review, id=parent_review_id)
+
+                    parent_reply = None
+                    if parent_reply_id:
+                        try:
+                            parent_reply = Reply.objects.get(id=parent_reply_id)
+                        except Reply.DoesNotExist:
+                            parent_reply = None  # fallback: just attach to review
+
+                    Reply.objects.create(
+                        review=parent_review,
+                        user=request.user,
+                        text=reply_text,
+                        parent_reply=parent_reply,
+                    )
+
+                    messages.success(request, "Reply submitted successfully!")
         return redirect(park.detail_page_url())
+
     park_json = json.dumps(model_to_dict(park))
 
     return render(
@@ -417,3 +450,27 @@ def report_image(request, image_id):
         return redirect(image.park.detail_page_url())
 
     return redirect(image.park.detail_page_url())
+
+
+@login_required
+def delete_reply(request, reply_id):
+    reply = get_object_or_404(Reply, id=reply_id)
+    if reply.user == request.user:
+        reply.delete()
+        messages.success(request, "Reply deleted successfully.")
+    else:
+        messages.error(request, "You can only delete your own replies.")
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+@login_required
+def report_reply(request, reply_id):
+    if request.method == "POST":
+        reason = request.POST.get("reason", "").strip()
+        reply = get_object_or_404(Reply, id=reply_id)
+        if reply.user != request.user and reason:
+            ReplyReport.objects.create(reply=reply, user=request.user, reason=reason)
+            messages.success(request, "Reply reported successfully.")
+        else:
+            messages.error(request, "You cannot report your own reply.")
+    return redirect(request.META.get("HTTP_REFERER", "/"))

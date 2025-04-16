@@ -1,0 +1,104 @@
+{% load reply_tags %}
+
+<div class="mt-2 ps-3 border-start" style="margin-left: 1rem;">
+    <p class="mb-1 text-muted">
+        <strong>{{ reply.user.username }}</strong>
+        <small class="text-muted">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
+    </p>
+    <p style="text-indent: 1rem;">{{ reply.text }}</p>
+
+    {% if user.is_authenticated %}
+        <button class="btn btn-sm btn-outline-secondary mb-2" data-bs-toggle="modal" data-bs-target="#replyModalReply{{ reply.id }}">
+            💬 Reply
+        </button>
+
+        {% if user == reply.user %}
+        <form method="POST" action="{% url 'delete_reply' reply.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="delete-link">Delete</button>
+        </form>
+    {% elif user.is_authenticated %}
+        <a href="#" class="text-danger small ms-2" data-bs-toggle="modal" data-bs-target="#reportReplyModal{{ reply.id }}">
+            Report
+        </a>
+
+        <!-- Report Reply Modal -->
+        <div class="modal fade" id="reportReplyModal{{ reply.id }}" tabindex="-1" aria-labelledby="reportReplyModalLabel{{ reply.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ park.detail_page_url }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="report_reply">
+                        <input type="hidden" name="reply_id" value="{{ reply.id }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportReplyModalLabel{{ reply.id }}">Report Reply</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="reason">Reason for report:</label>
+                            <textarea name="reason" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-danger">Submit Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+        <!-- Modal to reply to this reply -->
+        <div class="modal fade" id="replyModalReply{{ reply.id }}" tabindex="-1" aria-labelledby="replyModalReplyLabel{{ reply.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ park.detail_page_url }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="submit_reply">
+                        <input type="hidden" name="parent_review_id" value="{{ reply.review.id }}">
+                        <input type="hidden" name="parent_reply_id" value="{{ reply.id }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="replyModalReplyLabel{{ reply.id }}">Reply to {{ reply.user.username }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <textarea name="reply_text" class="form-control" rows="3" placeholder="Write your reply here" required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Submit Reply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Recursively render children replies -->
+    {% for child in reply.children.all %}
+        {% render_replies child %}
+    {% endfor %}
+</div>
+
+<!-- Report Reply Modal -->
+{% if user.is_authenticated and user != reply.user %}
+<div class="modal fade" id="reportReplyModal{{ reply.id }}" tabindex="-1" aria-labelledby="reportReplyModalLabel{{ reply.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'report_reply' reply.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportReplyModalLabel{{ reply.id }}">Report Reply</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="reason">Reason for report:</label>
+                    <textarea name="reason" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+

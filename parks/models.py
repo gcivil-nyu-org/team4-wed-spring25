@@ -143,6 +143,29 @@ class ImageReport(models.Model):
         return f"Report by {self.user.username} on Image {self.image.id}"
 
 
+class Reply(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="replies")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_reply = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="children"
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Reply by {self.user.username} on review {self.review.id}"
+
+
+class ReplyReport(models.Model):
+    reply = models.ForeignKey(Reply, on_delete=models.CASCADE, related_name="reports")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class ParkPresence(models.Model):
     STATUS_CHOICES = [
         ("Current", "Current"),
