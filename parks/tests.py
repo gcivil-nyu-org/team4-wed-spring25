@@ -35,22 +35,22 @@ from cloudinary import config as cloudinary_config
     },
 )
 class ErrorPageTests(TestCase):
-    def test_trigger_400(self):
+    def test_trigger_400(self, _mock=None):
         response = self.client.get("/test400/")
         self.assertEqual(response.status_code, 400)
         self.assertTemplateUsed(response, "400.html")
 
-    def test_trigger_403(self):
+    def test_trigger_403(self, _mock=None):
         response = self.client.get("/test403/")
         self.assertEqual(response.status_code, 403)
         self.assertTemplateUsed(response, "403.html")
 
-    def test_trigger_404(self):
+    def test_trigger_404(self, _mock=None):
         response = self.client.get("/test404/")
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, "404.html")
 
-    def test_trigger_500(self):
+    def test_trigger_500(self, _mock=None):
         response = self.client.get("/test500/")
         self.assertEqual(response.status_code, 500)
         self.assertTemplateUsed(response, "500.html")
