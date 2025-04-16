@@ -11,6 +11,23 @@ class UserProfileForm(forms.ModelForm):
         ("Queens", "Queens"),
         ("Bronx", "Bronx"),
         ("Staten Island", "Staten Island"),
+        ("Harlem", "Harlem"),
+        ("Upper East Side", "Upper East Side"),
+        ("Upper West Side", "Upper West Side"),
+        ("Midtown", "Midtown"),
+        ("Chelsea", "Chelsea"),
+        ("Lower Manhattan", "Lower Manhattan"),
+        ("Financial District", "Financial District"),
+        ("Williamsburg", "Williamsburg"),
+        ("Bushwick", "Bushwick"),
+        ("Park Slope", "Park Slope"),
+        ("DUMBO", "DUMBO"),
+        ("Flushing", "Flushing"),
+        ("Long Island City", "Long Island City"),
+        ("Astoria", "Astoria"),
+        ("Fordham", "Fordham"),
+        ("Riverdale", "Riverdale"),
+        ("St. George", "St. George"),
     ]
 
     website = forms.URLField(
@@ -64,28 +81,74 @@ class UserProfileForm(forms.ModelForm):
         return phone_number
 
 
+ALLOWED_BREEDS = [
+    "Beagle",
+    "Border Collie",
+    "Boston Terrier",
+    "Boxer",
+    "Bulldog",
+    "Chihuahua",
+    "Cocker Spaniel",
+    "Dachshund",
+    "Dalmatian",
+    "Doberman",
+    "French Bulldog",
+    "German Shepherd",
+    "Golden Retriever",
+    "Great Dane",
+    "Labrador Retriever",
+    "Maltese",
+    "Miniature Schnauzer",
+    "Pembroke Welsh Corgi",
+    "Pomeranian",
+    "Poodle",
+    "Pug",
+    "Rottweiler",
+    "Samoyed",
+    "Shiba Inu",
+    "Shih Tzu",
+    "Siberian Husky",
+    "Yorkshire Terrier",
+    "Abyssinian",
+    "American Shorthair",
+    "Bengal",
+    "Birman",
+    "British Shorthair",
+    "Exotic Shorthair",
+    "Maine Coon",
+    "Persian",
+    "Ragdoll",
+    "Russian Blue",
+    "Scottish Fold",
+    "Siamese",
+    "Sphynx",
+]
+breeds = sorted(ALLOWED_BREEDS)
+
+
 class PetProfileForm(forms.ModelForm):
-    age = forms.IntegerField(
-        min_value=0,
+    breed = forms.ChoiceField(
+        choices=[(breed, breed) for breed in breeds],
         required=False,
-        widget=forms.NumberInput(attrs={"class": "form-control"}),
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
 
     class Meta:
         model = PetProfile
         fields = [
             "name",
-            "breed",
             "age",
             "gender",
+            "breed",
             "pet_picture",
             "personality",
             "favorite_food",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "pet_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "personality": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
-            "favorite_food": forms.TextInput(attrs={"class": "form-control"}),
+            "age": forms.NumberInput(attrs={"class": "form-control"}),
             "gender": forms.Select(attrs={"class": "form-select"}),
+            "pet_picture": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "personality": forms.TextInput(attrs={"class": "form-control"}),
+            "favorite_food": forms.TextInput(attrs={"class": "form-control"}),
         }

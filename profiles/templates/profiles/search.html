@@ -8,7 +8,7 @@
     .results-card {
         font-family: 'Nunito', Arial, sans-serif;
         border: none;
-        border-radius: 15px;
+        border-radius: 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         background-color: #fff;
         margin-top: 2rem;
@@ -63,8 +63,8 @@
 
     .section-card {
         background-color: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 25px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         padding: 2rem;
         margin-top: 2rem;
         min-height: 400px;
@@ -74,8 +74,8 @@
         background-color: #6D4C41;
         color: white;
         padding: 1rem 1.5rem;
-        border-top-left-radius: 15px;
-        border-top-right-radius: 15px;
+        border-top-left-radius: 25px;
+        border-top-right-radius: 25px;
         font-size: 1.5rem;
         font-weight: 600;
         margin: -2rem -2rem 1rem;
@@ -97,13 +97,20 @@
         text-decoration: underline;
     }
 
+    .form-control,
     .form-select,
-    .form-control {
-        border-radius: 8px 0 0 8px;
+    .btn {
+        border-radius: 12px;
     }
 
     .btn-primary {
-        border-radius: 0 8px 8px 0;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
     }
 
     .search-form-wrapper .form-label {
@@ -123,6 +130,30 @@
     .form-check-label {
         margin-left: 0.4rem;
     }
+
+    .search-form-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: flex-end;
+    }
+
+    .search-row > div {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .search-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -132,13 +163,11 @@
         <div class="section-header">Search for Users or Pets</div>
 
         <form method="get" action="{% url 'profiles:search' %}" class="search-form-wrapper mt-4">
-            <div class="d-flex flex-wrap gap-3 align-items-end justify-content-start">
-
+            <div class="search-row">
                 <div>
                     <label class="form-label fw-bold mb-1">Search</label>
                     <input type="text" name="q" class="form-control" placeholder="Name..." value="{{ request.GET.q }}">
                 </div>
-
                 <div>
                     <label class="form-label fw-bold mb-1">Type</label>
                     <select class="form-select" name="type" onchange="this.form.submit()">
@@ -146,46 +175,55 @@
                         <option value="pets" {% if request.GET.type == "pets" %}selected{% endif %}>Pets</option>
                     </select>
                 </div>
-
                 {% if request.GET.type == "pets" %}
-                    <div>
-                        <label class="form-label fw-bold mb-1">Breed</label>
-                        <select name="breed" class="form-select">
-                            <option value="">All Breeds</option>
-                            {% for breed in breeds %}
-                                <option value="{{ breed }}" {% if request.GET.breed == breed %}selected{% endif %}>{{ breed }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="form-label fw-bold mb-1">Min Age</label>
-                        <input type="number" class="form-control" name="min_age" min="0" value="{{ request.GET.min_age }}">
-                    </div>
-
-                    <div>
-                        <label class="form-label fw-bold mb-1">Max Age</label>
-                        <input type="number" class="form-control" name="max_age" min="0" value="{{ request.GET.max_age }}">
-                    </div>
-
-                    <div>
-                        <label class="form-label fw-bold mb-1">Gender</label>
-                        <select class="form-select" name="gender">
-                            <option value="">All</option>
-                            <option value="male" {% if request.GET.gender == "male" %}selected{% endif %}>Male</option>
-                            <option value="female" {% if request.GET.gender == "female" %}selected{% endif %}>Female</option>
-                        </select>
-                    </div>
-
-                    <div class="form-check mt-4">
-                        <input class="form-check-input" type="checkbox" name="has_photo" value="1" id="has_photo"
-                            {% if request.GET.has_photo %}checked{% endif %}>
-                        <label class="form-check-label fw-bold" for="has_photo">With Photo</label>
-                    </div>
-                {% endif %}
-
                 <div>
-                    <button type="submit" class="btn btn-primary px-4 mt-2">Search</button>
+                    <label class="form-label fw-bold mb-1">Breed</label>
+                    <select name="breed" class="form-select">
+                        <option value="none" {% if selected_breed == 'none' %}selected{% endif %}>None</option>
+                        <option value="all_breed" {% if selected_breed == 'all_breed' %}selected{% endif %}>All Breeds</option>
+                        {% for b in breeds %}
+                            {% if b and b != 'none' and b != 'all_breed' %}
+                                <option value="{{ b }}" {% if selected_breed == b %}selected{% endif %}>{{ b }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if request.GET.type == "pets" %}
+            <div class="search-row">
+                <div>
+                    <label class="form-label fw-bold mb-1">Min Age</label>
+                    <input type="number" class="form-control" name="min_age" min="0" value="{{ request.GET.min_age }}">
+                </div>
+                <div>
+                    <label class="form-label fw-bold mb-1">Max Age</label>
+                    <input type="number" class="form-control" name="max_age" min="0" value="{{ request.GET.max_age }}">
+                </div>
+                <div>
+                    <label class="form-label fw-bold mb-1">Gender</label>
+                    <select class="form-select" name="gender">
+                        <option value="">All</option>
+                        <option value="male" {% if request.GET.gender == "male" %}selected{% endif %}>Male</option>
+                        <option value="female" {% if request.GET.gender == "female" %}selected{% endif %}>Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="search-row">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="has_photo" value="1" id="has_photo"
+                        {% if request.GET.has_photo %}checked{% endif %}>
+                    <label class="form-check-label fw-bold" for="has_photo">With Photo</label>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ✅ Always show the button -->
+            <div class="search-row search-actions">
+                <div>
+                    <button type="submit" class="btn btn-primary px-4">Search</button>
                 </div>
             </div>
         </form>

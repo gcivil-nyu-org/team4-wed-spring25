@@ -130,24 +130,90 @@ def pet_detail(request, username, pet_id):
 
 @login_required
 def search_view(request):
-
     query = request.GET.get("q", "")
     search_type = request.GET.get("type", "users")
-    selected_breed = request.GET.get("breed", "")
+    submitted_breed = request.GET.get("breed", "")
+    min_age = request.GET.get("min_age")
+    max_age = request.GET.get("max_age")
+    gender = request.GET.get("gender")
+    has_photo = request.GET.get("has_photo")
 
     user_results = []
     pet_results = []
+    ALLOWED_BREEDS = [
+        "Beagle",
+        "Border Collie",
+        "Boston Terrier",
+        "Boxer",
+        "Bulldog",
+        "Chihuahua",
+        "Cocker Spaniel",
+        "Dachshund",
+        "Dalmatian",
+        "Doberman",
+        "French Bulldog",
+        "German Shepherd",
+        "Golden Retriever",
+        "Great Dane",
+        "Labrador Retriever",
+        "Maltese",
+        "Miniature Schnauzer",
+        "Pembroke Welsh Corgi",
+        "Pomeranian",
+        "Poodle",
+        "Pug",
+        "Rottweiler",
+        "Samoyed",
+        "Shiba Inu",
+        "Shih Tzu",
+        "Siberian Husky",
+        "Yorkshire Terrier",
+        "Abyssinian",
+        "American Shorthair",
+        "Bengal",
+        "Birman",
+        "British Shorthair",
+        "Exotic Shorthair",
+        "Maine Coon",
+        "Persian",
+        "Ragdoll",
+        "Russian Blue",
+        "Scottish Fold",
+        "Siamese",
+        "Sphynx",
+    ]
+    breeds = sorted(ALLOWED_BREEDS)
 
-    breeds = (
-        PetProfile.objects.values_list("breed", flat=True).distinct().order_by("breed")
-    )
+    if not query and not submitted_breed:
+        selected_breed_for_template = "all_breed"
+    elif submitted_breed in ["", "none"]:
+        selected_breed_for_template = "all_breed"
+    else:
+        selected_breed_for_template = submitted_breed
 
     if search_type == "users":
         user_results = User.objects.filter(username__icontains=query)
+
     elif search_type == "pets":
-        pet_results = PetProfile.objects.filter(name__icontains=query)
-        if selected_breed:
-            pet_results = pet_results.filter(breed=selected_breed)
+        pet_results = PetProfile.objects.all()
+
+        if query:
+            pet_results = pet_results.filter(name__icontains=query)
+
+        if submitted_breed and submitted_breed not in ["none", "all_breed", ""]:
+            if submitted_breed in ALLOWED_BREEDS:
+                pet_results = pet_results.filter(breed=submitted_breed)
+
+        if min_age:
+            pet_results = pet_results.filter(age__gte=int(min_age))
+        if max_age:
+            pet_results = pet_results.filter(age__lte=int(max_age))
+        if gender:
+            pet_results = pet_results.filter(gender=gender)
+        if has_photo:
+            pet_results = pet_results.exclude(pet_picture__isnull=True).exclude(
+                pet_picture=""
+            )
 
     return render(
         request,
@@ -155,7 +221,7 @@ def search_view(request):
         {
             "query": query,
             "search_type": search_type,
-            "selected_breed": selected_breed,
+            "selected_breed": selected_breed_for_template,
             "user_results": user_results,
             "pet_results": pet_results,
             "breeds": breeds,
