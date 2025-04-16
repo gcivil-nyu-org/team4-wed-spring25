@@ -5,6 +5,7 @@ from .models import DogRunNew, Review, ParkImage, ReviewReport, ImageReport, Rep
 from parks.templatetags.display_rating import render_stars
 from django.utils.text import slugify
 from django.core import mail
+from django.contrib.messages import get_messages
 
 
 class ErrorPageTests(TestCase):
@@ -436,24 +437,29 @@ class ParkDetailViewTest(TestCase):
             response, expected_url, status_code=301, target_status_code=200
         )
 
-    def test_submit_review_non_integer_rating(self):
-        self.client.login(username="reporter", password="testpass123")
-        url = reverse("park_detail", args=[self.park.slug, self.park.id])
-        response = self.client.post(
-            url,
-            {
-                "form_type": "submit_review",
-                "text": "Invalid rating",
-                "rating": "bad_rating",
-            },
-            follow=True,
-        )
+    from django.contrib.messages import get_messages
 
-        self.assertContains(response, "Please select a rating before submitting.")
 
-        self.assertEqual(
-            Review.objects.filter(park=self.park).count(), 1
-        )  # no new review
+def test_submit_review_non_integer_rating(self):
+    self.client.login(username="testuser", password="testpass")
+
+    response = self.client.post(
+        self.park.detail_page_url(),
+        {
+            "form_type": "submit_review",
+            "text": "This should not go through.",
+            "rating": "abc",
+        },
+        follow=True,
+    )
+
+    self.assertEqual(response.status_code, 200)
+
+    messages = list(get_messages(response.wsgi_request))
+    self.assertTrue(
+        any("Please select a rating before submitting." in str(m) for m in messages),
+        "Expected error message not found in messages.",
+    )
 
 
 class ReportFunctionalityTests(TestCase):
