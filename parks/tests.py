@@ -528,6 +528,48 @@ class ReportFunctionalityTests(TestCase):
         self.assertEqual(ImageReport.objects.count(), 0)
         self.assertEqual(response.status_code, 302)
 
+    def test_duplicate_review_report(self):
+        # First report
+        response1 = self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {
+                "form_type": "report_review",
+                "review_id": self.review.id,
+                "reason": "Spam",
+            },
+        )
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(self.review.reports.count(), 1)
+
+        # Second report by same user
+        response2 = self.client.post(
+            reverse("park_detail", args=[self.park.slug, self.park.id]),
+            {
+                "form_type": "report_review",
+                "review_id": self.review.id,
+                "reason": "Still spam",
+            },
+        )
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(self.review.reports.count(), 1)  # should still be 1
+
+    def test_duplicate_image_report(self):
+        # First report
+        response1 = self.client.post(
+            reverse("report_image", args=[self.image.id]),
+            {"reason": "Bad image"},
+        )
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(self.image.reports.count(), 1)
+
+        # Second report by same user
+        response2 = self.client.post(
+            reverse("report_image", args=[self.image.id]),
+            {"reason": "Still bad"},
+        )
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(self.image.reports.count(), 1)  # should still be 1
+
 
 class DeleteTests(TestCase):
     def setUp(self):

@@ -173,12 +173,22 @@ def park_detail(request, slug, id):
                 reason = request.POST.get("reason", "").strip()
             if review_id and reason:
                 review = get_object_or_404(Review, id=review_id)
-                ReviewReport.objects.create(
-                    review=review, reported_by=request.user, reason=reason
-                )
-                messages.success(
-                    request, "Your review report was submitted successfully."
-                )
+
+                # prevent duplicate reports by the same user
+                exists = ReviewReport.objects.filter(
+                    review=review, reported_by=request.user
+                ).exists()
+                if exists:
+                    messages.error(
+                        request, "You have already reported this review before."
+                    )
+                else:
+                    ReviewReport.objects.create(
+                        review=review, reported_by=request.user, reason=reason
+                    )
+                    messages.success(
+                        request, "Your review report was submitted successfully."
+                    )
                 return redirect(park.detail_page_url())
 
     park_json = json.dumps(model_to_dict(park))
@@ -224,10 +234,21 @@ def contact_view(request):
 @login_required
 def report_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
+
     if request.method == "POST":
         reason = request.POST.get("reason", "").strip()
         if reason:
-            ImageReport.objects.create(user=request.user, image=image, reason=reason)
-            messages.success(request, "You have successfully reported the image!")
-            return redirect(image.park.detail_page_url())
+            # Check if this user already reported this image
+            already_reported = ImageReport.objects.filter(
+                user=request.user, image=image
+            ).exists()
+            if already_reported:
+                messages.error(request, "You have already reported this image before.")
+            else:
+                ImageReport.objects.create(
+                    user=request.user, image=image, reason=reason
+                )
+                messages.success(request, "You have successfully reported the image!")
+        return redirect(image.park.detail_page_url())
+
     return redirect(image.park.detail_page_url())
