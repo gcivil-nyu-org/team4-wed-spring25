@@ -33,7 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = data["message"]
             sender = self.scope["user"]
 
-            await self.save_message(sender, self.recipient, message)
+            message_obj = await self.save_message(sender, self.recipient, message)
             logger.debug(f"[receive] Message saved: '{message}'")
 
             await self.channel_layer.group_send(
@@ -42,6 +42,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "chat_message",
                     "message": message,
                     "sender": sender.username,
+                    "timestamp": message_obj.timestamp.isoformat(),
                 },
             )
 
@@ -55,6 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "message": event["message"],
                     "sender": event["sender"],
+                    "timestamp": event["timestamp"],
                 }
             )
         )
@@ -74,5 +76,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, sender, recipient, message):
         logger.debug(f"[save_message] Saving message from {sender} to {recipient}")
         return Message.objects.create(
-            sender=sender, recipient=recipient, content=message
+            sender=sender, recipient=recipient, content=message, 
         )

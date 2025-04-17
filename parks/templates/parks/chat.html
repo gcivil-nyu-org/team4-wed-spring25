@@ -58,24 +58,33 @@
 
     const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + recipientUsername + '/');
 
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const isMe = data.sender === "{{ user.username }}";
-        const messageEl = document.createElement("div");
-        messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
+	socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const isMe = data.sender === "{{ user.username }}";
+    const messageEl = document.createElement("div");
+    messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
 
-        const bubble = document.createElement("div");
-        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
-        bubble.style.maxWidth = "60%";
-        bubble.innerHTML = `
-            <div>${data.message}</div>
-            <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">just now</div>
-        `;
+    const bubble = document.createElement("div");
+    bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
+    bubble.style.maxWidth = "60%";
 
-        messageEl.appendChild(bubble);
-        chatContainer.appendChild(messageEl);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    };
+    // Format timestamp using JS
+    const timestamp = new Date(data.timestamp);
+    const formattedTime = timestamp.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    bubble.innerHTML = `
+        <div>${data.message}</div>
+        <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">${formattedTime}</div>
+    `;
+
+    messageEl.appendChild(bubble);
+    chatContainer.appendChild(messageEl);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+};
+
 
     sendMessageButton.onclick = function() {
         const message = messageInput.value.trim();
