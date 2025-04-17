@@ -51,7 +51,7 @@ def chat_view(request, username):
             Message.objects.create(
                 sender=request.user, recipient=recipient, content=content
             )
-            return redirect("chat", username=username)
+            return redirect("chat_view", username=username)
     return render(
         request, "parks/chat.html", {"recipient": recipient, "messages": messages}
     )
