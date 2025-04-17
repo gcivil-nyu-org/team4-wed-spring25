@@ -24,20 +24,13 @@ from pawpark import error_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
-    # path("", include("homepage.urls")),
-    path("health_check/", homepage_views.health_check),
-    path("dbtest/", homepage_views.test_db_connection),
     path("profiles/", include("profiles.urls")),
     path("test400/", error_views.trigger_400),
     path("test403/", error_views.trigger_403),
     path("test404/", error_views.trigger_404),
     path("test500/", error_views.trigger_500),
-<<<<<<< Updated upstream
     path("announcements/", include("announcements.urls")),
     path("moderation/", include("moderation.urls")),
-
-=======
->>>>>>> Stashed changes
 ]
 
 if settings.DEBUG:

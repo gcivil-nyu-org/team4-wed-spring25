@@ -21,11 +21,19 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm
-from collections import defaultdict
 
 import json
+import datetime
 from django.contrib import messages
+from django.utils import timezone
+from django.utils.timezone import now, localtime
+from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
+from datetime import timedelta
 
+from collections import defaultdict
+
+from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Message
 

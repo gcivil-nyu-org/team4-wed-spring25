@@ -179,10 +179,9 @@ class ParkPresence(models.Model):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
 
-    # This is now the proper datetime for scheduled arrival
 
     # This is now the proper datetime for scheduled arrival
-    time = models.DateDateTimeField(null=True, blank=True)
+    time = models.DateTimeField(null=True, blank=True)
 
 
     checked_in_at = models.DateTimeField(auto_now_add=True)
