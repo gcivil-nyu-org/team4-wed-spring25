@@ -76,5 +76,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, sender, recipient, message):
         logger.debug(f"[save_message] Saving message from {sender} to {recipient}")
         return Message.objects.create(
-            sender=sender, recipient=recipient, content=message, 
+            sender=sender,
+            recipient=recipient,
+            content=message,
         )
