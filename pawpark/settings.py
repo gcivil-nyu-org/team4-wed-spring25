@@ -206,4 +206,3 @@ LOGGING = {
         "level": "DEBUG",
     },
 }
-
