@@ -3,33 +3,64 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Your Messages</h4>
+    <div class="card shadow-sm border-0" style="border-radius: 16px;">
+        <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center px-4 py-3" style="border-radius: 16px 16px 0 0;">
+            <h4 class="mb-0 fw-semibold" style="color: #333;">Your Messages</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body px-0">
             {% if grouped_messages %}
-                <div class="list-group">
+                <div class="list-group list-group-flush">
                     {% for sender_username, msgs in grouped_messages.items %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{% url 'chat_view' sender_username %}" class="text-decoration-none text-dark flex-grow-1">
-                                <h6 class="mb-1 fw-bold">{{ sender_username }}</h6>
-                                <p class="mb-0 text-muted">{{ msgs.0.content|truncatechars:60 }}</p>
-                                <small class="text-muted">{{ msgs.0.timestamp|naturaltime }}</small>
+                        <div class="list-group-item d-flex align-items-start justify-content-between px-4 py-3 message-entry" style="border: none; transition: background 0.2s, transform 0.2s;">
+                            <a href="{% url 'chat_view' sender_username %}" class="text-decoration-none text-dark w-100 d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #ddd; font-weight: bold;">
+                                        {{ sender_username|slice:":1"|upper }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 fw-bold">{{ sender_username }}</h6>
+                                        <small class="text-muted">{{ msgs.0.timestamp|naturaltime }}</small>
+                                    </div>
+                                    <p class="mb-0 text-muted small mt-1">{{ msgs.0.content|truncatechars:60 }}</p>
+                                </div>
                             </a>
                             <form method="post" action="{% url 'delete_conversation' sender_username %}" onsubmit="return confirm('Are you sure you want to delete this conversation?');">
                                 {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger ms-3">
-                                    🗑️
-                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-3" title="Delete conversation">🗑️</button>
                             </form>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="text-muted">You have no messages yet.</p>
+                <p class="text-muted text-center my-4">You have no messages yet.</p>
             {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+    .message-entry:hover {
+        background-color: #f4f4f4;
+        transform: scale(1.01);
+        border-radius: 12px;
+    }
+
+    .list-group-item + .list-group-item {
+        border-top: 1px solid #eee;
+    }
+
+    .btn-outline-danger {
+        border: none;
+        background-color: transparent;
+        color: #d9534f;
+        font-size: 1rem;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #f8d7da;
+        color: #a71d2a;
+    }
+</style>
 {% endblock %}
