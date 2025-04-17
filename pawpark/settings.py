@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,7 +54,21 @@ INSTALLED_APPS = [
     "profiles.apps.ProfilesConfig",
     "announcements",
     "moderation",
+    "channels",
+    "django.contrib.humanize",
 ]
+
+ASGI_APPLICATION = "pawpark.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -172,3 +187,23 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "pawpark.noreply@gmail.com"
 EMAIL_HOST_PASSWORD = "yvtm objm fbrk cimi"
 DEFAULT_FROM_EMAIL = "no-reply@pawpark.com"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
+

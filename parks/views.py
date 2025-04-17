@@ -34,6 +34,63 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from datetime import timedelta
 
+from django.contrib.auth.models import User
+from .models import Message
+from collections import defaultdict
+
+
+@login_required
+def chat_view(request, username):
+    recipient = get_object_or_404(User, username=username)
+    messages = Message.objects.filter(
+        sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
+    )
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            Message.objects.create(
+                sender=request.user, recipient=recipient, content=content
+            )
+            return redirect("chat_view", username=username)
+    return render(
+        request, "parks/chat.html", {"recipient": recipient, "messages": messages}
+    )
+
+
+@login_required
+def all_messages_view(request):
+    user = request.user
+    # Get all messages involving the user, either sent or received
+    messages = (
+        Message.objects.filter(Q(sender=user) | Q(recipient=user))
+        .select_related("sender", "recipient")
+        .order_by("-timestamp")
+    )
+
+    # Group by the *other* user
+    grouped = defaultdict(list)
+    for msg in messages:
+        other_user = msg.recipient if msg.sender == user else msg.sender
+        grouped[other_user.username].append(msg)
+
+    return render(
+        request, "parks/all_messages.html", {"grouped_messages": dict(grouped)}
+    )
+
+
+@login_required
+def delete_conversation(request, sender_username):
+    # Get the recipient user object (the sender of the conversation)
+    recipient = get_object_or_404(User, username=sender_username)
+
+    # Delete messages where the user is either the sender or recipient
+    Message.objects.filter(
+        sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
+    ).delete()
+
+    # Redirect to the all messages view after deleting the conversation
+    return redirect("all_messages")
+
 
 @login_required
 @require_POST
