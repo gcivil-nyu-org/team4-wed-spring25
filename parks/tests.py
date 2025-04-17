@@ -1172,42 +1172,44 @@ class ReplyViewTests(TestCase):
 
 class ChatViewTests(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(username='user1', password='pass1234')
-        self.user2 = User.objects.create_user(username='user2', password='pass1234')
+        self.user1 = User.objects.create_user(username="user1", password="pass1234")
+        self.user2 = User.objects.create_user(username="user2", password="pass1234")
 
     def test_chat_view_get(self):
-        self.client.login(username='user1', password='pass1234')
-        response = self.client.get(reverse('chat_view', args=[self.user2.username]))
+        self.client.login(username="user1", password="pass1234")
+        response = self.client.get(reverse("chat_view", args=[self.user2.username]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.user2.username)
 
 
 class AllMessagesViewTests(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(username='user1', password='pass1234')
-        self.user2 = User.objects.create_user(username='user2', password='pass1234')
-        self.user3 = User.objects.create_user(username='user3', password='pass1234')
+        self.user1 = User.objects.create_user(username="user1", password="pass1234")
+        self.user2 = User.objects.create_user(username="user2", password="pass1234")
+        self.user3 = User.objects.create_user(username="user3", password="pass1234")
 
         # Create messages between user1 and user2
         Message.objects.create(sender=self.user1, recipient=self.user2, content="Hi 2")
         Message.objects.create(sender=self.user2, recipient=self.user1, content="Hey 1")
 
         # Create messages between user1 and user3
-        Message.objects.create(sender=self.user3, recipient=self.user1, content="Hello from 3")
+        Message.objects.create(
+            sender=self.user3, recipient=self.user1, content="Hello from 3"
+        )
 
     def test_all_messages_view(self):
-        self.client.login(username='user1', password='pass1234')
-        response = self.client.get(reverse('all_messages'))
+        self.client.login(username="user1", password="pass1234")
+        response = self.client.get(reverse("all_messages"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'user2')
-        self.assertContains(response, 'user3')
+        self.assertContains(response, "user2")
+        self.assertContains(response, "user3")
 
     def test_grouping_of_messages(self):
-        self.client.login(username='user1', password='pass1234')
-        response = self.client.get(reverse('all_messages'))
+        self.client.login(username="user1", password="pass1234")
+        response = self.client.get(reverse("all_messages"))
         self.assertEqual(response.status_code, 200)
-        context = response.context['grouped_messages']
-        self.assertIn('user2', context)
-        self.assertIn('user3', context)
-        self.assertEqual(len(context['user2']), 2)
-        self.assertEqual(len(context['user3']), 1)
+        context = response.context["grouped_messages"]
+        self.assertIn("user2", context)
+        self.assertIn("user3", context)
+        self.assertEqual(len(context["user2"]), 2)
+        self.assertEqual(len(context["user3"]), 1)
