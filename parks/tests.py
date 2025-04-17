@@ -1181,6 +1181,19 @@ class ChatViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.user2.username)
 
+    def test_chat_view_post(self):
+        self.client.login(username="user1", password="pass1234")
+        response = self.client.post(
+            reverse("chat_view", args=[self.user2.username]),
+            {"content": "Hello user2!"},
+        )
+        self.assertEqual(response.status_code, 302)  # Redirect after POST
+
+        # Verify the message was saved
+        messages = Message.objects.filter(sender=self.user1, recipient=self.user2)
+        self.assertEqual(messages.count(), 1)
+        self.assertEqual(messages.first().content, "Hello user2!")
+
 
 class AllMessagesViewTests(TestCase):
     def setUp(self):
@@ -1213,3 +1226,53 @@ class AllMessagesViewTests(TestCase):
         self.assertIn("user3", context)
         self.assertEqual(len(context["user2"]), 2)
         self.assertEqual(len(context["user3"]), 1)
+
+
+class DeleteConversationTests(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="user1", password="pass1234")
+        self.user2 = User.objects.create_user(username="user2", password="pass1234")
+
+        # Create some messages between user1 and user2
+        Message.objects.create(
+            sender=self.user1,
+            recipient=self.user2,
+            content="Hello",
+            timestamp=timezone.now(),
+        )
+        Message.objects.create(
+            sender=self.user2,
+            recipient=self.user1,
+            content="Hi",
+            timestamp=timezone.now() + timedelta(minutes=1),
+        )
+        Message.objects.create(
+            sender=self.user1,
+            recipient=self.user2,
+            content="How are you?",
+            timestamp=timezone.now() + timedelta(minutes=2),
+        )
+
+    def test_delete_conversation_deletes_messages(self):
+        self.client.login(username="user1", password="pass1234")
+
+        # Ensure messages exist
+        self.assertEqual(Message.objects.count(), 3)
+
+        url = reverse("delete_conversation", args=[self.user2.username])
+        response = self.client.post(url)
+
+        # Should redirect to all_messages
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("all_messages"))
+
+        # All messages between user1 and user2 should be gone
+        self.assertEqual(Message.objects.count(), 0)
+
+    def test_delete_conversation_requires_login(self):
+        url = reverse("delete_conversation", args=[self.user2.username])
+        response = self.client.post(url)
+
+        # Should redirect to login page
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.url)  # Adjust if you have a custom login URL
