@@ -11,7 +11,7 @@
                 {% if message.sender == user %}
                     <!-- Message from current user (right side) -->
                     <div class="d-flex justify-content-end mb-3">
-                        <div class="bg-success text-white p-2 px-3 rounded-4" style="max-width: 60%;">
+                        <div class="bg-brown text-white p-2 px-3 rounded-4" style="max-width: 60%;">
                             <div>{{ message.content }}</div>
                             <div class="text-end small mt-1 opacity-75">{{ message.timestamp|date:"M d, H:i" }}</div>
                         </div>
@@ -38,7 +38,7 @@
                 </button>
                 <button id="send-message"
                         class="btn ms-2 px-4"
-                        style="background-color: #5cb85c; color: white; border-radius: 12px;">
+                        style="background-color: #8B4513; color: white; border-radius: 12px;">
                     Send
                 </button>
             </div>
@@ -84,6 +84,10 @@
         margin: 5px;
         font-size: 20px;
     }
+
+    .bg-brown {
+        background-color: #8B4513; /* Brown color */
+    }
 </style>
 
 <script>
@@ -103,7 +107,7 @@
         messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
 
         const bubble = document.createElement("div");
-        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
+        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-brown text-white" : "bg-light text-dark"}`;
         bubble.style.maxWidth = "60%";
 
         // Format timestamp using JS
