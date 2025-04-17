@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "profiles.apps.ProfilesConfig",
     "announcements",
     "moderation",
-	"channels",
+    "channels",
     "django.contrib.humanize",
 ]
 
@@ -68,7 +68,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
 
 
 MIDDLEWARE = [

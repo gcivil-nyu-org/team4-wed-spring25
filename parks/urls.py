@@ -55,6 +55,9 @@ urlpatterns = [
     path("api/bethere/", views.bethere_view, name="bethere"),
     path("messages/", views.all_messages_view, name="all_messages"),
     path("chat/<str:username>/", views.chat_view, name="chat_view"),
-	path('delete_conversation/<str:sender_username>/', views.delete_conversation, name='delete_conversation'),
-
+    path(
+        "delete_conversation/<str:sender_username>/",
+        views.delete_conversation,
+        name="delete_conversation",
+    ),
 ]

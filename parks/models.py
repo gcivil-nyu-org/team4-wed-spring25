@@ -193,6 +193,7 @@ class ParkPresence(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.park.display_name} ({self.status})"
 
+
 class Message(models.Model):
     sender = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="sent_messages"
