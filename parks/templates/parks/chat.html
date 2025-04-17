@@ -7,13 +7,23 @@
         <div class="card-body px-4 py-3" id="chat-container"
              style="height: 400px; overflow-y: auto; background-color: #f1f1f1; border-radius: 16px 16px 0 0;">
             {% for message in messages %}
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <strong style="color: #444;">{{ message.sender.username }}</strong>
-                        <small class="text-muted">{{ message.timestamp|date:"M d, H:i" }}</small>
+                {% if message.sender == user %}
+                    <!-- Message from current user (right side) -->
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="bg-success text-white p-2 px-3 rounded-4" style="max-width: 60%;">
+                            <div>{{ message.content }}</div>
+                            <div class="text-end small mt-1 opacity-75">{{ message.timestamp|date:"M d, H:i" }}</div>
+                        </div>
                     </div>
-                    <div class="ms-2 mt-1" style="color: #555;">{{ message.content }}</div>
-                </div>
+                {% else %}
+                    <!-- Message from recipient (left side) -->
+                    <div class="d-flex justify-content-start mb-3">
+                        <div class="bg-light text-dark p-2 px-3 rounded-4" style="max-width: 60%;">
+                            <div>{{ message.content }}</div>
+                            <div class="text-end small mt-1 text-muted">{{ message.timestamp|date:"M d, H:i" }}</div>
+                        </div>
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
         <div class="card-footer bg-white border-top-0 px-4 py-3" style="border-radius: 0 0 16px 16px;">
@@ -30,6 +40,16 @@
     </div>
 </div>
 
+<style>
+    #chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    #chat-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+</style>
+
 <script>
     const recipientUsername = "{{ recipient.username }}";
     const chatContainer = document.getElementById("chat-container");
@@ -40,16 +60,20 @@
 
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        const newMessage = document.createElement("div");
-        newMessage.classList.add("mb-3");
-        newMessage.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-                <strong style="color: #444;">${data.sender}</strong>
-                <small class="text-muted">just now</small>
-            </div>
-            <div class="ms-2 mt-1" style="color: #555;">${data.message}</div>
+        const isMe = data.sender === "{{ user.username }}";
+        const messageEl = document.createElement("div");
+        messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
+
+        const bubble = document.createElement("div");
+        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
+        bubble.style.maxWidth = "60%";
+        bubble.innerHTML = `
+            <div>${data.message}</div>
+            <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">just now</div>
         `;
-        chatContainer.appendChild(newMessage);
+
+        messageEl.appendChild(bubble);
+        chatContainer.appendChild(messageEl);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     };
 
