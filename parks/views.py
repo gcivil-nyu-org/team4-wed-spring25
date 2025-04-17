@@ -38,6 +38,11 @@ from django.contrib.auth.models import User
 from .models import Message
 
 @login_required
+def user_list_view(request):
+    users = User.objects.exclude(id=request.user.id)
+    return render(request, "parks/user_list.html", {"users": users})
+
+@login_required
 def chat_view(request, username):
     recipient = get_object_or_404(User, username=username)
     messages = Message.objects.filter(
