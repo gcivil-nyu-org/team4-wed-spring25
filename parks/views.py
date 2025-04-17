@@ -21,6 +21,7 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm
+from collections import defaultdict
 
 import json
 from django.contrib import messages
@@ -137,38 +138,62 @@ def expire_old_checkins():
 from django.contrib.auth.models import User
 from .models import Message
 
+
 @login_required
 def user_list_view(request):
     users = User.objects.exclude(id=request.user.id)
     return render(request, "parks/user_list.html", {"users": users})
 
+
 @login_required
 def chat_view(request, username):
     recipient = get_object_or_404(User, username=username)
-    messages = Message.objects.filter(
-        sender__in=[request.user, recipient],
-        recipient__in=[request.user, recipient]
-    )
-    if request.method == "POST":
-        content = request.POST.get("content")
-        if content:
-            Message.objects.create(sender=request.user, recipient=recipient, content=content)
-            return redirect("chat", username=username)
-    return render(request, "parks/chat.html", {
-        "recipient": recipient,
-        "messages": messages
-    })
 
-from collections import defaultdict
+    # Fetch all messages between the logged-in user and the recipient
+    messages = Message.objects.filter(
+        sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
+    ).order_by("timestamp")
+
+    return render(
+        request, "parks/chat.html", {"recipient": recipient, "messages": messages}
+    )
+
 
 @login_required
 def all_messages_view(request):
-    messages = Message.objects.filter(recipient=request.user).select_related('sender').order_by('-timestamp')
+    # Fetch all messages where the logged-in user is either the sender or recipient
+    messages = (
+        Message.objects.filter(sender=request.user)
+        .select_related("recipient")
+        .order_by("-timestamp")
+    )
+
     grouped = defaultdict(list)
     for msg in messages:
-        grouped[msg.sender.username].append(msg)  # Use username as key
-    return render(request, "parks/all_messages.html", {"grouped_messages": dict(grouped)})
+        grouped[msg.recipient.username].append(msg)  # Group by recipient's username
 
+    # Add the received messages for the logged-in user
+    received_messages = (
+        Message.objects.filter(recipient=request.user)
+        .select_related("sender")
+        .order_by("-timestamp")
+    )
+
+    for msg in received_messages:
+        grouped[msg.sender.username].append(msg)  # Group by sender's username
+
+    return render(
+        request, "parks/all_messages.html", {"grouped_messages": dict(grouped)}
+    )
+
+
+@login_required
+def delete_conversation(request, username):
+    if request.method == "POST":
+        other_user = get_object_or_404(User, username=username)
+        Message.objects.filter(sender=request.user, recipient=other_user).delete()
+        Message.objects.filter(sender=other_user, recipient=request.user).delete()
+    return redirect("all_messages")
 
 
 def register_view(request):

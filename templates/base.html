@@ -320,11 +320,22 @@
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">Profile</a>
+                            <a class="nav-link" href="{% url 'profile' username=user.username %}"> Profile </a>
+                         </li>
+
+                         <li class="nav-item d-flex align-items-center">
+                            <form method="post" action="{% url 'logout' %}" class="m-0 p-0">
+                                {% csrf_token %}
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-link nav-link p-0"
+                                    style="border: none; background: none;"
+                                >
+                                    Logout
+                                </button>
+                            </form>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                        </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'user_list' %}">Chat</a>
                         </li>

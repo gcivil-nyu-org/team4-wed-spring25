@@ -32,9 +32,12 @@ urlpatterns = [
     path("test403/", error_views.trigger_403),
     path("test404/", error_views.trigger_404),
     path("test500/", error_views.trigger_500),
+<<<<<<< Updated upstream
     path("announcements/", include("announcements.urls")),
     path("moderation/", include("moderation.urls")),
 
+=======
+>>>>>>> Stashed changes
 ]
 
 if settings.DEBUG:
