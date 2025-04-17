@@ -30,11 +30,25 @@
             <div class="input-group">
                 <textarea id="message-input" class="form-control border-0 shadow-sm"
                           placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"></textarea>
+                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;">
+                    😊
+                </button>
                 <button id="send-message"
                         class="btn ms-2 px-4"
                         style="background-color: #5cb85c; color: white; border-radius: 12px;">
                     Send
                 </button>
+            </div>
+            <!-- Emoji picker modal -->
+            <div id="emoji-picker" class="emoji-picker" style="display: none; position: absolute; background-color: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
+                <span class="emoji" data-emoji="😀">😀</span>
+                <span class="emoji" data-emoji="😃">😃</span>
+                <span class="emoji" data-emoji="😄">😄</span>
+                <span class="emoji" data-emoji="😁">😁</span>
+                <span class="emoji" data-emoji="😆">😆</span>
+                <span class="emoji" data-emoji="😅">😅</span>
+                <span class="emoji" data-emoji="😂">😂</span>
+                <!-- Add more emojis as desired -->
             </div>
         </div>
     </div>
@@ -48,6 +62,15 @@
         background: #ccc;
         border-radius: 3px;
     }
+
+    .emoji-picker {
+        z-index: 1000;
+    }
+    .emoji {
+        cursor: pointer;
+        margin: 5px;
+        font-size: 20px;
+    }
 </style>
 
 <script>
@@ -55,36 +78,37 @@
     const chatContainer = document.getElementById("chat-container");
     const messageInput = document.getElementById("message-input");
     const sendMessageButton = document.getElementById("send-message");
+    const emojiButton = document.getElementById("emoji-button");
+    const emojiPicker = document.getElementById("emoji-picker");
 
     const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + recipientUsername + '/');
 
-	socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    const isMe = data.sender === "{{ user.username }}";
-    const messageEl = document.createElement("div");
-    messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isMe = data.sender === "{{ user.username }}";
+        const messageEl = document.createElement("div");
+        messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
 
-    const bubble = document.createElement("div");
-    bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
-    bubble.style.maxWidth = "60%";
+        const bubble = document.createElement("div");
+        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-success text-white" : "bg-light text-dark"}`;
+        bubble.style.maxWidth = "60%";
 
-    // Format timestamp using JS
-    const timestamp = new Date(data.timestamp);
-    const formattedTime = timestamp.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+        // Format timestamp using JS
+        const timestamp = new Date(data.timestamp);
+        const formattedTime = timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
 
-    bubble.innerHTML = `
-        <div>${data.message}</div>
-        <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">${formattedTime}</div>
-    `;
+        bubble.innerHTML = `
+            <div>${data.message}</div>
+            <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">${formattedTime}</div>
+        `;
 
-    messageEl.appendChild(bubble);
-    chatContainer.appendChild(messageEl);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-};
-
+        messageEl.appendChild(bubble);
+        chatContainer.appendChild(messageEl);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
 
     sendMessageButton.onclick = function() {
         const message = messageInput.value.trim();
@@ -100,5 +124,29 @@
             sendMessageButton.click();
         }
     });
+
+    // Show/hide emoji picker
+    emojiButton.onclick = function(event) {
+        // Prevent the event from bubbling up to the document
+        event.stopPropagation();
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // Add emoji to message input
+    emojiPicker.addEventListener("click", function(e) {
+        if (e.target.classList.contains("emoji")) {
+            const emoji = e.target.dataset.emoji;
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+    });
+
+    // Close emoji picker if click is outside of it
+    document.addEventListener("click", function(event) {
+        if (!emojiPicker.contains(event.target) && event.target !== emojiButton) {
+            emojiPicker.style.display = "none";
+        }
+    });
+
 </script>
 {% endblock %}
