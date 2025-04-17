@@ -256,6 +256,7 @@
                                 </div>
                                 {% endif %}
                                 
+                                
                                 {% if user_profile.bio %}   
                                 <div class="profile-detail-field d-flex gap-3 align-items-center">
                                     <i class="fas fa-info-circle fa-fw"></i>
@@ -275,8 +276,7 @@
                                     <i class="fas fa-map-marker-alt fa-fw"></i>
                                     <span>{{ user_profile.location }}</span>
                                 </div>
-                                {% endif %}
-                                
+                                {% endif %}            
                                 {% if user_profile.signature %}    
                                 <div class="profile-detail-field d-flex gap-3 align-items-center">
                                     <i class="fas fa-signature fa-fw"></i>
@@ -289,6 +289,13 @@
                                <a href="{% url 'profiles:edit_profile' %}" class="btn btn-profile-action btn-edit-profile">
                                    <i class="fas fa-pencil-alt"></i> Edit Profile
                                </a>
+                           </div>
+                           {% endif %}
+                           {% if not is_own_profile %}
+                           <div class="text-center mt-4">
+                               <a href="{% url 'chat_view' profile_user.username %}" class="btn btn-primary">
+                                   <i class="fas fa-comments"></i> Chat with {{ profile_user.username }}
+                               </a> 
                            </div>
                            {% endif %}
                        </div>

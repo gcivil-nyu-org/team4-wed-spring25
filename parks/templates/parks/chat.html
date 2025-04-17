@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Chat with {{ recipient.username }}</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body" id="chat-container" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+            {% for message in messages %}
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ message.sender.username }}:</strong>
+                        <small class="text-muted">{{ message.timestamp|date:"M d, H:i" }}</small>
+                    </div>
+                    <div class="ms-2">{{ message.content }}</div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer bg-white border-top-0 pt-3">
+            <div class="input-group">
+                <textarea id="message-input" class="form-control" placeholder="Type a message..." rows="1" style="resize: none;"></textarea>
+                <button id="send-message" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const recipientUsername = "{{ recipient.username }}";
+    const chatContainer = document.getElementById("chat-container");
+    const messageInput = document.getElementById("message-input");
+    const sendMessageButton = document.getElementById("send-message");
+
+    const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + recipientUsername + '/');
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const newMessage = document.createElement("div");
+        newMessage.classList.add("mb-2");
+        newMessage.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <strong>${data.sender}:</strong>
+                <small class="text-muted">just now</small>
+            </div>
+            <div class="ms-2">${data.message}</div>
+        `;
+        chatContainer.appendChild(newMessage);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
+
+    sendMessageButton.onclick = function() {
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.send(JSON.stringify({ "message": message }));
+            messageInput.value = '';
+        }
+    };
+
+    // Optional: Send message on Enter key (without Shift)
+    messageInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessageButton.click();
+        }
+    });
+</script>
+{% endblock %}

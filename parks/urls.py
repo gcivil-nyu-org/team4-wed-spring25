@@ -53,4 +53,9 @@ urlpatterns = [
     ),
     path("api/checkin/", views.checkin_view, name="checkin"),
     path("api/bethere/", views.bethere_view, name="bethere"),
+	path("users/", views.user_list_view, name="user_list"),
+    path("messages/", views.all_messages_view, name="all_messages"),
+    path("chat/<str:username>/", views.chat_view, name="chat_view"),
+	path('delete_conversation/<str:sender_username>/', views.delete_conversation, name='delete_conversation'),
+
 ]
