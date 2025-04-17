@@ -36,9 +36,7 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from .models import Message
-
 from collections import defaultdict
-from django.db.models import Q
 
 
 @login_required

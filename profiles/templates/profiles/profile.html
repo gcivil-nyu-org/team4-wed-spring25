@@ -293,10 +293,11 @@
                            {% endif %}
                            {% if not is_own_profile %}
                            <div class="text-center mt-4">
-                               <a href="{% url 'chat_view' profile_user.username %}" class="btn btn-primary">
-                                   <i class="fas fa-comments"></i> Chat with {{ profile_user.username }}
-                               </a> 
-                           </div>
+                            <a href="{% url 'chat_view' profile_user.username %}" class="btn btn-dark rounded-pill px-4 py-2 shadow-sm">
+                                <i class="fas fa-comments me-2"></i> Chat with {{ profile_user.username }}
+                            </a>
+                        </div>
+                        
                            {% endif %}
                        </div>
                    </div>

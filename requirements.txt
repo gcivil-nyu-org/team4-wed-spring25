@@ -41,3 +41,6 @@ urllib3==2.3.0
 xyzservices==2025.1.0
 cloudinary
 django-cloudinary-storage
+daphne==4.1.0             
+channels==4.0.0            
+channels-redis==4.1.0     

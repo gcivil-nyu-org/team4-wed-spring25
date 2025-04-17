@@ -294,68 +294,87 @@
           </symbol>
     </svg>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">PAWPARK</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'park_and_map' %}">Parks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'contact' %}">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profiles:search' %}">Search</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'announcements_list' %}">Announcements</a>
-                    </li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">Profile</a>
-                        </li>
-                        <li class="nav-item d-flex align-items-center">
-                            <form method="post" action="{% url 'logout' %}" class="m-0 p-0">
-                                {% csrf_token %}
-                                <button 
-                                    type="submit" 
-                                    class="btn btn-link nav-link p-0"
-                                    style="border: none; background: none;"
-                                >
-                                    Logout
-                                </button>
-                            </form>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_messages' %}">Messages</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">Sign Up</a>
-                        </li>
-                    {% endif %}
-                    {% if user.is_authenticated and user.is_staff %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'moderation_dashboard' %}">Dashboard</a>
-                        </li>
-                    {% endif %}
-                </ul>
-
-
-            </div>
+ <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">PAWPARK</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         </div>
     </nav>
+    
+    <!-- Offcanvas Sidebar Menu -->
+    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+        <!-- General Navigation -->
+        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3 mb-4">
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'park_and_map' %}">Parks</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'profiles:search' %}">Search</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'announcements_list' %}">Announcements</a>
+            </li>
+        </ul>
+    
+        {% if user.is_authenticated %}
+        <!-- User Links -->
+        <hr class="bg-light">
+        <h6 class="text-light mb-3">Your Account</h6>
+        <ul class="navbar-nav mb-4">
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">Profile</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'all_messages' %}">Messages</a>
+            </li>
+            <li class="nav-item">
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button class="btn btn-link nav-link p-0 text-start" type="submit" style="color: white;">Logout</button>
+            </form>
+            </li>
+        </ul>
+        {% else %}
+        <!-- Guest Links -->
+        <hr class="bg-light">
+        <h6 class="text-light mb-3">Welcome</h6>
+        <ul class="navbar-nav mb-4">
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Sign Up</a>
+            </li>
+        </ul>
+        {% endif %}
+    
+        {% if user.is_authenticated and user.is_staff %}
+        <!-- Admin Links -->
+        <hr class="bg-light">
+        <h6 class="text-light mb-3">Admin</h6>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'moderation_dashboard' %}">Dashboard</a>
+            </li>
+        </ul>
+        {% endif %}
+        </div>
+    </div>
+  
 
     <main class="main">
         {% block content %}{% endblock %}
