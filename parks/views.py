@@ -37,10 +37,8 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from .models import Message
 
-@login_required
-def user_list_view(request):
-    users = User.objects.exclude(id=request.user.id)
-    return render(request, "parks/user_list.html", {"users": users})
+from collections import defaultdict
+from django.db.models import Q
 
 @login_required
 def chat_view(request, username):
@@ -59,15 +57,22 @@ def chat_view(request, username):
         "messages": messages
     })
 
-from collections import defaultdict
-
 @login_required
 def all_messages_view(request):
-    messages = Message.objects.filter(recipient=request.user).select_related('sender').order_by('-timestamp')
+    user = request.user
+    # Get all messages involving the user, either sent or received
+    messages = Message.objects.filter(
+        Q(sender=user) | Q(recipient=user)
+    ).select_related('sender', 'recipient').order_by('-timestamp')
+
+    # Group by the *other* user
     grouped = defaultdict(list)
     for msg in messages:
-        grouped[msg.sender.username].append(msg)  # Use username as key
+        other_user = msg.recipient if msg.sender == user else msg.sender
+        grouped[other_user.username].append(msg)
+
     return render(request, "parks/all_messages.html", {"grouped_messages": dict(grouped)})
+
 
 @login_required
 def delete_conversation(request, sender_username):
