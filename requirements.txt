@@ -44,3 +44,4 @@ django-cloudinary-storage
 daphne==4.1.0             
 channels==4.0.0            
 channels-redis==4.1.0     
+supervisor==4.2.2
