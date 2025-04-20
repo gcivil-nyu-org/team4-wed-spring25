@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     "pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com",
     "127.0.0.1",
     "localhost",
+    "172.31.41.123",
 ]
 
 # Custom handlers
@@ -60,14 +61,20 @@ INSTALLED_APPS = [
 
 ASGI_APPLICATION = "pawpark.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
-    },
-}
+USE_REDIS = os.getenv("USE_REDIS", "true").lower() == "true"
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")  # Default to local, override in AWS
+
+if USE_REDIS:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_HOST, 6379)],
+            },
+        }
+    }
+else:
+    CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
 MIDDLEWARE = [
