@@ -916,9 +916,13 @@ class ParkPresenceTests(TestCase):
         self.assertEqual(presences.count(), 1)
         self.assertEqual(presences.first().status, "current")
 
-    """
-    def test_user_be_there_at_creates_presence(self):
-        future_time = (timezone.now() + timedelta(minutes=20)).strftime("%H:%M")
+    @patch("django.utils.timezone.now")
+    def test_user_be_there_at_creates_presence(self, mock_now):
+        fixed_now = timezone.datetime(2025, 4, 20, 12, 0, 0, tzinfo=timezone.utc)
+        mock_now.return_value = fixed_now
+
+        future_time = (fixed_now + timedelta(minutes=20)).strftime("%H:%M")
+
         self.client.post(
             reverse("park_detail", args=[self.park.slug, self.park.id]),
             {"form_type": "be_there_at", "time": future_time},
@@ -926,7 +930,6 @@ class ParkPresenceTests(TestCase):
         presences = ParkPresence.objects.filter(user=self.user, park=self.park)
         self.assertEqual(presences.count(), 1)
         self.assertEqual(presences.first().status, "on_the_way")
-    """
 
 
 @patch(
