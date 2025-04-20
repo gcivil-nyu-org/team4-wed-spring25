@@ -3,70 +3,198 @@
 {% block title %}Welcome to PAWPARK{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="hero text-center">
-    <h1>Welcome to PawPark!</h1>
-    <p>Find the best dog parks in NYC for your furry friend.</p>
+<!-- Scroll Indicator -->
+<div class="scroll-indicator">
+    <div class="scroll-indicator-item active" data-section="hero"></div>
+    <div class="scroll-indicator-item" data-section="why-use"></div>
+    <div class="scroll-indicator-item" data-section="faq"></div>
+    <div class="scroll-indicator-item" data-section="footer"></div>
 </div>
 
-<!-- Unified Search Panel -->
-<div class="container section mt-5">
-    <form method="get" action="{% url 'park_and_map' %}" class="row g-3 align-items-end justify-content-center">
-
-        <!-- Search Field -->
-        <div class="col-md-3">
-            <label for="query" class="form-label fw-bold">Search</label>
-            <div class="input-group">
-                <span class="input-group-text bg-white">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" name="query" id="query" class="form-control" placeholder="Park name or ZIP" value="{{ request.GET.query }}">
+<!-- Hero Section -->
+<section id="hero" class="full-screen-section bg-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1 class="display-4 text-brown mb-4">Find Your Perfect Dog Park</h1>
+                <p class="lead text-dark mb-5">Discover dog parks near you with detailed information about amenities, reviews, and more.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#why-use" class="btn btn-brown btn-lg">Learn More</a>
+                    <a href="{% url 'park_and_map' %}" class="btn btn-outline-brown btn-lg">Find Parks</a>
+                </div>
             </div>
         </div>
-
-        <!-- Park Type Filter -->
-        <div class="col-md-2">
-            <label for="filter" class="form-label fw-bold">Type</label>
-            <select class="form-select" name="filter" id="filter">
-                <option value="" {% if request.GET.filter == "" %}selected{% endif %}>All Types</option>
-                <option value="Off-Leash" {% if request.GET.filter == "Off-Leash" %}selected{% endif %}>Off-Leash</option>
-                <option value="Run" {% if request.GET.filter == "Run" %}selected{% endif %}>Run</option>
-            </select>
-        </div>
-
-        <!-- Accessibility Filter -->
-        <div class="col-md-2">
-            <label for="accessible" class="form-label fw-bold">Accessibility</label>
-            <select class="form-select" name="accessible" id="accessible">
-                <option value="" {% if request.GET.accessible == "" %}selected{% endif %}>All</option>
-                <option value="True" {% if request.GET.accessible == "True" %}selected{% endif %}>Yes</option>
-                <option value="False" {% if request.GET.accessible == "False" %}selected{% endif %}>No</option>
-            </select>
-        </div>
-
-        <!-- Borough Filter -->
-        <div class="col-md-2">
-            <label for="borough" class="form-label fw-bold">Borough</label>
-            <select class="form-select" name="borough" id="borough">
-                <option value="" {% if selected_borough == "" %}selected{% endif %}>All Boroughs</option>
-                <option value="M" {% if selected_borough == "M" %}selected{% endif %}>Manhattan</option>
-                <option value="B" {% if selected_borough == "B" %}selected{% endif %}>Brooklyn</option>
-                <option value="Q" {% if selected_borough == "Q" %}selected{% endif %}>Queens</option>
-                <option value="X" {% if selected_borough == "X" %}selected{% endif %}>Bronx</option>
-                <option value="R" {% if selected_borough == "R" %}selected{% endif %}>Staten Island</option>
-            </select>
-        </div>
-
-        <!-- Search Button -->
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
-        </div>
-    </form>
-
-    <!-- Additional Actions -->
-    <div class="d-flex justify-content-center flex-wrap gap-3 mt-5">
-        <a href="{% url 'park_and_map' %}" class="btn btn-lg btn-outline-primary px-4">Explore All Parks</a>
     </div>
-</div>
+</section>
+
+<!-- Why Use Section -->
+<section id="why-use" class="full-screen-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="display-5 text-brown mb-5">Why Use PawPark?</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-map-marker-alt fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Find Parks Near You</h3>
+                                <p class="text-dark">Discover dog parks in your area with our easy-to-use search and map interface.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-info-circle fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Detailed Information</h3>
+                                <p class="text-dark">Get comprehensive details about each park's amenities, rules, and facilities.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-star fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Community Reviews</h3>
+                                <p class="text-dark">Read and share experiences with other dog owners in your community.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <a href="#faq" class="btn btn-brown btn-lg">FAQ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="full-screen-section bg-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="display-5 text-brown mb-5">Frequently Asked Questions</h2>
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How do I find dog parks near me?
+                            </button>
+                        </h3>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Simply click on the "Find Parks" button and use our interactive map to discover dog parks in your area. You can also use the search filters to find parks with specific amenities.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Can I leave a review for a park?
+                            </button>
+                        </h3>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! After visiting a park, you can leave a review and rating to help other dog owners. Your feedback helps build our community and improve the park information.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                How do I report an issue with a park?
+                            </button>
+                        </h3>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can report issues through our contact form or by leaving a review with your concerns. Our team will review and address the reported issues promptly.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <a href="#footer" class="btn btn-brown btn-lg">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Section -->
+<section id="footer" class="full-screen-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h2 class="display-5 text-brown mb-5">Get in Touch</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-envelope fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Email Us</h3>
+                                <p class="text-dark">support@pawpark.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-phone fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Call Us</h3>
+                                <p class="text-dark">(555) 123-4567</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <i class="fas fa-map-marker-alt fa-3x text-brown mb-3"></i>
+                                <h3 class="h5 text-brown">Visit Us</h3>
+                                <p class="text-dark">123 Dog Park Lane<br>San Francisco, CA 94105</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Scroll Indicator JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('.full-screen-section');
+    const indicators = document.querySelectorAll('.scroll-indicator-item');
+    
+    function updateActiveIndicator() {
+        const scrollPosition = window.scrollY + window.innerHeight / 2;
+        
+        sections.forEach((section, index) => {
+            const sectionTop = section.offsetTop;
+            const sectionBottom = sectionTop + section.offsetHeight;
+            
+            if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                indicators.forEach(indicator => indicator.classList.remove('active'));
+                indicators[index].classList.add('active');
+            }
+        });
+    }
+    
+    // Update indicator on scroll
+    window.addEventListener('scroll', updateActiveIndicator);
+    
+    // Update indicator on section click
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+            sections[index].scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+    
+    // Initial update
+    updateActiveIndicator();
+});
+</script>
 
 {% endblock %}
