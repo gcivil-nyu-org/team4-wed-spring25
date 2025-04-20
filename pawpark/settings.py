@@ -33,7 +33,6 @@ ALLOWED_HOSTS = [
     "pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com",
     "127.0.0.1",
     "localhost",
-    "172.31.41.123",
 ]
 
 # Custom handlers
