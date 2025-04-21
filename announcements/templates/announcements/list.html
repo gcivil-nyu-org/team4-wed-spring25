@@ -1,29 +1,228 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+  /* ====== Announcement Cards ====== */
+  .announcement-card {
+    border-radius: 12px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+  }
+  
+  .announcement-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+  }
+  
+  .announcement-card.pinned {
+    border-left: 4px solid #d63384;
+  }
+  
+  .announcement-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+  }
+  
+  .announcement-content {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    max-height: 8em;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .announcement-content:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2em;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+    display: none;
+  }
+  
+  .announcement-content.truncated:after {
+    display: block;
+  }
+  
+  .post-date {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+  
+  .pinned-icon {
+    color: #d63384;
+    margin-right: .25rem;
+  }
+  
+  .card-body {
+    padding: 1.75rem;
+  }
+  
+  .badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+  }
+  
+  .bg-pink {
+    background-color: #f8bbd0;
+    color: #880e4f;
+  }
+  
+  .bg-orange {
+    background-color: #ffe0b2;
+    color: #e65100;
+  }
+  
+  .empty-state {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+  }
+  
+  .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #fff5f5;
+  }
+  
+  .read-more {
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Stagger animations */
+  .announcement-card:nth-child(1) { animation-delay: 0.1s; }
+  .announcement-card:nth-child(2) { animation-delay: 0.2s; }
+  .announcement-card:nth-child(3) { animation-delay: 0.3s; }
+  .announcement-card:nth-child(4) { animation-delay: 0.4s; }
+  .announcement-card:nth-child(5) { animation-delay: 0.5s; }
+  
+  @media (max-width: 767.98px) {
+    .announcement-card {
+      min-height: auto;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <h2>Announcements</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Announcements</h2>
+    
+    <div class="d-flex">
+     
+      {% if request.user.is_staff %}
+      <a href="{% url 'create_announcement' %}" class="btn btn-success btn-sm">
+        <i class="fas fa-plus"></i> Create
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
     {% for ann in announcements %}
-      <div class="card mb-3 {% if ann.pinned %}border-primary{% endif %}">
-        <div class="card-body">
-          <h5 class="card-title">
-            {% if ann.pinned %}<span class="badge bg-primary">Pinned</span>{% endif %}
-            {{ ann.title }}
-          </h5>
-          <p class="card-text">{{ ann.content }}</p>
-          <p class="text-muted" style="font-size: 0.8rem;">
-            Posted on {{ ann.created_at|date:"M d, Y h:i A" }}
-          </p>
-          {% if request.user.is_staff %}
-            <a href="{% url 'edit_announcement' ann.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-            <a href="{% url 'delete_announcement' ann.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-          {% endif %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card announcement-card h-100 {% if ann.pinned %}pinned{% endif %}">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="announcement-title mb-0">
+                {% if ann.pinned %}
+                  <i class="fas fa-thumbtack pinned-icon"></i>
+                {% endif %}
+                {{ ann.title }}
+              </h5>
+              {% if request.user.is_staff %}
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'edit_announcement' ann.pk %}"
+                     class="btn btn-outline-secondary"
+                     title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'delete_announcement' ann.pk %}"
+                     class="btn btn-outline-danger"
+                     title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center mb-2">
+              {% if ann.pinned %}
+                <span class="badge bg-pink me-2">Pinned</span>
+              {% endif %}
+            </div>
+
+            <p class="post-date small mb-2">
+              Posted on {{ ann.created_at|date:"M d, Y h:i A" }}
+            </p>
+
+            <div class="announcement-content flex-grow-1 mb-3 {% if ann.content|length > 150 %}truncated{% endif %}">
+              {{ ann.content }}
+            </div>
+
+            {% if ann.content|length > 150 %}
+              <button class="read-more btn btn-link p-0 text-primary align-self-start" 
+                      onclick="this.previousElementSibling.classList.remove('truncated'); this.style.display='none'">
+                Read more...
+              </button>
+            {% endif %}
+          </div>
         </div>
       </div>
     {% empty %}
-      <p>No announcements available.</p>
+      <div class="col-12">
+        <div class="empty-state text-center py-5">
+          <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+          <h4 class="text-muted">No announcements yet</h4>
+          {% if request.user.is_staff %}
+            <a href="{% url 'create_announcement' %}" class="btn btn-primary mt-3">
+              Create First Announcement
+            </a>
+          {% endif %}
+        </div>
+      </div>
     {% endfor %}
-    {% if request.user.is_staff %}
-      <a href="{% url 'create_announcement' %}" class="btn btn-success">Create Announcement</a>
-    {% endif %}
+  </div>
 </div>
+
+<script>
+// Initialize animations after page load
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.announcement-card');
+  cards.forEach(card => {
+    card.style.opacity = '1';
+  });
+});
+</script>
 {% endblock %}
