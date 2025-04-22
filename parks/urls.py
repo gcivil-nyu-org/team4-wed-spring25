@@ -70,7 +70,6 @@ urlpatterns = [
         ),
         name="password_reset",
     ),
-
     # Password reset: email sent confirmation
     path(
         "password-reset/done/",
@@ -79,7 +78,6 @@ urlpatterns = [
         ),
         name="password_reset_done",
     ),
-
     # Password reset: link with token
     path(
         "reset/<uidb64>/<token>/",
@@ -89,7 +87,6 @@ urlpatterns = [
         ),
         name="password_reset_confirm",
     ),
-
     # Password reset: complete
     path(
         "reset/done/",
@@ -99,41 +96,38 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path(
-    "password-change/",
-    auth_views.PasswordResetView.as_view(
-        template_name="registration/password_change_email_form.html",
-        email_template_name="registration/password_change_email.html",
-        subject_template_name="registration/password_change_subject.txt",
-        success_url=reverse_lazy("password_change_done"),
+        "password-change/",
+        auth_views.PasswordResetView.as_view(
+            template_name="registration/password_change_email_form.html",
+            email_template_name="registration/password_change_email.html",
+            subject_template_name="registration/password_change_subject.txt",
+            success_url=reverse_lazy("password_change_done"),
+        ),
+        name="password_change_email",
     ),
-    name="password_change_email",
-),
-
-# 2) “Check your inbox” confirmation
-path(
-    "password-change/done/",
-    auth_views.PasswordResetDoneView.as_view(
-        template_name="registration/password_change_done.html"
+    # 2) “Check your inbox” confirmation
+    path(
+        "password-change/done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="registration/password_change_done.html"
+        ),
+        name="password_change_done",
     ),
-    name="password_change_done",
-),
-
-# 3) Link with token → new‑password form
-path(
-    "password-change-confirm/<uidb64>/<token>/",
-    auth_views.PasswordResetConfirmView.as_view(
-        template_name="registration/password_change_confirm.html",
-        success_url=reverse_lazy("password_change_complete"),
+    # 3) Link with token → new‑password form
+    path(
+        "password-change-confirm/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="registration/password_change_confirm.html",
+            success_url=reverse_lazy("password_change_complete"),
+        ),
+        name="password_change_confirm",
     ),
-    name="password_change_confirm",
-),
-
-# 4) Final “your password has been changed” page
-path(
-    "password-change-complete/",
-    auth_views.PasswordResetCompleteView.as_view(
-        template_name="registration/password_change_complete.html"
+    # 4) Final “your password has been changed” page
+    path(
+        "password-change-complete/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="registration/password_change_complete.html"
+        ),
+        name="password_change_complete",
     ),
-    name="password_change_complete",
-),
 ]
