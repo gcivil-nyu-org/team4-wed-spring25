@@ -10,7 +10,6 @@ from channels.auth import AuthMiddlewareStack  # noqa: E402
 import parks.routing  # noqa: E402
 
 
-
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
