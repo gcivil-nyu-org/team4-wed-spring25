@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from profiles.templatetags.custom_filters import replace
 from profiles.models import PetProfile
+from parks.models import Review, ParkImage, DogRunNew
 
 
 class ProfileViewsTest(TestCase):
@@ -47,6 +48,16 @@ class ProfileViewsTest(TestCase):
             "profiles:pet_detail", args=[self.user.username, self.pet.id]
         )
         self.login_url = reverse("login")
+        self.park = DogRunNew.objects.create(
+            id="central-park",
+            prop_id="prop-123",
+            name="Central Park",
+            address="123 Park Ave",
+            dogruns_type="Off-Leash",
+            accessible="Yes",
+            notes="A big park",
+            display_name="Central Park",
+        )
 
     def test_profile_view_requires_login(self):
         response = self.client.get(self.profile_url)
@@ -219,6 +230,54 @@ class ProfileViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "profiles/edit_pet.html")
         self.assertContains(response, "form")
+
+    def test_profile_view_filters_deleted_review_images(self):
+        self.client.login(username="testuser", password="testpass")
+
+        # Create review with attached image
+        review = Review.objects.create(
+            user=self.user, park=self.park, rating=4, text="Nice place!"
+        )
+        image = ParkImage.objects.create(
+            user=self.user, review=review, park=self.park, image="upload/sample.jpg"
+        )
+
+        # Soft-delete the review
+        review.is_deleted = True
+        review.save()
+
+        response = self.client.get(self.profile_url)
+
+        # The image should not appear in user_images (deleted review)
+        self.assertNotIn(image, response.context["user_images"])
+
+    def test_profile_view_includes_images_without_review(self):
+        self.client.login(username="testuser", password="testpass")
+
+        # Create an image not attached to any review
+        image = ParkImage.objects.create(
+            user=self.user, park=self.park, image="upload/standalone.jpg"
+        )
+
+        response = self.client.get(self.profile_url)
+
+        # The image should be included
+        self.assertIn(image, response.context["user_images"])
+
+    def test_profile_view_includes_images_attached_to_visible_review(self):
+        self.client.login(username="testuser", password="testpass")
+
+        review = Review.objects.create(
+            user=self.user, park=self.park, rating=5, text="Great!"
+        )
+        image = ParkImage.objects.create(
+            user=self.user, review=review, park=self.park, image="upload/clean.jpg"
+        )
+
+        response = self.client.get(self.profile_url)
+
+        # Image should be visible because the review is not deleted
+        self.assertIn(image, response.context["user_images"])
 
 
 class CustomFilterTests(TestCase):

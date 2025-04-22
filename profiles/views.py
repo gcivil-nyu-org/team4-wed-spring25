@@ -6,6 +6,7 @@ from django.http import HttpResponseForbidden, HttpResponse, Http404
 from .models import UserProfile, PetProfile
 from .forms import UserProfileForm, PetProfileForm
 from parks.models import Review, Reply, ParkImage
+from django.db.models import Prefetch, Q
 
 
 @login_required
@@ -15,10 +16,16 @@ def profile_view(request, username):
     pets = PetProfile.objects.filter(owner=user_profile)
     is_own_profile = request.user == profile_user
 
-    user_reviews = Review.objects.filter(user=profile_user, is_removed=False)
-    user_replies = Reply.objects.filter(user=profile_user)
-    user_images = ParkImage.objects.filter(user=profile_user, is_removed=False)
+    # Prefetch images per review
+    image_qs = ParkImage.objects.filter(is_removed=False)
+    user_reviews = Review.objects.filter(
+        user=profile_user, is_removed=False
+    ).prefetch_related(Prefetch("images", queryset=image_qs, to_attr="visible_images"))
 
+    user_replies = Reply.objects.filter(user=profile_user)
+    user_images = ParkImage.objects.filter(user=profile_user, is_removed=False).filter(
+        Q(review__isnull=True) | Q(review__is_deleted=False)
+    )
     context = {
         "profile_user": profile_user,
         "user_profile": user_profile,
