@@ -4,6 +4,19 @@ from .models import Announcement
 from .decorators import staff_required  # Use the custom decorator
 from .forms import AnnouncementForm
 
+def announcement_list(request):
+    announcements = Announcement.objects.all().order_by('-pinned', '-created_at')
+    pinned_announcements = [ann.title for ann in announcements if ann.pinned]
+
+    print("All Announcements:", announcements)
+    print("Pinned Announcement Titles:", pinned_announcement_titles)
+
+    context = {
+        'announcements': announcements,
+        'pinned_announcement_titles': pinned_announcement_titles,
+    }
+    return render(request, 'announcements/list.html', context)
+
 
 def announcements_list(request):
     # Show only non-expired announcements

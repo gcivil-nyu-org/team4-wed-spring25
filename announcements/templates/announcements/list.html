@@ -151,6 +151,7 @@
 
   <div class="row g-4">
     {% for ann in announcements %}
+      {% if ann.pinned %}
       <div class="col-sm-6 col-lg-4">
         <div class="card announcement-card h-100 {% if ann.pinned %}pinned{% endif %}">
           <div class="card-body d-flex flex-column">
@@ -200,11 +201,82 @@
           </div>
         </div>
       </div>
+      {% endif %}
     {% empty %}
       <div class="col-12">
         <div class="empty-state text-center py-5">
           <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
-          <h4 class="text-muted">No announcements yet</h4>
+          <h4 class="text-muted">No pinned announcements yet</h4>
+          {% if request.user.is_staff %}
+            <a href="{% url 'create_announcement' %}" class="btn btn-primary mt-3">
+              Create First Announcement
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top: 2rem;"></div>
+
+  <div class="row g-4">
+    {% for ann in announcements %}
+    {% if not ann.pinned %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="card announcement-card h-100 {% if ann.pinned %}pinned{% endif %}">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="announcement-title mb-0">
+                {% if ann.pinned %}
+                  <i class="fas fa-thumbtack pinned-icon"></i>
+                {% endif %}
+                {{ ann.title }}
+              </h5>
+              {% if request.user.is_staff %}
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'edit_announcement' ann.pk %}"
+                     class="btn btn-outline-secondary"
+                     title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a href="{% url 'delete_announcement' ann.pk %}"
+                     class="btn btn-outline-danger"
+                     title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center mb-2">
+              {% if ann.pinned %}
+                <span class="badge bg-pink me-2">Pinned</span>
+              {% endif %}
+            </div>
+
+            <p class="post-date small mb-2">
+              Posted on {{ ann.created_at|date:"M d, Y h:i A" }}
+            </p>
+
+            <div class="announcement-content flex-grow-1 mb-3 {% if ann.content|length > 150 %}truncated{% endif %}">
+              {{ ann.content }}
+            </div>
+
+            {% if ann.content|length > 150 %}
+              <button class="read-more btn btn-link p-0 text-primary align-self-start" 
+                      onclick="this.previousElementSibling.classList.remove('truncated'); this.style.display='none'">
+                Read more...
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% empty %}
+      <div class="col-12">
+        <div class="empty-state text-center py-5">
+          <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+          <h4 class="text-muted">No other announcements yet</h4>
           {% if request.user.is_staff %}
             <a href="{% url 'create_announcement' %}" class="btn btn-primary mt-3">
               Create First Announcement
