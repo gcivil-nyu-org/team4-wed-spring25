@@ -50,6 +50,37 @@
             scroll-snap-type: y mandatory;
             overflow-y: auto;
         }
+        .news-bar {
+            margin-top: 56px; 
+            padding: 10px 0;  
+            height: auto;     
+            min-height: 32px; 
+            background-color: #f9f9f9;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            /* Remove padding-left: 100%; */
+            animation: scroll-left 15s linear infinite;
+            font-weight: bold;
+            color: #333;
+        }
+        .scrolling-text:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scroll-left {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
 
         .navbar {
             background-color: #6D4C41 !important;
@@ -424,6 +455,14 @@
 
         </div>
     </nav>
+    <div class="news-bar">
+        <div class="scrolling-text">
+            🐾 Welcome to PawPark! Your pup’s next adventure awaits | 🔔 Stay safe—always keep your dog on leash unless in a designated off‑leash area | 🚩 New: Pin your favorite parks! • 📍 Explore Neighborhood Filters • 📸 Share your park photos
+        </div>
+    </div>
+    
+    
+      
     
     <!-- Offcanvas Sidebar Menu -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="background-color: #593d34;">
@@ -461,22 +500,24 @@
 
             <!-- User Links -->
             {% if user.is_authenticated %}
-                <ul class="navbar-nav mb-4">
-                    <li class="nav-item ">
-                        <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
-                            <i class="fas fa-user-alt fa-fw text-white"></i>
-                            Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'all_messages' %}">
-                            <i class="fas fa-comment-alt fa-fw text-white"></i>
-                            Messages
-                        </a>
-                    </li>
-                </ul>
-                <hr style="border-color: white;">
-            {% endif %}
+  <ul class="navbar-nav mb-4">
+    <li class="nav-item ">
+      <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
+        <i class="fas fa-user-alt fa-fw text-white"></i>
+        Profile
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'all_messages' %}">
+        <i class="fas fa-comment-alt fa-fw text-white"></i>
+        Messages
+      </a>
+    </li>
+  </ul>
+  <hr style="border-color: white;">
+  …
+{% endif %}
+
                 
             <!-- Admin Buttons -->
             {% if user.is_authenticated and user.is_staff %}
@@ -555,11 +596,11 @@
 
                 newFiles.forEach(file => {
                     if (!ALLOWED_TYPES.includes(file.type)) {
-                        errorMessages.push(`${file.name} is not a supported format.`);
+                        errorMessages.push(${file.name} is not a supported format.);
                         return;
                     }
                     if (file.size > MAX_FILE_SIZE) {
-                        errorMessages.push(`${file.name} exceeds the 5MB limit.`);
+                        errorMessages.push(${file.name} exceeds the 5MB limit.);
                         return;
                     }
                     validFiles.push(file);
@@ -598,7 +639,7 @@
                         const img = document.createElement("img");
                         img.src = e.target.result;
                         img.classList.add("preview-img");
-                        img.setAttribute("onclick", `openImagePopup('${e.target.result}')`);
+                        img.setAttribute("onclick", openImagePopup('${e.target.result}'));
     
                         const closeBtn = document.createElement("span");
                         closeBtn.innerHTML = "&times;";
