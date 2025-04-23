@@ -506,23 +506,22 @@
 
             <!-- User Links -->
             {% if user.is_authenticated %}
-  <ul class="navbar-nav mb-4">
-    <li class="nav-item ">
-      <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
-        <i class="fas fa-user-alt fa-fw text-white"></i>
-        Profile
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'all_messages' %}">
-        <i class="fas fa-comment-alt fa-fw text-white"></i>
-        Messages
-      </a>
-    </li>
-  </ul>
-  <hr style="border-color: white;">
-  …
-{% endif %}
+                <ul class="navbar-nav mb-4">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
+                            <i class="fas fa-user-alt fa-fw text-white"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'all_messages' %}">
+                            <i class="fas fa-comment-alt fa-fw text-white"></i>
+                            Messages
+                        </a>
+                    </li>
+                </ul>
+                <hr style="border-color: white;">
+            {% endif %}
 
                 
             <!-- Admin Buttons -->
