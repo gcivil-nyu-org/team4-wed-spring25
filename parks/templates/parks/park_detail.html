@@ -223,7 +223,32 @@
                     <div class="border-bottom py-3 d-flex flex-column gap-2">
                         <div class="review d-flex justify-content-between align-items-start">
                             <div class="d-flex flex-column">
-                                <p class="mb-1 text-muted">Posted by: <strong>{{ review.user.username }}</strong></p>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if review.is_deleted %}
+                                        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                                            alt="[deleted]" class="rounded-circle"
+                                            style="width: 30px; height: 30px; object-fit: cover;">
+                                        <span class="fw-bold text-muted">[deleted]</span>
+                                    {% else %}
+                                        {% with review.user.userprofile as profile %}
+                                            {% if profile.profile_picture and profile.profile_picture.url %}
+                                                <img src="{{ profile.profile_picture.url }}"
+                                                    alt="{{ review.user.username }}'s avatar"
+                                                    class="rounded-circle"
+                                                    style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                                                    alt="Default avatar"
+                                                    class="rounded-circle"
+                                                    style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% endif %}
+                                        {% endwith %}
+                                        <a href="{% url 'profiles:profile' username=review.user.username %}" class="fw-bold text-dark text-decoration-none">
+                                            {{ review.user.username }}
+                                        </a>
+                                    {% endif %}
+                                </div>                                
+
                                 <p class="d-flex gap-1 m-0">
                                     <span class="d-flex gap-0 align-items-center">
                                         {% render_stars review.rating 17 %}
@@ -232,45 +257,53 @@
                                 </p>
                             </div>
                             <div class="ms-3 text-end">
-                                {% if user == review.user %}
-                                    <form method="POST" action="{% url 'delete_review' review.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="delete-link">Delete</button>
-                                    </form>
-                                {% elif user.is_authenticated %}
-                                    <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
-                                    <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form method="POST" action="{{ park.detail_page_url }}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="form_type" value="report_review">
-                                                    <input type="hidden" name="review_id" value="{{ review.id }}">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                {% if not review.is_deleted %}
+                                    {% if user.is_authenticated %}
+                                        {% if user == review.user %}
+                                            <form method="POST" action="{% url 'delete_review' review.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="delete-link">Delete</button>
+                                            </form>
+                                        {% else %}
+                                            <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
+                                            <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form method="POST" action="{{ park.detail_page_url }}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="form_type" value="report_review">
+                                                            <input type="hidden" name="review_id" value="{{ review.id }}">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <label for="reason">Reason for report:</label>
+                                                                <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="submit" class="btn btn-danger">Submit Report</button>
+                                                            </div>
+                                                        </form>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <label for="reason">Reason for report:</label>
-                                                        <textarea name="reason" class="form-control" rows="3" required></textarea>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" class="btn btn-danger">Submit Report</button>
-                                                    </div>
-                                                </form>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                {% endif %}
+                                        {% endif %}
+    {% endif %}
+{% endif %}
+
                             </div>
                         </div>
 
-                        {% if review.text %}
+                        {% if review.is_deleted %}
+                            <div class="text-muted fst-italic">Comment deleted by user</div>
+                        {% elif review.text %}
                             <div>{{ review.text }}</div>
                         {% endif %}
 
+
                         <!-- Images Section -->
-                        {% if review.visible_images %}
+                        {% if review.visible_images and not review.is_deleted %}
                             
 
                             <div class="scrollable-image-wrapper position-relative mt-2">
@@ -292,11 +325,26 @@
                             </div>
                         {% endif %}
 
-                        {% for reply in review.replies.all %}
-                            {% if not reply.parent_reply %}
-                                {% render_replies reply %}
-                            {% endif %}
-                        {% endfor %}
+                        {% if review.replies.all %}
+                        <div class="ms-2">
+                            <button class="toggle-replies-btn rounded-circle border text-muted mb-2"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#replies-{{ review.id }}"
+                                    aria-expanded="true"
+                                    aria-controls="replies-{{ review.id }}">
+                                <span class="toggle-icon">−</span>
+                            </button>
+                        </div>
+
+                        <div class="collapse show" id="replies-{{ review.id }}">
+                            {% for reply in review.replies.all %}
+                                {% if not reply.parent_reply %}
+                                    {% render_replies reply %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
                         <!-- Reply Button (bottom-left Reddit style) -->
                         {% if user.is_authenticated %}
@@ -521,6 +569,20 @@
         });
     });
 
+        // Disable Report Reply button when clicked
+        const reportReplyInputs = document.querySelectorAll("form input[name='form_type'][value='report_reply']");
+        reportReplyInputs.forEach(input => {
+            const form = input.closest("form");
+            const button = form.querySelector("button[type='submit']");
+            form.addEventListener("submit", function () {
+                if (button) {
+                    button.disabled = true;
+                    button.innerText = "Submitting...";
+                }
+            });
+        });
+
+
     
     // Map
     const park = JSON.parse('{{ park_json|escapejs }}');
@@ -693,7 +755,25 @@
         const imageModal = new bootstrap.Modal(document.getElementById("imagePreviewModal"));
         imageModal.show();
     }
- 
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const toggles = document.querySelectorAll(".toggle-replies-btn");
+    toggles.forEach(btn => {
+        const icon = btn.querySelector(".toggle-icon");
+        const targetId = btn.getAttribute("data-bs-target");
+        const target = document.querySelector(targetId);
+
+        if (target) {
+            target.addEventListener("shown.bs.collapse", () => {
+                icon.textContent = "−";
+            });
+            target.addEventListener("hidden.bs.collapse", () => {
+                icon.textContent = "+";
+            });
+        }
+    });
+});
+
 
 
 </script>
@@ -888,6 +968,24 @@
     .btn-reply:hover {
         background-color: #f0f0f0;
         color: #495057;
+    }
+
+    .toggle-replies-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        text-align: center;
+        line-height: 1;
+        background-color: #f8f9fa;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .toggle-icon {
+        display: inline-block;
+        transition: transform 0.2s ease;
     }
 
 </style>

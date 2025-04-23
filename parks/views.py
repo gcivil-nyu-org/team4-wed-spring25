@@ -258,6 +258,9 @@ def park_detail(request, slug, id):
         queryset=ParkImage.objects.filter(is_removed=False),
         to_attr="visible_images",
     )
+    reviews = park.reviews.filter(is_removed=False).prefetch_related(
+        visible_images, "replies__user__userprofile", "user__userprofile"  # load avatar
+    )
     reviews = park.reviews.filter(is_removed=False).prefetch_related(visible_images)
 
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
@@ -438,15 +441,32 @@ def park_detail(request, slug, id):
     )
 
 
+def try_hard_delete_review_if_all_replies_deleted(review):
+    if review.is_deleted and not review.replies.filter(is_deleted=False).exists():
+        ParkImage.objects.filter(review=review).delete()
+        review.delete()
+
+
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    if request.user == review.user:
-        review.delete()
-        messages.success(request, "You have successfully deleted the review!")
-        return redirect(review.park.detail_page_url())
-    else:
+
+    # Ensure the current user owns the review
+    if request.user != review.user:
         return HttpResponseForbidden("You are not allowed to delete this review.")
+
+    # If there are any non-deleted replies, perform soft-delete
+    if review.replies.filter(is_deleted=False).exists():
+        review.is_deleted = True
+        review.text = ""
+        review.save()
+    else:
+        # Delete associated images (if any), then delete the review
+        review.images.all().delete()
+        review.delete()
+
+    messages.success(request, "You have successfully deleted the review!")
+    return redirect(review.park.detail_page_url())
 
 
 @login_required
@@ -489,11 +509,22 @@ def report_image(request, image_id):
 @login_required
 def delete_reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
-    if reply.user == request.user:
-        reply.delete()
-        messages.success(request, "Reply deleted successfully.")
-    else:
+
+    if reply.user != request.user:
         messages.error(request, "You can only delete your own replies.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    if reply.children.filter(is_deleted=False).exists():
+        # Soft-delete: mark deleted, clear text
+        reply.is_deleted = True
+        reply.text = ""
+        reply.save()
+    else:
+        reply.delete()
+
+    messages.success(request, "Reply deleted successfully.")
+    # check & hard delete
+    try_hard_delete_review_if_all_replies_deleted(reply.review)
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
