@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("parks.urls")),
     path("profiles/", include("profiles.urls")),
+    path("accounts/", include("accounts.urls")),
     path("test400/", error_views.trigger_400),
     path("test403/", error_views.trigger_403),
     path("test404/", error_views.trigger_404),
