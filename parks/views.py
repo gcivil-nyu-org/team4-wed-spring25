@@ -539,3 +539,11 @@ def report_reply(request, reply_id):
         else:
             messages.error(request, "You cannot report your own reply.")
     return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+def custom_500_view(request):
+    return render(request, "500.html", status=500)
+
+
+def trigger_500(request):
+    raise Exception("Simulated 500 error")
