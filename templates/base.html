@@ -602,11 +602,11 @@
 
                 newFiles.forEach(file => {
                     if (!ALLOWED_TYPES.includes(file.type)) {
-                        errorMessages.push(${file.name} is not a supported format.);
+                        errorMessages.push(`${file.name} is not a supported format.`);
                         return;
                     }
                     if (file.size > MAX_FILE_SIZE) {
-                        errorMessages.push(${file.name} exceeds the 5MB limit.);
+                        errorMessages.push(`${file.name} exceeds the 5MB limit.`);
                         return;
                     }
                     validFiles.push(file);
@@ -645,7 +645,7 @@
                         const img = document.createElement("img");
                         img.src = e.target.result;
                         img.classList.add("preview-img");
-                        img.setAttribute("onclick", openImagePopup('${e.target.result}'));
+                        img.setAttribute("onclick", `openImagePopup('${e.target.result}')`);
     
                         const closeBtn = document.createElement("span");
                         closeBtn.innerHTML = "&times;";
