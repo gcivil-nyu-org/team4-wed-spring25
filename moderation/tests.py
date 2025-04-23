@@ -6,6 +6,7 @@ from parks.models import DogRunNew, Review, ReviewReport, ImageReport, ParkImage
 from django.utils import timezone
 
 from unittest.mock import patch
+from cloudinary import config as cloudinary_config
 
 
 # Create your tests here.
@@ -187,7 +188,6 @@ class ModerationTests(TestCase):
         self.assertTrue(any("Invalid Action" in str(m) for m in messages))
 
 
-# @patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
 @patch(
     "cloudinary.uploader.upload",
     return_value={
@@ -256,6 +256,11 @@ class ModerationImageTests(TestCase):
         self.assertFalse(ParkImage.objects.filter(id=self.image.id).exists())
 
     def test_remove_image_from_report(self, mock_upload):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.image.is_removed = False
         self.image.save()
         ImageReport.objects.create(image=self.image, user=self.user, reason="Bad image")
@@ -285,7 +290,6 @@ class ModerationImageTests(TestCase):
         self.assertEqual(ImageReport.objects.count(), 0)
 
 
-# @patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
 @patch(
     "cloudinary.uploader.upload",
     return_value={
@@ -343,6 +347,11 @@ class RemovedContentTests(TestCase):
         )
 
     def test_restore_review(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.client.login(username="admin", password="pass")
         res = self.client.post(
             reverse("removed_review_action"),
@@ -353,6 +362,11 @@ class RemovedContentTests(TestCase):
         self.assertFalse(self.review.is_removed)
 
     def test_restore_review_not_removed(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.review.is_removed = False
         self.review.save()
         self.client.login(username="admin", password="pass")
@@ -363,6 +377,11 @@ class RemovedContentTests(TestCase):
         self.assertRedirects(res, reverse("moderation_dashboard"))
 
     def test_invalid_review_action(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.client.login(username="admin", password="pass")
         res = self.client.post(
             reverse("removed_review_action"),
@@ -371,6 +390,11 @@ class RemovedContentTests(TestCase):
         self.assertRedirects(res, reverse("moderation_dashboard"))
 
     def test_restore_image(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.client.login(username="admin", password="pass")
         res = self.client.post(
             reverse("removed_image_action"),
@@ -381,6 +405,11 @@ class RemovedContentTests(TestCase):
         self.assertFalse(self.image.is_removed)
 
     def test_restore_image_not_removed(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.image.is_removed = False
         self.image.save()
         self.client.login(username="admin", password="pass")
@@ -400,6 +429,11 @@ class RemovedContentTests(TestCase):
         self.assertFalse(ParkImage.objects.filter(id=self.image.id).exists())
 
     def test_invalid_image_action(self, _):
+        cloudinary_config(
+            cloud_name="demo",
+            api_key="fake_api_key",
+            api_secret="fake_api_secret",
+        )
         self.client.login(username="admin", password="pass")
         res = self.client.post(
             reverse("removed_image_action"),
