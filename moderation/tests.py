@@ -187,7 +187,23 @@ class ModerationTests(TestCase):
         self.assertTrue(any("Invalid Action" in str(m) for m in messages))
 
 
-@patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
+# @patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
+@patch(
+    "cloudinary.uploader.upload",
+    return_value={
+        "asset_id": "dummy_asset_id",
+        "public_id": "dummy_id",
+        "version": "1234567890",
+        "signature": "dummy_signature",
+        "width": 800,
+        "height": 600,
+        "format": "jpg",
+        "resource_type": "image",
+        "type": "upload",
+        "secure_url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+        "url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+    },
+)
 class ModerationImageTests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -269,7 +285,23 @@ class ModerationImageTests(TestCase):
         self.assertEqual(ImageReport.objects.count(), 0)
 
 
-@patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
+# @patch("cloudinary.models.CloudinaryField.pre_save", return_value="mocked.jpg")
+@patch(
+    "cloudinary.uploader.upload",
+    return_value={
+        "asset_id": "dummy_asset_id",
+        "public_id": "dummy_id",
+        "version": "1234567890",
+        "signature": "dummy_signature",
+        "width": 800,
+        "height": 600,
+        "format": "jpg",
+        "resource_type": "image",
+        "type": "upload",
+        "secure_url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+        "url": "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+    },
+)
 class RemovedContentTests(TestCase):
     def setUp(self):
         self.client = Client()
