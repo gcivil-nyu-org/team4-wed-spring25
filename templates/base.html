@@ -424,7 +424,7 @@
             </a>
             
             <!-- Right side of nav bar -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-4">
                 <!-- Common Links, shown on big screens, hidden on small -->
                 <ul class="navbar-nav d-none d-lg-flex flex-row gap-4 h-100">
                     <li class="nav-item">
@@ -473,17 +473,21 @@
                         </button>
                     </div>
                 {% else %}
-                    <ul class="navbar-nav d-flex flex-row gap-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-none d-lg-block" href="{% url 'register' %}">Sign Up</a>
-                        </li>
-                        <button class="btn d-flex flex-row gap-1 align-items-center text-white p-0" style="font-size: 20px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">            
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                    </ul>
+                    <div class="d-flex">
+                        <ul class="navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-none d-lg-block" href="{% url 'register' %}">Sign Up</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex justify-content-center align-items-center" style="margin-right: -24px;">
+                            <button class="btn d-flex flex-row gap-1 align-items-center text-white p-0 justify-content-center border-0" style="font-size: 20px; width: 53px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">            
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
                 {% endif %} 
             </div>
 
@@ -534,23 +538,22 @@
 
             <!-- User Links -->
             {% if user.is_authenticated %}
-  <ul class="navbar-nav mb-4">
-    <li class="nav-item ">
-      <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
-        <i class="fas fa-user-alt fa-fw text-white"></i>
-        Profile
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'all_messages' %}">
-        <i class="fas fa-comment-alt fa-fw text-white"></i>
-        Messages
-      </a>
-    </li>
-  </ul>
-  <hr style="border-color: white;">
-  …
-{% endif %}
+                <ul class="navbar-nav mb-4">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
+                            <i class="fas fa-user-alt fa-fw text-white"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'all_messages' %}">
+                            <i class="fas fa-comment-alt fa-fw text-white"></i>
+                            Messages
+                        </a>
+                    </li>
+                </ul>
+                <hr style="border-color: white;">
+            {% endif %}
 
                 
             <!-- Admin Buttons -->
