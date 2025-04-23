@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = [
     "pawpark-develop-env.eba-qmeihm3d.us-east-1.elasticbeanstalk.com",
     "127.0.0.1",
     "localhost",
+    "172.31.41.123",
 ]
 
 # Custom handlers
@@ -53,7 +55,27 @@ INSTALLED_APPS = [
     "profiles.apps.ProfilesConfig",
     "announcements",
     "moderation",
+    "channels",
+    "django.contrib.humanize",
 ]
+
+ASGI_APPLICATION = "pawpark.asgi.application"
+
+USE_REDIS = os.getenv("USE_REDIS", "true").lower() == "true"
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")  # Default to local, override in AWS
+
+if USE_REDIS:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_HOST, 6379)],
+            },
+        }
+    }
+else:
+    CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -172,3 +194,19 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "pawpark.noreply@gmail.com"
 EMAIL_HOST_PASSWORD = "yvtm objm fbrk cimi"
 DEFAULT_FROM_EMAIL = "no-reply@pawpark.com"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
