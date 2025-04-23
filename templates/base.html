@@ -132,6 +132,26 @@
             flex-shrink: 0;
         }
 
+        #hero {
+            background-color: #1e2a38;
+            background-image: url('https://res.cloudinary.com/depkyxqbe/image/upload/v1745391883/3784909_dzkq6r.jpg');
+            background-repeat: repeat;
+            background-size: contain;
+            background-position: center center;
+        }
+
+        .hero-text-box {
+            background-color: rgba(255, 255, 255, 0.85); /* or rgba(30, 42, 56, 0.85) */ /* soft warm pinkish beige */
+            color: #2c2c2c;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            display: inline-block;
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            backdrop-filter: blur(2px);
+        }
+
         #map-search-container {
             display: flex;
             flex-direction: column;
@@ -156,6 +176,7 @@
             flex-grow: 1;
             min-height: 0;
         }
+
 
         #parklist-container {
             display: flex;
@@ -338,6 +359,13 @@
             border-color: #5D4037;
             color: white;
         }
+        .btn-brown {
+            border: 2px solid #6D4C41;
+            background-color: transparent;
+            color: #6D4C41;
+            transition: all 0.3s ease;
+        }
+
 
         /* Accordion styling */
         .accordion-button:not(.collapsed) {
@@ -396,7 +424,7 @@
             </a>
             
             <!-- Right side of nav bar -->
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-4">
                 <!-- Common Links, shown on big screens, hidden on small -->
                 <ul class="navbar-nav d-none d-lg-flex flex-row gap-4 h-100">
                     <li class="nav-item">
@@ -445,17 +473,21 @@
                         </button>
                     </div>
                 {% else %}
-                    <ul class="navbar-nav d-flex flex-row gap-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link d-none d-lg-block" href="{% url 'register' %}">Sign Up</a>
-                        </li>
-                        <button class="btn d-flex flex-row gap-1 align-items-center text-white p-0" style="font-size: 20px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">            
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                    </ul>
+                    <div class="d-flex">
+                        <ul class="navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-none d-lg-block" href="{% url 'register' %}">Sign Up</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex justify-content-center align-items-center" style="margin-right: -24px;">
+                            <button class="btn d-flex flex-row gap-1 align-items-center text-white p-0 justify-content-center border-0" style="font-size: 20px; width: 53px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">            
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
                 {% endif %} 
             </div>
 
@@ -506,23 +538,22 @@
 
             <!-- User Links -->
             {% if user.is_authenticated %}
-  <ul class="navbar-nav mb-4">
-    <li class="nav-item ">
-      <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
-        <i class="fas fa-user-alt fa-fw text-white"></i>
-        Profile
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'all_messages' %}">
-        <i class="fas fa-comment-alt fa-fw text-white"></i>
-        Messages
-      </a>
-    </li>
-  </ul>
-  <hr style="border-color: white;">
-  …
-{% endif %}
+                <ul class="navbar-nav mb-4">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'profiles:profile' username=user.username %}">
+                            <i class="fas fa-user-alt fa-fw text-white"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'all_messages' %}">
+                            <i class="fas fa-comment-alt fa-fw text-white"></i>
+                            Messages
+                        </a>
+                    </li>
+                </ul>
+                <hr style="border-color: white;">
+            {% endif %}
 
                 
             <!-- Admin Buttons -->
@@ -602,11 +633,11 @@
 
                 newFiles.forEach(file => {
                     if (!ALLOWED_TYPES.includes(file.type)) {
-                        errorMessages.push(${file.name} is not a supported format.);
+                        errorMessages.push(`${file.name} is not a supported format.`);
                         return;
                     }
                     if (file.size > MAX_FILE_SIZE) {
-                        errorMessages.push(${file.name} exceeds the 5MB limit.);
+                        errorMessages.push(`${file.name} exceeds the 5MB limit.`);
                         return;
                     }
                     validFiles.push(file);
@@ -645,7 +676,7 @@
                         const img = document.createElement("img");
                         img.src = e.target.result;
                         img.classList.add("preview-img");
-                        img.setAttribute("onclick", openImagePopup('${e.target.result}'));
+                        img.setAttribute("onclick", `openImagePopup('${e.target.result}')`);
     
                         const closeBtn = document.createElement("span");
                         closeBtn.innerHTML = "&times;";

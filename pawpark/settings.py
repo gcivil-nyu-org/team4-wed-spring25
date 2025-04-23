@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "moderation",
     "channels",
     "django.contrib.humanize",
+    "accounts",
 ]
 
 ASGI_APPLICATION = "pawpark.asgi.application"
@@ -181,7 +182,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = "/login/"
+LOGIN_URL = "/accounts/login/"
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"

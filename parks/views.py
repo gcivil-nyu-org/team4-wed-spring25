@@ -21,9 +21,7 @@ from .models import (
     ReplyReport,
 )
 from django.forms.models import model_to_dict
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .forms import RegisterForm
 
 import json
 import datetime
@@ -162,27 +160,6 @@ def bethere_view(request):
 def expire_old_checkins():
     expiration_time = timezone.now() - timedelta(hours=1)
     ParkPresence.objects.filter(status="current", time__lt=expiration_time).delete()
-
-
-def register_view(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            # Save but don't commit yet
-            user = form.save(commit=False)
-            # If they chose Admin, mark them as staff
-            if form.cleaned_data["role"] == "admin":
-                user.is_staff = True
-            user.save()
-
-            # Log the user in immediately
-            login(request, user)
-            request.session.save()
-            return redirect("home")
-    else:
-        form = RegisterForm()
-
-    return render(request, "parks/register.html", {"form": form})
 
 
 def home_view(request):
@@ -562,3 +539,11 @@ def report_reply(request, reply_id):
         else:
             messages.error(request, "You cannot report your own reply.")
     return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+def custom_500_view(request):
+    return render(request, "500.html", status=500)
+
+
+def trigger_500(request):
+    raise Exception("Simulated 500 error")
