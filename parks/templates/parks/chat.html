@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center fw-semibold" style="color: #333;">Chat with {{ recipient.username }}</h2>
+
+    <div class="card shadow-sm border-0" style="border-radius: 16px; display: flex; flex-direction: column; height: 80vh;">
+        <!-- Chat messages container -->
+        <div class="card-body px-4 py-3" id="chat-container"
+             style="flex-grow: 1; overflow-y: auto; background-color: #f1f1f1; border-radius: 16px 16px 0 0; padding-bottom: 10px;">
+            {% for message in messages %}
+                {% if message.sender == user %}
+                    <!-- Message from current user (right side) -->
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="bg-brown text-white p-2 px-3 rounded-4" style="max-width: 60%;">
+                            <div>{{ message.content }}</div>
+                            <div class="text-end small mt-1 opacity-75">{{ message.timestamp|date:"M d, H:i" }}</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Message from recipient (left side) -->
+                    <div class="d-flex justify-content-start mb-3">
+                        <div class="bg-light text-dark p-2 px-3 rounded-4" style="max-width: 60%;">
+                            <div>{{ message.content }}</div>
+                            <div class="text-end small mt-1 text-muted">{{ message.timestamp|date:"M d, H:i" }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Send message input and emoji picker -->
+        <div class="card-footer bg-white border-top-0 px-4 py-3" style="border-radius: 0 0 16px 16px;">
+            <div class="input-group">
+                <textarea id="message-input" class="form-control border-0 shadow-sm"
+                          placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"></textarea>
+                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;">
+                    😊
+                </button>
+                <button id="send-message"
+                        class="btn ms-2 px-4"
+                        style="background-color: #8B4513; color: white; border-radius: 12px;">
+                    Send
+                </button>
+            </div>
+            <!-- Emoji picker modal -->
+            <div id="emoji-picker" class="emoji-picker" style="display: none; position: absolute; background-color: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
+                <span class="emoji" data-emoji="😀">😀</span>
+                <span class="emoji" data-emoji="😃">😃</span>
+                <span class="emoji" data-emoji="😄">😄</span>
+                <span class="emoji" data-emoji="😁">😁</span>
+                <span class="emoji" data-emoji="😆">😆</span>
+                <span class="emoji" data-emoji="😅">😅</span>
+                <span class="emoji" data-emoji="😂">😂</span>
+                <!-- Add more emojis as desired -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 10px;
+    }
+
+    #chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+
+    .emoji-picker {
+        z-index: 1000;
+    }
+
+    .emoji {
+        cursor: pointer;
+        margin: 5px;
+        font-size: 20px;
+    }
+
+    .bg-brown {
+        background-color: #8B4513; /* Brown color */
+    }
+</style>
+
+<script>
+    const recipientUsername = "{{ recipient.username }}";
+    const chatContainer = document.getElementById("chat-container");
+    const messageInput = document.getElementById("message-input");
+    const sendMessageButton = document.getElementById("send-message");
+    const emojiButton = document.getElementById("emoji-button");
+    const emojiPicker = document.getElementById("emoji-picker");
+
+    const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + recipientUsername + '/');
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isMe = data.sender === "{{ user.username }}";
+        const messageEl = document.createElement("div");
+        messageEl.classList.add("d-flex", isMe ? "justify-content-end" : "justify-content-start", "mb-3");
+
+        const bubble = document.createElement("div");
+        bubble.className = `p-2 px-3 rounded-4 ${isMe ? "bg-brown text-white" : "bg-light text-dark"}`;
+        bubble.style.maxWidth = "60%";
+
+        // Format timestamp using JS
+        const timestamp = new Date(data.timestamp);
+        const formattedTime = timestamp.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        bubble.innerHTML = `
+            <div>${data.message}</div>
+            <div class="text-end small mt-1 ${isMe ? "opacity-75" : "text-muted"}">${formattedTime}</div>
+        `;
+
+        messageEl.appendChild(bubble);
+        chatContainer.appendChild(messageEl);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    };
+
+    sendMessageButton.onclick = function() {
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.send(JSON.stringify({ "message": message }));
+            messageInput.value = '';
+        }
+    };
+
+    messageInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessageButton.click();
+        }
+    });
+
+    // Show/hide emoji picker
+    emojiButton.onclick = function(event) {
+        // Prevent the event from bubbling up to the document
+        event.stopPropagation();
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // Add emoji to message input
+    emojiPicker.addEventListener("click", function(e) {
+        if (e.target.classList.contains("emoji")) {
+            const emoji = e.target.dataset.emoji;
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+    });
+
+    // Close emoji picker if click is outside of it
+    document.addEventListener("click", function(event) {
+        if (!emojiPicker.contains(event.target) && event.target !== emojiButton) {
+            emojiPicker.style.display = "none";
+        }
+    });
+</script>
+{% endblock %}

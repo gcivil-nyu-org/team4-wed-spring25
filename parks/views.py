@@ -34,6 +34,63 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from datetime import timedelta
 
+from django.contrib.auth.models import User
+from .models import Message
+from collections import defaultdict
+
+
+@login_required
+def chat_view(request, username):
+    recipient = get_object_or_404(User, username=username)
+    messages = Message.objects.filter(
+        sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
+    )
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            Message.objects.create(
+                sender=request.user, recipient=recipient, content=content
+            )
+            return redirect("chat_view", username=username)
+    return render(
+        request, "parks/chat.html", {"recipient": recipient, "messages": messages}
+    )
+
+
+@login_required
+def all_messages_view(request):
+    user = request.user
+    # Get all messages involving the user, either sent or received
+    messages = (
+        Message.objects.filter(Q(sender=user) | Q(recipient=user))
+        .select_related("sender", "recipient")
+        .order_by("-timestamp")
+    )
+
+    # Group by the *other* user
+    grouped = defaultdict(list)
+    for msg in messages:
+        other_user = msg.recipient if msg.sender == user else msg.sender
+        grouped[other_user.username].append(msg)
+
+    return render(
+        request, "parks/all_messages.html", {"grouped_messages": dict(grouped)}
+    )
+
+
+@login_required
+def delete_conversation(request, sender_username):
+    # Get the recipient user object (the sender of the conversation)
+    recipient = get_object_or_404(User, username=sender_username)
+
+    # Delete messages where the user is either the sender or recipient
+    Message.objects.filter(
+        sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
+    ).delete()
+
+    # Redirect to the all messages view after deleting the conversation
+    return redirect("all_messages")
+
 
 @login_required
 @require_POST
@@ -224,6 +281,9 @@ def park_detail(request, slug, id):
         queryset=ParkImage.objects.filter(is_removed=False),
         to_attr="visible_images",
     )
+    reviews = park.reviews.filter(is_removed=False).prefetch_related(
+        visible_images, "replies__user__userprofile", "user__userprofile"  # load avatar
+    )
     reviews = park.reviews.filter(is_removed=False).prefetch_related(visible_images)
 
     average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
@@ -404,15 +464,32 @@ def park_detail(request, slug, id):
     )
 
 
+def try_hard_delete_review_if_all_replies_deleted(review):
+    if review.is_deleted and not review.replies.filter(is_deleted=False).exists():
+        ParkImage.objects.filter(review=review).delete()
+        review.delete()
+
+
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    if request.user == review.user:
-        review.delete()
-        messages.success(request, "You have successfully deleted the review!")
-        return redirect(review.park.detail_page_url())
-    else:
+
+    # Ensure the current user owns the review
+    if request.user != review.user:
         return HttpResponseForbidden("You are not allowed to delete this review.")
+
+    # If there are any non-deleted replies, perform soft-delete
+    if review.replies.filter(is_deleted=False).exists():
+        review.is_deleted = True
+        review.text = ""
+        review.save()
+    else:
+        # Delete associated images (if any), then delete the review
+        review.images.all().delete()
+        review.delete()
+
+    messages.success(request, "You have successfully deleted the review!")
+    return redirect(review.park.detail_page_url())
 
 
 @login_required
@@ -455,11 +532,22 @@ def report_image(request, image_id):
 @login_required
 def delete_reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
-    if reply.user == request.user:
-        reply.delete()
-        messages.success(request, "Reply deleted successfully.")
-    else:
+
+    if reply.user != request.user:
         messages.error(request, "You can only delete your own replies.")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    if reply.children.filter(is_deleted=False).exists():
+        # Soft-delete: mark deleted, clear text
+        reply.is_deleted = True
+        reply.text = ""
+        reply.save()
+    else:
+        reply.delete()
+
+    messages.success(request, "Reply deleted successfully.")
+    # check & hard delete
+    try_hard_delete_review_if_all_replies_deleted(reply.review)
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 

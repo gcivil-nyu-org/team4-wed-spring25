@@ -76,6 +76,10 @@ class Review(models.Model):
         on_delete=models.SET_NULL,
         related_name="removed_reviews",
     )
+    is_deleted = models.BooleanField(default=False)
+
+    def has_active_replies(self):
+        return self.replies.filter(is_deleted=False).exists()
 
     class Meta:
         db_table = "park_reviews"
@@ -152,6 +156,11 @@ class Reply(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_deleted = models.BooleanField(default=False)
+
+    def has_active_children(self):
+        return self.children.filter(is_deleted=False).exists()
+
     class Meta:
         ordering = ["created_at"]
 
@@ -192,3 +201,20 @@ class ParkPresence(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.park.display_name} ({self.status})"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="received_messages"
+    )
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["timestamp"]
+
+    def __str__(self):
+        return f"From {self.sender} to {self.recipient} at {self.timestamp}"
