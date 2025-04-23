@@ -30,13 +30,13 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="true">
                 Reported Reviews
-                <span class="p-1" style="background-color: #806056; color: white; border-radius: 50%; ">{{ reported_reviews|length }}</span>
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ reported_reviews|length }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab" aria-controls="images" aria-selected="false">
                 Reported Images
-                <span class="p-1" style="background-color: #806056; color: white; border-radius: 50%; ">{{ image_reports|length }}</span>
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ image_reports|length }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -199,27 +199,27 @@
                     </select>
                 </div>
         
-                {% for report in image_reports %}
+                {% for image in image_reports %}
                     <div class="image-report-card card mb-3"
-                        data-reported-at="{{ report.first_reported|date:'U' }}"
-                        data-latest-reported="{{ report.latest_reported|date:'U' }}"
-                        data-report-count="{{ report.report_count }}"
+                        data-reported-at="{{ image.first_reported|date:'U' }}"
+                        data-latest-reported="{{ image.latest_reported|date:'U' }}"
+                        data-report-count="{{ image.report_count }}"
                     >
                         <div class="card-body py-4 px-3">
                             <div class="d-flex flex-column gap-3">
                                 <!-- Report Metadata -->
                                 <div class="d-flex flex-column gap-2 border-bottom">
                                     <div class="d-flex gap-3">
-                                        <span style="font-weight: bold; color: red;"> {{ report.report_count }} {% if report.report_count == 1 %} Report {% else %} Reports {% endif %}</span>
+                                        <span style="font-weight: bold; color: red;"> {{ image.report_count }} {% if image.report_count == 1 %} Report {% else %} Reports {% endif %}</span>
                                         <span style="font-weight: bold;"> | </span>
                                         <span class="text-dark fw-semibold">First Reported:</span>
-                                        <span class="text-secondary">{{ report.first_reported|date:"F j, Y, h:i a" }}</span>
+                                        <span class="text-secondary">{{ image.first_reported|date:"F j, Y, h:i a" }}</span>
                                     </div>
         
                                     <div>
                                         <strong>Reasons:</strong>
                                         <ul>
-                                            {% for r in report.image.reports.all %}
+                                            {% for r in image.reports.all %}
                                                 <li class="list-group-item px-0 py-1">
                                                     <div class="d-flex gap-2">
                                                         <small class="text-muted">{{ r.created_at|date:"M d, Y, h:i A" }}</small>
@@ -243,24 +243,24 @@
                                     <div class="mt-2 d-flex flex-column gap-2 align-items-start">
                                         <p class="mb-0">
                                             Uploaded by:
-                                            {% if report.image.user and report.image.user.username %}
-                                                <a class="text-danger fw-bold" href="{% url 'profiles:profile' report.image.user.username %}">{{ report.image.user.username }}</a>
+                                            {% if image.user and image.user.username %}
+                                                <a class="text-danger fw-bold" href="{% url 'profiles:profile' image.user.username %}">{{ image.user.username }}</a>
                                             {% else %}
                                                 <span class="text-muted">[Unknown User]</span>
                                             {% endif %}
                                             in 
-                                            <a href="{{ report.image.park.detail_page_url }}" class="fw-bold" style="color: #6D4C41;">
-                                                {{ report.image.park.display_name }}
+                                            <a href="{{ image.park.detail_page_url }}" class="fw-bold" style="color: #6D4C41;">
+                                                {{ image.park.display_name }}
                                             </a>
                                         </p>
                                         
-                                        <img src="{{ report.image.image.url }}" 
+                                        <img src="{{ image.image.url }}" 
                                              alt="Reported Image" 
                                              style="max-width: 200px; border-radius: 10px; border: 1px solid #ccc;">
                                     </div>
 
                                     <!-- Option to preview review -->
-                                    {% if report.image.review %}
+                                    {% if image.review %}
                                         <div class="mt-2">
                                             <button class="btn btn-sm btn-outline-secondary toggle-review" type="button">
                                                 Show Entire Review
@@ -276,19 +276,19 @@
                                                         <div class="d-flex flex-column">
                                                             <p class="d-flex gap-1 m-0">
                                                                 <span class="d-flex gap-0 align-items-center">
-                                                                    {% render_stars report.image.review.rating 17 %}
+                                                                    {% render_stars image.review.rating 17 %}
                                                                 </span>
-                                                                <span class="text-muted float-end" style="font-size: 15px;">{{ report.image.review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                                                                <span class="text-muted float-end" style="font-size: 15px;">{{ image.review.created_at|localtime|date:"Y-m-d H:i" }}</span>
                                                             </p>
 
-                                                            {% if report.image.review.text %}
-                                                                <div>{{ report.image.review.text }}</div>
+                                                            {% if image.review.text %}
+                                                                <div>{{ image.review.text }}</div>
                                                             {% endif %}
                                     
-                                                            {% if report.image.review.images.all %}
+                                                            {% if image.review.images.all %}
                                                                 <div class="scrollable-image-wrapper position-relative mt-2">
                                                                     <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
-                                                                    {% for img in report.image.review.images.all %}
+                                                                    {% for img in image.review.images.all %}
                                                                         <img 
                                                                             data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
                                                                             data-full="{{ img.image.url }}"
@@ -317,14 +317,14 @@
                                         <form method="post" action="{% url 'image_moderation_action' %}" class="prevent-double-submit">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="remove_image">
-                                            <input type="hidden" name="image_id" value="{{ report.image.id }}">
+                                            <input type="hidden" name="image_id" value="{{ image.id }}">
                                             <button type="submit" class="btn btn-danger btn-sm action-button">Remove Image</button>
                                         </form>
         
                                         <form method="post" action="{% url 'image_moderation_action' %}" class="prevent-double-submit">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="dismiss_image_report">
-                                            <input type="hidden" name="image_id" value="{{ report.image.id }}">
+                                            <input type="hidden" name="image_id" value="{{ image.id }}">
                                             <button type="submit" class="btn btn-success btn-sm action-button">Dismiss Report</button>
                                         </form>
                                     </div>

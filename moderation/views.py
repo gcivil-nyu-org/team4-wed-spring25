@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
 from parks.models import Review, ImageReport, ReviewReport, ParkImage
-from django.db.models import Count, Min, Max, Q, Prefetch
+from django.db.models import Count, Min, Max, Prefetch
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseNotAllowed
@@ -30,16 +30,18 @@ def dashboard(request):
     )
 
     image_reports = (
-        ImageReport.objects.select_related("user", "image__user", "image__park")
+        ParkImage.objects.annotate(
+            report_count=Count("reports"),
+            first_reported=Min("reports__created_at"),
+            latest_reported=Max("reports__created_at"),
+        )
         .filter(
-            ~Q(image__review__is_removed=True),
-            image__is_removed=False,
+            report_count__gt=0,
+            is_removed=False,
+            review__is_removed=False,
         )
-        .annotate(
-            report_count=Count("id"),
-            first_reported=Min("created_at"),
-            latest_reported=Max("created_at"),
-        )
+        .select_related("user", "park", "review")
+        .prefetch_related("reports")
     )
 
     # Removed Content Object
