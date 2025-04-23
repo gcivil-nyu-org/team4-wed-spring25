@@ -5,136 +5,74 @@
 
 {% block extra_head %}
 <style>
-    .results-card {
-        font-family: 'Nunito', Arial, sans-serif;
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        background-color: #fff;
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-        padding: 2rem;
-        animation: fadeInUp 0.5s ease-out;
+    :root {
+        /* Define your primary color */
+        --primary-color: #6D4C41; /* Using the brown from your header */
+        --primary-color-darker: #5a3d34; /* A darker shade for hover */
+        --input-border-color: #ced4da;
+        --input-focus-border-color: #a78c83; /* Lighter shade of primary for focus */
+        --input-focus-box-shadow: 0 0 0 0.25rem rgba(109, 76, 65, 0.25); /* Subtle focus glow */
+        --card-bg: #fff;
+        --text-color: #212529;
+        --text-muted: #6c757d;
+        --link-color: var(--primary-color);
+        --border-color-light: #eee;
+        --hover-bg-light: #f8f9fa; /* Light background for hover */
     }
 
-    .results-card h4 {
+    /* Using Nunito as the base font, Poppins for headers */
+    body {
+    font-family: 'Nunito', Arial, sans-serif;
+    background-image: url("https://res.cloudinary.com/depkyxqbe/image/upload/q_auto,f_auto/v1745217473/egrbgd5o7wfrd4qbcqhz.webp");
+    background-repeat: repeat;
+    background-size: 600px;
+    background-position: top left;
+    background-attachment: fixed;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(255, 255, 255, 0.6);
+        z-index: -1;
+    }
+
+    h1, h2, h3, h4, h5, h6, .section-header {
         font-family: 'Poppins', sans-serif;
-        font-weight: 600;
-        color: #6D4C41;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 0.5rem;
-    }
-
-    .results-card ul {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    .results-card li {
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #f1f1f1;
-    }
-
-    .results-card li a {
-        color: #6D4C41;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    .results-card li a:hover {
-        text-decoration: underline;
-    }
-
-    .results-empty {
-        font-style: italic;
-        color: #999;
-    }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
     }
 
     .search-wrapper {
         max-width: 900px;
-        margin: 4rem auto;
+        margin: 3rem auto;
     }
 
     .section-card {
-        background-color: white;
-        border-radius: 25px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        padding: 2rem;
+        background-color: var(--card-bg);
+        border-radius: 20px;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.09);
+        padding: 2.5rem;
         margin-top: 2rem;
         min-height: 400px;
+        border: 1px solid var(--border-color-light);
+        position: relative; /* Needed for potential absolute positioning inside */
     }
 
     .section-header {
-        background-color: #6D4C41;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-top-left-radius: 25px;
-        border-top-right-radius: 25px;
-        font-size: 1.5rem;
+        color: var(--primary-color);
+        padding: 0 0 1rem 0;
+        border-bottom: 2px solid var(--border-color-light);
+        font-size: 1.6rem;
         font-weight: 600;
-        margin: -2rem -2rem 1rem;
+        margin-bottom: 2rem;
     }
 
-    .results-list li {
-        padding: 0.6rem 0;
-        border-bottom: 1px solid #eee;
-        list-style: none;
-    }
-
-    .results-list li a {
-        text-decoration: none;
-        color: #6D4C41;
-        font-weight: 500;
-    }
-
-    .results-list li a:hover {
-        text-decoration: underline;
-    }
-
-    .form-control,
-    .form-select,
-    .btn {
-        border-radius: 12px;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
-    }
-
-    .search-form-wrapper .form-label {
-        font-size: 0.95rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .search-form-wrapper .form-control,
-    .search-form-wrapper .form-select {
-        min-width: 160px;
-    }
-
-    .form-check-input {
-        margin-top: 8px;
-    }
-
-    .form-check-label {
-        margin-left: 0.4rem;
-    }
-
+    /* --- Form Styles --- */
     .search-form-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     .search-row {
@@ -146,14 +84,238 @@
 
     .search-row > div {
         flex: 1;
-        min-width: 160px;
+        min-width: 180px;
     }
 
-    .search-actions {
+    .search-form-wrapper .form-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.35rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        border: 1px solid var(--input-border-color);
+        padding: 0.6rem 0.8rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control::placeholder { color: #aaa; opacity: 1; }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--input-focus-border-color);
+        box-shadow: var(--input-focus-box-shadow);
+        outline: 0;
+    }
+
+    .form-check { padding-left: 0; display: flex; align-items: center; }
+    .form-check-input { margin-top: 0; height: 1.2em; width: 1.2em; border-radius: 4px; border: 1px solid var(--input-border-color); }
+    .form-check-input:checked { background-color: var(--primary-color); border-color: var(--primary-color); }
+    .form-check-input:focus { border-color: var(--input-focus-border-color); box-shadow: var(--input-focus-box-shadow); }
+    .form-check-label { margin-left: 0.5rem; font-weight: 500; }
+
+    .search-actions { display: flex; justify-content: flex-end; width: 100%; margin-top: 0.5rem; }
+
+    /* --- Button Styles --- */
+    .btn {
+        border-radius: 10px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.1s ease-out;
+        display: inline-flex; /* Align icon and text */
+        align-items: center;
+        gap: 0.5rem; /* Space between icon and text */
+    }
+    .btn svg { /* Style the icon inside the button */
+         margin: 0; /* Remove default margins if any */
+    }
+    .btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-color-darker); border-color: var(--primary-color-darker); color: white; }
+    .btn-primary:focus { background-color: var(--primary-color-darker); border-color: var(--primary-color-darker); color: white; box-shadow: var(--input-focus-box-shadow); }
+    .btn-primary:active { /* Add a subtle press effect */
+        transform: scale(0.98);
+    }
+    /* Loading state for button (add/remove this class with JS) */
+    .btn.is-loading {
+        position: relative;
+        color: transparent !important; /* Hide text */
+        cursor: wait;
+    }
+    .btn.is-loading::after { /* Spinner */
+        content: '';
+        display: block;
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin-left: -8px;
+        margin-top: -8px;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: button-spin .6s linear infinite;
+    }
+    @keyframes button-spin {
+        to { transform: rotate(360deg); }
+    }
+
+
+    /* --- Results Styling --- */
+    .search-results-container {
+        margin-top: 2.5rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .results-title {
+        font-family: 'Poppins', sans-serif;
+        /* text-align: center; */ /* Changed to left align */
+        text-align: left;
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem;
+        color: var(--text-muted); /* Make it slightly less prominent */
+    }
+     .results-title strong {
+         color: var(--primary-color);
+         font-weight: 600;
+     }
+
+    .results-section h5 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--border-color-light);
+        font-size: 1.1rem;
+        display: flex; /* Align icon and text */
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .results-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .results-list li {
+        /* Removed padding/border from li itself */
+        border-bottom: 1px solid #f5f5f5; /* Lighter border still separating items */
+        transition: background-color 0.15s ease-in-out;
+    }
+     .results-list li:last-child {
+        border-bottom: none;
+    }
+    .results-list li:hover {
+        background-color: var(--hover-bg-light); /* Add hover background */
+    }
+
+    /* New: Link now covers the whole item for better click area */
+    .result-item-link {
+        display: block;
+        padding: 0.8rem 0.5rem; /* Add padding inside the link */
+        text-decoration: none;
+        color: inherit; /* Inherit color, don't force link color */
+    }
+
+    .result-item-content {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1rem; /* Space between avatar and info */
     }
+
+    .result-avatar {
+        flex-shrink: 0; /* Prevent avatar from shrinking */
+        width: 45px;
+        height: 45px;
+        border-radius: 50%; /* Circular avatar */
+        background-color: var(--border-color-light); /* Placeholder background */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Clip image if needed */
+        font-size: 1.5rem; /* Icon size */
+        color: var(--text-muted);
+    }
+    .result-avatar .avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensure image covers the area */
+    }
+
+    .result-info {
+        display: flex;
+        flex-direction: column; /* Stack primary/secondary info */
+        flex-grow: 1;
+    }
+
+    .result-primary-info {
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 1rem;
+    }
+    .result-secondary-info {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.1rem;
+    }
+
+    /* Hover effect on primary info (optional underline) */
+    .result-item-link:hover .result-primary-info {
+       /* text-decoration: underline; */ /* Optional: underline on hover */
+       color: var(--primary-color); /* Change primary info color on hover */
+    }
+
+    .results-empty {
+        font-style: italic;
+        color: var(--text-muted);
+        padding: 1.5rem 0.5rem; /* More padding for empty state */
+        text-align: center;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 767px) {
+        .section-card {
+            padding: 1.5rem; /* Reduce padding on smaller screens */
+        }
+        .section-header {
+            font-size: 1.4rem;
+        }
+        .search-row {
+            gap: 1rem; /* Reduce gap */
+        }
+         .search-actions {
+            justify-content: center; /* Center button on small screens */
+        }
+        .btn {
+             padding: 0.6rem 1.2rem; /* Adjust button padding */
+        }
+        .result-item-content {
+            gap: 0.8rem; /* Reduce gap */
+        }
+        .result-avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+        }
+        .result-primary-info {
+            font-size: 0.95rem;
+        }
+         .result-secondary-info {
+            font-size: 0.8rem;
+        }
+    }
+
 </style>
 {% endblock %}
 
@@ -162,28 +324,29 @@
     <div class="section-card">
         <div class="section-header">Search for Users or Pets</div>
 
-        <form method="get" action="{% url 'profiles:search' %}" class="search-form-wrapper mt-4">
+        {# Add id="searchForm" to target with JS later for loading state #}
+        <form method="get" action="{% url 'profiles:search' %}" class="search-form-wrapper" id="searchForm">
+            {# First Row: Search Term, Type, Breed (Conditional) #}
             <div class="search-row">
                 <div>
-                    <label class="form-label fw-bold mb-1">Search</label>
-                    <input type="text" name="q" class="form-control" placeholder="Name..." value="{{ request.GET.q }}">
+                    <label for="searchInput" class="form-label">Search Term</label>
+                     <input type="text" id="searchInput" name="q" class="form-control" placeholder="Enter name..." value="{{ request.GET.q }}">
                 </div>
                 <div>
-                    <label class="form-label fw-bold mb-1">Type</label>
-                    <select class="form-select" name="type" onchange="this.form.submit()">
-                        <option value="users" {% if request.GET.type == "users" %}selected{% endif %}>Users</option>
+                    <label for="typeSelect" class="form-label">Type</label>
+                    <select id="typeSelect" class="form-select" name="type" onchange="this.form.submit()">
+                        <option value="users" {% if request.GET.type == "users" or not request.GET.type %}selected{% endif %}>Users</option>
                         <option value="pets" {% if request.GET.type == "pets" %}selected{% endif %}>Pets</option>
                     </select>
                 </div>
                 {% if request.GET.type == "pets" %}
                 <div>
-                    <label class="form-label fw-bold mb-1">Breed</label>
-                    <select name="breed" class="form-select">
-                        <option value="none" {% if selected_breed == 'none' %}selected{% endif %}>None</option>
-                        <option value="all_breed" {% if selected_breed == 'all_breed' %}selected{% endif %}>All Breeds</option>
+                    <label for="breedSelect" class="form-label">Breed</label>
+                    <select id="breedSelect" name="breed" class="form-select">
+                        <option value="" {% if not selected_breed or selected_breed == 'none' %}selected{% endif %}>Any Breed</option>
                         {% for b in breeds %}
                             {% if b and b != 'none' and b != 'all_breed' %}
-                                <option value="{{ b }}" {% if selected_breed == b %}selected{% endif %}>{{ b }}</option>
+                                <option value="{{ b }}" {% if selected_breed == b %}selected{% endif %}>{{ b|capfirst }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -191,70 +354,112 @@
                 {% endif %}
             </div>
 
+            {# Second Row: Pet Filters (Conditional) #}
             {% if request.GET.type == "pets" %}
             <div class="search-row">
                 <div>
-                    <label class="form-label fw-bold mb-1">Min Age</label>
-                    <input type="number" class="form-control" name="min_age" min="0" value="{{ request.GET.min_age }}">
+                    <label for="minAgeInput" class="form-label">Min Age</label>
+                    <input type="number" id="minAgeInput" class="form-control" name="min_age" min="0" placeholder="e.g., 1" value="{{ request.GET.min_age }}">
                 </div>
                 <div>
-                    <label class="form-label fw-bold mb-1">Max Age</label>
-                    <input type="number" class="form-control" name="max_age" min="0" value="{{ request.GET.max_age }}">
+                    <label for="maxAgeInput" class="form-label">Max Age</label>
+                    <input type="number" id="maxAgeInput" class="form-control" name="max_age" min="0" placeholder="e.g., 5" value="{{ request.GET.max_age }}">
                 </div>
                 <div>
-                    <label class="form-label fw-bold mb-1">Gender</label>
-                    <select class="form-select" name="gender">
-                        <option value="">All</option>
+                    <label for="genderSelect" class="form-label">Gender</label>
+                    <select id="genderSelect" class="form-select" name="gender">
+                        <option value="" {% if not request.GET.gender %}selected{% endif %}>Any Gender</option>
                         <option value="male" {% if request.GET.gender == "male" %}selected{% endif %}>Male</option>
                         <option value="female" {% if request.GET.gender == "female" %}selected{% endif %}>Female</option>
                     </select>
                 </div>
             </div>
 
+            {# Third Row: More Pet Filters (Conditional) #}
             <div class="search-row">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="has_photo" value="1" id="has_photo"
                         {% if request.GET.has_photo %}checked{% endif %}>
-                    <label class="form-check-label fw-bold" for="has_photo">With Photo</label>
+                    <label class="form-check-label" for="has_photo">Must Have Photo</label>
                 </div>
             </div>
             {% endif %}
 
-            <!-- ✅ Always show the button -->
+            {# Action Row: Search Button #}
             <div class="search-row search-actions">
-                <div>
-                    <button type="submit" class="btn btn-primary px-4">Search</button>
-                </div>
+                 {# Add id="searchButton" to target with JS for loading state #}
+                <button type="submit" class="btn btn-primary" id="searchButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16"> <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/> </svg>
+                    <span>Search</span> {# Wrap text in span for better control if needed #}
+                </button>
             </div>
         </form>
 
-        {% if query %}
-            <h4 class="text-center mt-4">Search results for "<strong>{{ query }}</strong>"</h4>
+        {# --- Search Results Section --- #}
+        {# Use a specific ID for results container if needed for JS manipulation #}
+        <div id="searchResults" class="search-results-container" {% if not query %}style="display: none;"{% endif %}>
+             {# Changed alignment and styling of results title #}
+            <h4 class="results-title">Search results for "<strong>{{ query|default:'...' }}</strong>"</h4>
 
             {% if search_type == "users" %}
-                <h5 class="mt-4">👤 Users</h5>
-                <ul class="results-list">
-                    {% for user in user_results %}
-                        <li><a href="{% url 'profiles:profile' username=user.username %}">{{ user.username }}</a></li>
-                    {% empty %}
-                        <li class="results-empty">No matching users found.</li>
-                    {% endfor %}
-                </ul>
+                <div class="results-section">
+                     {# Added icon to section header #}
+                    <h5>👤 Users Found</h5>
+                    <ul class="results-list">
+                        {% for user in user_results %}
+                             {# Updated list item structure #}
+                            <li>
+                                <a href="{% url 'profiles:profile' username=user.username %}" class="result-item-link">
+                                    <div class="result-item-content">
+                                        <div class="result-avatar">
+                                             <span class="avatar-placeholder">{{ user.username|first|upper }}</span>
+                                        </div>
+                                        <div class="result-info">
+                                            <span class="result-primary-info">{{ user.username }}</span>
+                                            {# <span class="result-secondary-info">Other info...</span> #}
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li class="results-empty">No matching users found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             {% elif search_type == "pets" %}
-                <h5 class="mt-4">🐶 Pets</h5>
-                <ul class="results-list">
-                    {% for pet in pet_results %}
-                        <li>
-                            <a href="{% url 'profiles:pet_detail' username=pet.owner.user.username pet_id=pet.id %}?from_search=1">
-                                {{ pet.name }}{% if pet.breed %} ({{ pet.breed }}){% endif %}
-                            </a>
-                        </li>
-                    {% empty %}
-                        <li class="results-empty">No matching pets found.</li>
-                    {% endfor %}
-                </ul>
+                 <div class="results-section">
+                     {# Added icon to section header #}
+                    <h5>🐶 Pets Found</h5>
+                    <ul class="results-list">
+                        {% for pet in pet_results %}
+                             {# Updated list item structure #}
+                            <li>
+                                <a href="{% url 'profiles:pet_detail' username=pet.owner.user.username pet_id=pet.id %}?from_search=1" class="result-item-link">
+                                    <div class="result-item-content">
+                                        <div class="result-avatar">
+                                            {% if pet.photo %} {# Placeholder check for pet photo #}
+                                                <img src="{{ pet.photo.url }}" alt="{{ pet.name }}" class="avatar-image">
+                                            {% else %}
+                                                <span class="avatar-placeholder">🐾</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="result-info">
+                                            <span class="result-primary-info">{{ pet.name|capfirst }}{% if pet.breed %} ({{ pet.breed|capfirst }}){% endif %}</span>
+                                            <span class="result-secondary-info">Owned by {{ pet.owner.user.username }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li class="results-empty">No matching pets found based on your criteria.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             {% endif %}
-        {% endif %}
-    </div>
-</div>
+        </div>
+        {# --- End Search Results --- #}
+
+    </div> {# End .section-card #}
+</div> {# End .container .search-wrapper #}
+
 {% endblock %}
