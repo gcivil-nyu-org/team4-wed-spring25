@@ -49,7 +49,7 @@ class ProfileViewsTest(TestCase):
         )
         self.login_url = reverse("login")
         self.park = DogRunNew.objects.create(
-            id="central-park",
+            id=123,
             prop_id="prop-123",
             name="Central Park",
             address="123 Park Ave",
@@ -57,6 +57,7 @@ class ProfileViewsTest(TestCase):
             accessible="Yes",
             notes="A big park",
             display_name="Central Park",
+            slug="central-park",
         )
 
     def test_profile_view_requires_login(self):
