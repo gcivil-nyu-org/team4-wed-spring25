@@ -396,7 +396,7 @@
             {% if user_reviews %}
                 {% for review in user_reviews %}
                     <div class="border-bottom pb-3 mb-3">
-                        <p><strong>Park:</strong> {{ review.park.name }}</p>
+                        <p><strong>Park:</strong> {{ review.park.display_name }}</p>
                         <p><strong>Rating:</strong> {{ review.rating }} stars</p>
                         <p>{{ review.text }}</p>
                         <small class="text-muted">{{ review.created_at|date:"Y-m-d H:i" }}</small>
