@@ -23,7 +23,20 @@
 
 <div class="container-fluid" 
      style="min-height:100%; 
+            position: relative;
             background:url('{% static "parks/images/doggy-bg2.png" %}') center center / cover no-repeat;">
+
+  {% if messages %}
+    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto; max-width: 90%;">
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <div class="row justify-content-center align-items-center" style="min-height:100%;">
     <div class="col-md-4 fade-in-down">
       <div class="card shadow p-4" style="background-color: rgba(255,255,255,0.9); border-radius:10px;">

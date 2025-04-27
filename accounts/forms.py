@@ -53,6 +53,7 @@ class UserLoginAuthForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         if hasattr(user, "userprofile") and user.userprofile.is_banned:
             raise ValidationError(
-                "Your account has been banned. You are not able to log in at this time.",
+                "Your account has been banned. "
+                "You are not able to log in at this time.",
                 code="banned",
             )

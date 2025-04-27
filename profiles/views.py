@@ -8,8 +8,10 @@ from .forms import UserProfileForm, PetProfileForm
 from parks.models import Review, Reply, ParkImage
 from django.db.models import Prefetch, Q, OuterRef, Subquery, CharField
 from django.db.models.functions import Cast
+from accounts.decorators import ban_protected
 
 
+@ban_protected
 @login_required
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
@@ -53,6 +55,7 @@ def profile_view(request, username):
     return render(request, "profiles/profile.html", context)
 
 
+@ban_protected
 @login_required
 def edit_profile(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -73,6 +76,7 @@ def edit_profile(request):
     return render(request, "profiles/edit_profile.html", context)
 
 
+@ban_protected
 @login_required
 def add_pet(request):
     user_profile = get_object_or_404(UserProfile, user=request.user)
@@ -90,6 +94,7 @@ def add_pet(request):
     return render(request, "profiles/add_pet.html", {"form": form})
 
 
+@ban_protected
 @login_required
 def edit_pet(request, pet_id):
     pet = get_object_or_404(PetProfile, id=pet_id)
@@ -112,6 +117,7 @@ def edit_pet(request, pet_id):
     return render(request, "profiles/edit_pet.html", context)
 
 
+@ban_protected
 @login_required
 def delete_pet(request, pet_id):
     pet = get_object_or_404(PetProfile, id=pet_id)
@@ -132,6 +138,7 @@ def delete_pet(request, pet_id):
     return redirect("profiles:profile", username=pet.owner.user.username)
 
 
+@ban_protected
 @login_required
 def pet_detail(request, username, pet_id):
     profile_user = get_object_or_404(User, username=username)
@@ -150,6 +157,7 @@ def pet_detail(request, username, pet_id):
     return render(request, "profiles/pet_detail.html", context)
 
 
+@ban_protected
 @login_required
 def search_view(request):
     query = request.GET.get("q", "")
