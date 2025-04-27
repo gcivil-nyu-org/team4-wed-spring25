@@ -179,6 +179,19 @@ class LoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_banned_user_login(self):
+        self.user.userprofile.is_banned = True
+        self.user.userprofile.save()
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "testuser", "password": "StrongPass123"},
+            follow=True,  # follow redirects to see the page
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Your account has been banned.")
+
 
 class AuthTests(TestCase):
     def setUp(self):

@@ -36,7 +36,24 @@
         </p>
         <form method="POST">
           {% csrf_token %}
-          {{ form.as_p }}
+
+          {% if form.non_field_errors %}
+              <div class="alert alert-danger" style="border-radius: 10px; background-color: #ffdddd; color: #900; padding: 10px; margin-bottom: 15px;">
+                  {% for error in form.non_field_errors %}
+                      {{ error }}
+                  {% endfor %}
+              </div>
+          {% endif %}
+
+          {% for field in form %}
+            <p>
+              {{ field.label_tag }}
+              {{ field }}
+              {% for error in field.errors %}
+                <span class="text-danger small">{{ error }}</span>
+              {% endfor %}
+            </p>
+          {% endfor %}
           <button type="submit" class="btn btn-success w-100 mt-2">Login</button>
         </form>
 
