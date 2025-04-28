@@ -6,7 +6,8 @@ from django.http import HttpResponseForbidden, HttpResponse, Http404
 from .models import UserProfile, PetProfile
 from .forms import UserProfileForm, PetProfileForm
 from parks.models import Review, Reply, ParkImage
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, OuterRef, Subquery, CharField
+from django.db.models.functions import Cast
 
 
 @login_required
@@ -16,11 +17,25 @@ def profile_view(request, username):
     pets = PetProfile.objects.filter(owner=user_profile)
     is_own_profile = request.user == profile_user
 
+    thumbnail_subquery = ParkImage.objects.filter(
+        park_id=OuterRef("park_id"),
+        is_removed=False,
+        review__is_removed=False,
+    ).values("image")[:1]
+
     # Prefetch images per review
     image_qs = ParkImage.objects.filter(is_removed=False)
-    user_reviews = Review.objects.filter(
-        user=profile_user, is_removed=False
-    ).prefetch_related(Prefetch("images", queryset=image_qs, to_attr="visible_images"))
+
+    user_reviews = (
+        Review.objects.filter(user=profile_user, is_removed=False)
+        .select_related("park")
+        .prefetch_related(
+            Prefetch("images", queryset=image_qs, to_attr="visible_images")
+        )
+        .annotate(
+            thumbnail_url=Cast(Subquery(thumbnail_subquery), output_field=CharField())
+        )
+    )
 
     user_replies = Reply.objects.filter(user=profile_user)
     user_images = ParkImage.objects.filter(user=profile_user, is_removed=False).filter(
