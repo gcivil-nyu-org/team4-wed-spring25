@@ -287,6 +287,16 @@ def park_detail(request, slug, id):
         park=park, status="On their way", time__isnull=False, time__gte=now
     ).count()
 
+    query = request.GET.get("q", "")
+
+    # Only users currently checked-in or on their way
+    presences = ParkPresence.objects.filter(
+        park=park, status__in=["current", "On their way"]
+    )
+
+    if query:
+        presences = presences.filter(user__username__icontains=query)
+
     if request.user.is_authenticated and request.method == "POST":
 
         if is_user_banned(request.user):
@@ -456,6 +466,8 @@ def park_detail(request, slug, id):
             "average_rating": average_rating,
             "current_count": current_count,
             "on_the_way_count": on_the_way_count,
+            "presences": presences,
+            "query": query,
         },
     )
 
