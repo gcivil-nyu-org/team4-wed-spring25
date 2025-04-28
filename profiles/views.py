@@ -19,6 +19,13 @@ def profile_view(request, username):
     pets = PetProfile.objects.filter(owner=user_profile)
     is_own_profile = request.user == profile_user
 
+    if user_profile.is_banned:
+        return render(
+            request,
+            "profiles/banned_profile.html",
+            {"profile_user": profile_user, "pet_view": False},
+        )
+
     thumbnail_subquery = ParkImage.objects.filter(
         park_id=OuterRef("park_id"),
         is_removed=False,
@@ -143,6 +150,13 @@ def delete_pet(request, pet_id):
 def pet_detail(request, username, pet_id):
     profile_user = get_object_or_404(User, username=username)
     pet = get_object_or_404(PetProfile, id=pet_id)
+
+    if profile_user.userprofile.is_banned:
+        return render(
+            request,
+            "profiles/banned_profile.html",
+            {"profile_user": profile_user, "pet_view": True},
+        )
 
     if pet.owner.user != profile_user:
         raise Http404("Pet not found for this user.")
