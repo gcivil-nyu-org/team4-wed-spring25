@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% load custom_filters %}
+{% load display_rating %}
+{% load tz %}
+
 
 
 {% block title %}
@@ -395,11 +398,36 @@
         <div class="card-body">
             {% if user_reviews %}
                 {% for review in user_reviews %}
-                    <div class="border-bottom pb-3 mb-3">
-                        <p><strong>Park:</strong> {{ review.park.name }}</p>
-                        <p><strong>Rating:</strong> {{ review.rating }} stars</p>
+                    <div class="border-bottom pb-3 mb-3"> 
+                        
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            {% if review.thumbnail_url %}
+                                <img 
+                                    src="https://res.cloudinary.com/depkyxqbe/{{ review.thumbnail_url }}" 
+                                    alt="Park Thumbnail" 
+                                    style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%; background-color: #fff;"
+                                >
+                            {% else %}
+                                <img 
+                                    src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png" 
+                                    alt="Park Thumbnail" 
+                                    style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%; background-color: #fff;"
+                                >
+                            {% endif %}
+                            <a href="{{ review.park.detail_page_url }}" style="text-decoration: none; color: black; font-weight: bold;">
+                                {{ review.park.display_name }}
+                            </a>
+                        </div>
+
+                        <p class="d-flex gap-1 m-0">
+                            <span class="d-flex gap-0 align-items-center">
+                                {% render_stars review.rating 17 %}
+                            </span>
+                            <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                        </p>
+                        
                         <p>{{ review.text }}</p>
-                        <small class="text-muted">{{ review.created_at|date:"Y-m-d H:i" }}</small>
+
                         {% if review.visible_images and not review.is_deleted %}
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             {% for img in review.visible_images %}
@@ -440,7 +468,12 @@
             {% if user_replies %}
                 {% for reply in user_replies %}
                     <div class="border-bottom pb-3 mb-3 ps-3 border-start">
-                        <p><strong>On {{ reply.review.park.name }}</strong></p>
+
+                        <p>
+                            <a href="{{ reply.review.park.detail_page_url }}" style="text-decoration: none; color: black; font-weight: bold;">
+                                {{ reply.review.park.display_name }}
+                            </a>
+                        </p>
                         <p style="text-indent: 1rem;">{{ reply.text }}</p>
                         <small class="text-muted">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
                         <form method="POST" action="{% url 'delete_reply' reply.id %}">
