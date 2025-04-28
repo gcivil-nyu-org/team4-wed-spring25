@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Banned User - PAWPARK
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center text-center" style="min-height: 80vh;">
+    <i class="fa-solid fa-ban fa-5x text-danger mb-4" style="margin-top: 100px;"></i>
+    <h1 class="display-4 fw-bold text-danger mb-3">
+        This {% if pet_view %} Pet's {% endif %} Account Has Been Banned
+    </h1>
+    <p class="lead mb-4" style="max-width: 600px;">
+        This {% if pet_view %} pet's {% endif %} user's profile is currently unavailable due to a violation of our community guidelines.
+    </p>
+    <a class="btn btn-primary mt-3" href="{% url 'home' %}">Back to Home</a>
+</div>
+{% endblock %}

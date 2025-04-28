@@ -59,6 +59,8 @@
             overflow: hidden;
             white-space: nowrap;
             border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
         }
 
         .scrolling-text {
@@ -603,6 +605,14 @@
                 </ul>
             {% endif %}
         </div>
+    </div>
+
+    <div>
+        {% if user.is_authenticated and user.userprofile.is_banned %}
+        <div class="alert alert-danger mb-0 p-2" style="text-align: center;">
+            Your account is banned. Some features may be restricted.
+        </div>
+        {% endif %}
     </div>
   
 

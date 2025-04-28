@@ -47,6 +47,16 @@
 
 <!-- Background overlay -->
 <div class="background-overlay"></div>
+{% if messages %}
+    <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto; max-width: 90%;">
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
 <div class="container-fluid" style="min-height:100%;">
   <div class="row justify-content-center align-items-center" style="min-height:100vh;">
@@ -62,7 +72,24 @@
 
         <form method="POST">
           {% csrf_token %}
-          {{ form.as_p }}
+
+          {% if form.non_field_errors %}
+              <div class="alert alert-danger" style="border-radius: 10px; background-color: #ffdddd; color: #900; padding: 10px; margin-bottom: 15px;">
+                  {% for error in form.non_field_errors %}
+                      {{ error }}
+                  {% endfor %}
+              </div>
+          {% endif %}
+
+          {% for field in form %}
+            <p>
+              {{ field.label_tag }}
+              {{ field }}
+              {% for error in field.errors %}
+                <span class="text-danger small">{{ error }}</span>
+              {% endfor %}
+            </p>
+          {% endfor %}
           <button type="submit" class="btn btn-success w-100 mt-2">Login</button>
         </form>
 
