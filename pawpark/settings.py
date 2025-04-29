@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5eooghf%un4sb3)r4=d9%97$(wdb)4cdd75)1xzo3!5%4#@)@-"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "pawpark-prod-env.eba-wdriaqjm.us-east-1.elasticbeanstalk.com",  # new
@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "channels",
     "django.contrib.humanize",
     "accounts",
+    'widget_tweaks',
 ]
 
 ASGI_APPLICATION = "pawpark.asgi.application"

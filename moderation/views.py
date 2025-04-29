@@ -7,7 +7,12 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseNotAllowed
 from itertools import chain
-
+from .forms import UserReportForm
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from .models import UserReport, ReportCategory
+from django.utils.translation import gettext_lazy as _
 
 @login_required
 def dashboard(request):
@@ -234,3 +239,50 @@ def removed_image_action(request):
         messages.error(request, "Invalid Action")
 
     return redirect("moderation_dashboard")
+
+
+User = get_user_model()
+
+@login_required
+def report_user(request, user_id):
+    reported_user = get_object_or_404(User, id=user_id)
+
+    # if request.user == reported_user:
+    #     messages.error(request, _("You cannot report yourself."))
+    #     return redirect(reverse('profiles:profile', kwargs={'username': request.user.username}))
+
+    next_param = request.GET.get('next') or request.POST.get('next')
+    default_next_url = reverse('profiles:profile', kwargs={'username': reported_user.username})
+
+    if next_param and url_has_allowed_host_and_scheme(
+        url=next_param,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure()
+    ):
+        next_url = next_param
+    else:
+        next_url = default_next_url
+
+    if request.method == 'POST':
+        form = UserReportForm(request.POST)
+        if form.is_valid():
+            try:
+                report = form.save(commit=False)
+                report.reporter = request.user
+                report.user_being_reported = reported_user
+                report.save()
+                messages.success(request, _('Your report has been submitted successfully.'))
+                return redirect(next_url)
+            except Exception as e:
+                 # Consider logging the error e
+                 messages.error(request, _('An error occurred while submitting the report: %(error)s') % {'error': e})
+    else:
+        form = UserReportForm()
+    context = {
+        'form': form,
+        'reported_user': reported_user,
+        'next': next_url,
+        'ReportCategory': ReportCategory,
+    }
+    return render(request, 'moderation/report_user.html', context)
+
