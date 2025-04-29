@@ -9,16 +9,32 @@
       {% endfor %}
     {% endif %}
 
-<div class="container mt-5 position-relative">
+    {% if recipient.userprofile.is_banned %}
+    <div class="alert alert-danger text-center mb-0 sticky-top" role="alert" style="">
+        <strong>This user is banned. You are not able to send new messages.</strong>
+    </div>
+    {% endif %}
 
-    <div class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 10;">
-         <a href="{% url 'report_user' user_id=recipient.id %}?next={{ request.path | urlencode }}"
-            class="btn btn-outline-danger btn-sm" title="Report {{ recipient.username }}">
-            <i class="fas fa-flag me-1"></i> Report User
-         </a>
-     </div>
+    <div class="container mt-4 position-relative">
 
-    <h2 class="mb-4 text-center fw-semibold" style="color: #333;">Chat with {{ recipient.username }}</h2>
+        <div class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 10;">
+             <a href="{% url 'report_user' user_id=recipient.id %}?next={{ request.path | urlencode }}"
+                class="btn btn-outline-danger btn-sm" title="Report {{ recipient.username }}">
+                <i class="fas fa-flag me-1"></i> Report User
+             </a>
+         </div>
+
+        <h2 class="mb-4 text-center fw-semibold d-flex justify-content-center gap-2" style="color: #333;">
+            Chat with
+            <a href="{% url 'profiles:profile' username=recipient.username %}" class="fw-bold text-decoration-none" style="color: #8B4513;">
+                {{ recipient.username }}
+            </a>
+            {% if recipient.is_staff %}
+                <span class="d-flex align-items-center">
+                    <span class="badge bg-danger d-none d-md-inline" style="font-size: small;">Admin</span>
+                </span>
+            {% endif %}
+        </h2>
 
     <div class="card shadow-sm border-0" style="border-radius: 16px; display: flex; flex-direction: column; height: 80vh;">
         <!-- Chat messages container -->
@@ -49,13 +65,20 @@
         <div class="card-footer bg-white border-top-0 px-4 py-3" style="border-radius: 0 0 16px 16px;">
             <div class="input-group">
                 <textarea id="message-input" class="form-control border-0 shadow-sm"
-                          placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"></textarea>
-                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;">
+                          placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"
+                          {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                ></textarea>
+                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;"
+                {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                >
                     😊
                 </button>
                 <button id="send-message"
                         class="btn ms-2 px-4"
-                        style="background-color: #8B4513; color: white; border-radius: 12px;">
+                        style="background-color: #8B4513; color: white; border-radius: 12px;"
+                        {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                        title="You cannot send messages because you are banned"
+                        >
                     Send
                 </button>
             </div>
@@ -105,6 +128,19 @@
     .bg-brown {
         background-color: #8B4513; /* Brown color */
     }
+
+
+
+    button:disabled {
+        cursor: not-allowed;
+        pointer-events: all !important;
+    }
+
+    textarea:disabled {
+        cursor: not-allowed;
+        pointer-events: all !important;
+    }
+
 </style>
 
 <script>

@@ -36,7 +36,12 @@ from django.contrib.auth.models import User
 from .models import Message
 from collections import defaultdict
 
+from accounts.decorators import ban_protected
+from accounts.utils import is_user_banned
+from django.contrib.auth import logout
 
+
+@ban_protected
 @login_required
 def chat_view(request, username):
     recipient = get_object_or_404(User, username=username)
@@ -57,6 +62,7 @@ def chat_view(request, username):
     )
 
 
+@ban_protected
 @login_required
 def all_messages_view(request):
     user = request.user
@@ -78,6 +84,7 @@ def all_messages_view(request):
     )
 
 
+@ban_protected
 @login_required
 def delete_conversation(request, sender_username):
     # Get the recipient user object (the sender of the conversation)
@@ -92,6 +99,7 @@ def delete_conversation(request, sender_username):
     return redirect("all_messages")
 
 
+@ban_protected
 @login_required
 @require_POST
 def checkin_view(request):
@@ -114,6 +122,7 @@ def checkin_view(request):
     return JsonResponse({"status": "checked in", "new": created})
 
 
+@ban_protected
 @login_required
 @require_POST
 def bethere_view(request):
@@ -280,7 +289,27 @@ def park_detail(request, slug, id):
         park=park, status="On their way", time__isnull=False, time__gte=now
     ).count()
 
+    query = request.GET.get("q", "")
+
+    # Only users currently checked-in or on their way
+    presences = ParkPresence.objects.filter(
+        park=park, status__in=["current", "On their way"]
+    )
+
+    if query:
+        presences = presences.filter(user__username__icontains=query)
+
     if request.user.is_authenticated and request.method == "POST":
+
+        if is_user_banned(request.user):
+            logout(request)
+            messages.error(
+                request,
+                "Your account is banned. "
+                "You cannot perform this action. You have been logged out.",
+            )
+            return redirect("login")
+
         form_type = request.POST.get("form_type")
 
         if form_type == "submit_review":
@@ -439,6 +468,8 @@ def park_detail(request, slug, id):
             "average_rating": average_rating,
             "current_count": current_count,
             "on_the_way_count": on_the_way_count,
+            "presences": presences,
+            "query": query,
         },
     )
 
@@ -449,6 +480,7 @@ def try_hard_delete_review_if_all_replies_deleted(review):
         review.delete()
 
 
+@ban_protected
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
@@ -471,6 +503,7 @@ def delete_review(request, review_id):
     return redirect(review.park.detail_page_url())
 
 
+@ban_protected
 @login_required
 def delete_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
@@ -485,6 +518,7 @@ def contact_view(request):
     return render(request, "parks/contact.html")
 
 
+@ban_protected
 @login_required
 def report_image(request, image_id):
     image = get_object_or_404(ParkImage, id=image_id)
@@ -508,6 +542,7 @@ def report_image(request, image_id):
     return redirect(image.park.detail_page_url())
 
 
+@ban_protected
 @login_required
 def delete_reply(request, reply_id):
     reply = get_object_or_404(Reply, id=reply_id)
@@ -530,6 +565,7 @@ def delete_reply(request, reply_id):
     return redirect(request.META.get("HTTP_REFERER", "/"))
 
 
+@ban_protected
 @login_required
 def report_reply(request, reply_id):
     if request.method == "POST":

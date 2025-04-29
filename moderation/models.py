@@ -40,5 +40,7 @@ class UserReport(models.Model):
     reported_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Report {self.report_id} by {self.reporter} " \
-               f"against {self.user_being_reported} ({self.get_category_display()})"
+        return (
+            f"Report {self.report_id} by {self.reporter} "
+            f"against {self.user_being_reported} ({self.get_category_display()})"
+        )

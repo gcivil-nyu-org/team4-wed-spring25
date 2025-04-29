@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 ROLE_CHOICES = [
     ("user", "User"),
@@ -46,3 +47,13 @@ class RegisterForm(UserCreationForm):
             if not access_code or access_code != REQUIRED_CODE:
                 self.add_error("admin_access_code", "Invalid admin access code.")
         return cleaned_data
+
+
+class UserLoginAuthForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        if hasattr(user, "userprofile") and user.userprofile.is_banned:
+            raise ValidationError(
+                "Your account has been banned. "
+                "You are not able to log in at this time.",
+                code="banned",
+            )

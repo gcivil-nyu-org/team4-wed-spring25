@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core import mail
 
+from accounts.utils import is_user_banned
+
 
 class UniqueEmailTests(TestCase):
     def setUp(self):
@@ -179,6 +181,19 @@ class LoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_banned_user_login(self):
+        self.user.userprofile.is_banned = True
+        self.user.userprofile.save()
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": "testuser", "password": "StrongPass123"},
+            follow=True,  # follow redirects to see the page
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Your account has been banned.")
+
 
 class AuthTests(TestCase):
     def setUp(self):
@@ -203,3 +218,23 @@ class AuthTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(User.objects.filter(username="testuser").exists())
+
+
+class IsUserBannedTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="pass123")
+        self.user_profile = self.user.userprofile
+
+    def test_user_not_banned(self):
+        self.user_profile.is_banned = False
+        self.user_profile.save()
+        self.assertFalse(is_user_banned(self.user))
+
+    def test_user_banned(self):
+        self.user_profile.is_banned = True
+        self.user_profile.save()
+        self.assertTrue(is_user_banned(self.user))
+
+    def test_missing_profile(self):
+        self.user_profile.delete()
+        self.assertFalse(is_user_banned(self.user))

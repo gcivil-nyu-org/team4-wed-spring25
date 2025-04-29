@@ -13,8 +13,10 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .models import ReportCategory
 from django.utils.translation import gettext_lazy as _
+from accounts.decorators import ban_protected
 
 
+@ban_protected
 @login_required
 def dashboard(request):
     # Deny if user not admin
@@ -92,6 +94,7 @@ def dashboard(request):
     )
 
 
+@ban_protected
 @login_required
 def moderation_action(request):
     # Deny if not admin
@@ -133,6 +136,7 @@ def moderation_action(request):
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def image_moderation_action(request):
     # Deny if not admin
@@ -171,6 +175,7 @@ def image_moderation_action(request):
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def removed_review_action(request):
     # Deny if not admin
@@ -210,6 +215,7 @@ def removed_review_action(request):
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def removed_image_action(request):
     # Deny if not admin
