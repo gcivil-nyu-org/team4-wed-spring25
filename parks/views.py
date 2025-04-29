@@ -51,7 +51,9 @@ def chat_view(request, username):
             )
             return redirect("chat_view", username=username)
     return render(
-        request, "parks/chat.html", {"recipient": recipient, "chat_messages": chat_messages}
+        request,
+        "parks/chat.html",
+        {"recipient": recipient, "chat_messages": chat_messages},
     )
 
 

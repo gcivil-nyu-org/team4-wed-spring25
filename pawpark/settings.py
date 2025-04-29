@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     "channels",
     "django.contrib.humanize",
     "accounts",
-    'widget_tweaks',
+    "widget_tweaks",
 ]
 
 ASGI_APPLICATION = "pawpark.asgi.application"

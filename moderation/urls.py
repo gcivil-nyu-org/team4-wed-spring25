@@ -16,6 +16,5 @@ urlpatterns = [
     path(
         "removed-image-action", views.removed_image_action, name="removed_image_action"
     ),
-    path('report/<int:user_id>/', views.report_user, name='report_user'),
+    path("report/<int:user_id>/", views.report_user, name="report_user"),
 ]
-
