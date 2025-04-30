@@ -100,6 +100,8 @@ def dashboard(request):
     for entry in reported_user_data:
         user = User.objects.get(id=entry["user_being_reported"])
         profile = UserProfile.objects.get(user=user)
+        if profile.is_banned:
+            continue
         reports = UserReport.objects.filter(user_being_reported=user).select_related(
             "reporter"
         )
@@ -350,4 +352,25 @@ def ban_user_action(request):
         profile.save()
         messages.success(request, f"User {profile.user.username} has been banned.")
 
+    return redirect("moderation_dashboard")
+
+
+@ban_protected
+@login_required
+def dismiss_user_report(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    user_id = request.POST.get("user_id")
+    reported_user = get_object_or_404(User, id=user_id)
+
+    # Delete all user reports for this user
+    UserReport.objects.filter(user_being_reported=reported_user).delete()
+
+    messages.success(
+        request, f"Reports for user {reported_user.username} have been dismissed."
+    )
     return redirect("moderation_dashboard")
