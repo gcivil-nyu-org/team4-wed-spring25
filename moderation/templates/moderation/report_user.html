@@ -16,7 +16,7 @@
 
                     <form method="post" id="report-form">
                         {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ next }}"
+                        <input type="hidden" name="next" value="{{ next }}">
                         <div class="mb-4">
                             <fieldset>
                                 <legend class="form-label fw-semibold fs-6 mb-3">{{ form.category.label }}</legend>
