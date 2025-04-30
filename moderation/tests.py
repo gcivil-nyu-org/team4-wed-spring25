@@ -1,7 +1,14 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from parks.models import DogRunNew, Review, ReviewReport, ImageReport, ParkImage
+from parks.models import (
+    DogRunNew,
+    Review,
+    ReviewReport,
+    ImageReport,
+    ParkImage,
+    ParkInfoReport,
+)
 
 from django.utils import timezone
 
@@ -440,3 +447,91 @@ class RemovedContentTests(TestCase):
             {"action": "wrong", "image_id": self.image.id},
         )
         self.assertRedirects(res, reverse("moderation_dashboard"))
+
+
+class ParkInfoReportModerationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        # Create a staff/admin user
+        self.admin_user = User.objects.create_user(
+            username="admin", password="adminpass", is_staff=True
+        )
+
+        # Create a regular user
+        self.regular_user = User.objects.create_user(
+            username="user", password="userpass"
+        )
+
+        # Create a park
+        self.park = DogRunNew.objects.create(
+            id="test-park-1",
+            prop_id="X001",
+            name="Test Park",
+            address="123 Test St",
+            dogruns_type="Run",
+            accessible="False",
+            notes="",
+            google_name="Test Park",
+            borough="Bronx",
+            zip_code="10001",
+            formatted_address="123 Test St, Bronx, NY",
+            latitude=40.0,
+            longitude=-73.0,
+            display_name="Test Park",
+            slug="test-park-x001",
+        )
+
+        # Create a park info report
+        self.report = ParkInfoReport.objects.create(
+            park=self.park,
+            user=self.regular_user,
+            new_dogruns_type="Off-Leash",
+            new_accessible=True,
+        )
+
+    def test_admin_can_approve_park_info_report(self):
+        self.client.login(username="admin", password="adminpass")
+        response = self.client.post(
+            reverse("moderation_action"),
+            {"action": "approve_park_report", "report_id": self.report.id},
+        )
+        self.park.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)  # redirect
+        self.assertEqual(self.park.dogruns_type, "Off-Leash")
+        self.assertEqual(
+            self.park.accessible, "True"
+        )  # still string unless model changed
+        self.assertFalse(ParkInfoReport.objects.filter(id=self.report.id).exists())
+
+    def test_admin_can_dismiss_park_info_report(self):
+        self.client.login(username="admin", password="adminpass")
+        response = self.client.post(
+            reverse("moderation_action"),
+            {"action": "dismiss_park_report", "report_id": self.report.id},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(ParkInfoReport.objects.filter(id=self.report.id).exists())
+
+    def test_non_admin_cannot_moderate_reports(self):
+        self.client.login(username="user", password="userpass")
+        response = self.client.post(
+            reverse("moderation_action"),
+            {"action": "approve_park_report", "report_id": self.report.id},
+        )
+
+        self.assertEqual(response.status_code, 403)  # PermissionDenied
+
+    def test_invalid_action_fails_gracefully(self):
+        self.client.login(username="admin", password="adminpass")
+        response = self.client.post(
+            reverse("moderation_action"),
+            {"action": "invalid_action", "report_id": self.report.id},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            ParkInfoReport.objects.filter(id=self.report.id).exists()
+        )  # not deleted

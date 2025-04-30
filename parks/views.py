@@ -19,6 +19,7 @@ from .models import (
     ParkPresence,
     Reply,
     ReplyReport,
+    ParkInfoReport,
 )
 from django.forms.models import model_to_dict
 from django.contrib.auth.decorators import login_required
@@ -583,3 +584,21 @@ def custom_500_view(request):
 
 def trigger_500(request):
     raise Exception("Simulated 500 error")
+
+
+@ban_protected
+@login_required
+def report_park_info(request, park_id):
+    if request.method == "POST":
+        park = get_object_or_404(DogRunNew, id=park_id)
+        new_dogruns_type = request.POST.get("new_dogruns_type")
+        new_accessible = request.POST.get("new_accessible") == "True"
+
+        ParkInfoReport.objects.create(
+            park=park,
+            user=request.user,
+            new_dogruns_type=new_dogruns_type,
+            new_accessible=new_accessible,
+        )
+        messages.success(request, "Thank you! Your report was submitted.")
+        return redirect(park.detail_page_url())

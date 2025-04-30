@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
-from parks.models import Review, ImageReport, ReviewReport, ParkImage
+from parks.models import Review, ImageReport, ReviewReport, ParkImage, ParkInfoReport
 from django.db.models import Count, Min, Max, Prefetch
 from django.contrib import messages
 from django.utils import timezone
@@ -77,6 +77,8 @@ def dashboard(request):
         reverse=True,
     )
 
+    park_reports = ParkInfoReport.objects.select_related("park", "user")
+
     return render(
         request,
         "moderation/dashboard.html",
@@ -84,6 +86,7 @@ def dashboard(request):
             "reported_reviews": reported_reviews,
             "image_reports": image_reports,
             "removed_content": removed_content,
+            "park_reports": park_reports,
         },
     )
 
@@ -97,9 +100,9 @@ def moderation_action(request):
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+    action = request.POST.get("action")
 
-    if request.method == "POST":
-        action = request.POST.get("action")
+    if "review_id" in request.POST:
         review = get_object_or_404(Review, id=request.POST.get("review_id"))
         reports = ReviewReport.objects.filter(review=review)
 
@@ -126,6 +129,29 @@ def moderation_action(request):
             messages.success(request, "Report Dismissed.")
         else:
             messages.error(request, "Invalid Action")
+
+    elif "report_id" in request.POST:
+        from parks.models import ParkInfoReport  # put at top of file if needed
+
+        report = get_object_or_404(ParkInfoReport, id=request.POST.get("report_id"))
+
+        if action == "approve_park_report":
+            park = report.park
+            park.dogruns_type = report.new_dogruns_type
+            park.accessible = report.new_accessible
+            park.save()
+            report.delete()
+            messages.success(request, "Park info updated successfully.")
+
+        elif action == "dismiss_park_report":
+            report.delete()
+            messages.success(request, "Park info report dismissed.")
+
+        else:
+            messages.error(request, "Invalid Action for park info report.")
+
+    else:
+        messages.error(request, "Missing review_id or report_id.")
 
     return redirect("moderation_dashboard")
 
