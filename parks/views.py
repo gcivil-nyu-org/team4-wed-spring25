@@ -46,7 +46,7 @@ from django.contrib.auth import logout
 @login_required
 def chat_view(request, username):
     recipient = get_object_or_404(User, username=username)
-    messages = Message.objects.filter(
+    chat_messages = Message.objects.filter(
         sender__in=[request.user, recipient], recipient__in=[request.user, recipient]
     )
     if request.method == "POST":
@@ -57,7 +57,9 @@ def chat_view(request, username):
             )
             return redirect("chat_view", username=username)
     return render(
-        request, "parks/chat.html", {"recipient": recipient, "messages": messages}
+        request,
+        "parks/chat.html",
+        {"recipient": recipient, "chat_messages": chat_messages},
     )
 
 
