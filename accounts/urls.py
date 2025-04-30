@@ -1,12 +1,15 @@
 from django.urls import path
 from .views import register_view
 from django.contrib.auth import views as auth_views
+from .forms import UserLoginAuthForm
 
 urlpatterns = [
     path("register/", register_view, name="register"),
     path(
         "login/",
-        auth_views.LoginView.as_view(template_name="accounts/login.html"),
+        auth_views.LoginView.as_view(
+            template_name="accounts/login.html", authentication_form=UserLoginAuthForm
+        ),
         name="login",
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),

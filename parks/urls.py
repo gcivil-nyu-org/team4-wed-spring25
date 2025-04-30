@@ -11,6 +11,11 @@ urlpatterns = [
     path("report/image/<int:image_id>/", views.report_image, name="report_image"),
     path("delete_reply/<int:reply_id>/", views.delete_reply, name="delete_reply"),
     path("report_reply/<int:reply_id>/", views.report_reply, name="report_reply"),
+    path(
+        "report/park-info/<int:park_id>/",
+        views.report_park_info,
+        name="report_park_info",
+    ),
     path("home/", views.home_view, name="home"),
     path("contact/", views.contact_view, name="contact"),
     path("", views.home_view, name="home"),

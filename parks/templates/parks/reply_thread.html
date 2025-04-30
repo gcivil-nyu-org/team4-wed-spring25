@@ -9,22 +9,29 @@
                  style="width: 24px; height: 24px; object-fit: cover; filter: grayscale(100%);">
             <span class="fw-semibold text-muted">[deleted]</span>
         {% else %}
-            {% with reply.user.userprofile as profile %}
-                {% if profile.profile_picture and profile.profile_picture.url %}
-                    <img src="{{ profile.profile_picture.url }}"
-                         alt="{{ reply.user.username }}'s avatar"
-                         class="rounded-circle"
-                         style="width: 24px; height: 24px; object-fit: cover;">
-                {% else %}
-                    <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
-                         alt="default avatar"
-                         class="rounded-circle"
-                         style="width: 24px; height: 24px; object-fit: cover;">
-                {% endif %}
-            {% endwith %}
-            <a href="{% url 'profiles:profile' username=reply.user.username %}" class="fw-semibold text-dark text-decoration-none">
-                {{ reply.user.username }}
-            </a>
+            {% if reply.user.userprofile.is_banned %}
+                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                    alt="default profile pic" class="rounded-circle"
+                    style="width: 30px; height: 30px; object-fit: cover;">
+                <span class="fw-bold text-muted">[banned]</span>
+            {% else %}
+                {% with reply.user.userprofile as profile %}
+                    {% if profile.profile_picture and profile.profile_picture.url %}
+                        <img src="{{ profile.profile_picture.url }}"
+                            alt="{{ reply.user.username }}'s avatar"
+                            class="rounded-circle"
+                            style="width: 24px; height: 24px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                            alt="default avatar"
+                            class="rounded-circle"
+                            style="width: 24px; height: 24px; object-fit: cover;">
+                    {% endif %}
+                {% endwith %}
+                <a href="{% url 'profiles:profile' username=reply.user.username %}" class="fw-semibold text-dark text-decoration-none">
+                    {{ reply.user.username }}
+                </a>
+            {% endif %}
         {% endif %}
         <small class="text-muted ms-2">{{ reply.created_at|date:"Y-m-d H:i" }}</small>
     </div>

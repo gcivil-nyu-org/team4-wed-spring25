@@ -42,6 +42,18 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="removed-tab" data-bs-toggle="tab" data-bs-target="#removed" type="button" role="tab" aria-controls="removed" aria-selected="false">Removed Content</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="false">
+                Reported Users
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ reported_users|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="park-tab" data-bs-toggle="tab" data-bs-target="#park" type="button" role="tab" aria-controls="park" aria-selected="false">
+                Park Info Reports
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ park_reports|length }}</span>
+            </button>
+        </li>        
     </ul>
 
     <!-- Tab panes -->
@@ -468,6 +480,124 @@
                 {% endfor %}
             {% else %}
                 <p class="text-muted">No removed content found.</p>
+            {% endif %}
+        </div>
+        <!-- Reported Users Tab -->
+        <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+            {% if reported_users %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Reported Users</h4>
+                </div>
+
+                {% for entry in reported_users %}
+                    <div class="card mb-3 review-card" 
+                        data-report-count="{{ entry.report_count }}"
+                        data-reported-at="{{ entry.first_reported|date:'U' }}"
+                        data-latest-reported="{{ entry.latest_reported|date:'U' }}">
+                        <div class="card-body d-flex flex-column gap-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="m-0">
+                                        <a class="text-danger fw-bold" href="{% url 'profiles:profile' entry.user.username %}">
+                                            {{ entry.user.username }}
+                                        </a>
+                                        {% if entry.profile.is_banned %}
+                                            <span class="badge bg-danger ms-2">Banned</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted m-0 small">
+                                        {{ entry.report_count }} report{{ entry.report_count|pluralize }}
+                                        |
+                                        First Reported: {{ entry.first_reported|date:"F j, Y, h:i a" }}
+                                    </p>
+                                </div>
+                            
+                                {% if not entry.profile.is_banned %}
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <form method="post" action="{% url 'ban_user' %}" class="prevent-double-submit">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ entry.user.id }}">
+                                        <button type="submit" class="btn btn-danger btn-sm action-button">Ban User</button>
+                                    </form>
+                            
+                                    <form method="post" action="{% url 'dismiss_user_report' %}" class="prevent-double-submit">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ entry.user.id }}">
+                                        <button type="submit" class="btn btn-success btn-sm action-button">Dismiss Report</button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <strong>Report Reasons:</strong>
+                                <ul>
+                                    {% for r in entry.reports %}
+                                        <li class="list-group-item px-0 py-1 d-flex gap-2">
+                                            <small class="text-muted">{{ r.reported_time|date:"M d, Y, h:i A" }}</small>
+                                            <span>
+                                                <strong class="text-primary">{{ r.reporter.username }}</strong>
+                                            </span>
+                                            <span>{{ r.get_category_display }}{% if r.reason %} – {{ r.reason }}{% endif %}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No reported users.</p>
+            {% endif %}
+        </div>
+        <!-- Park Info Report -->
+        <div class="tab-pane fade" id="park" role="tabpanel" aria-labelledby="park-tab">
+            <h4 class="mb-3">Park Info Reports</h4>
+        
+            {% if park_reports %}
+                {% for report in park_reports %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Park: <a href="{{ report.park.detail_page_url }}">{{ report.park.display_name }}</a>
+                            </h5>
+                            <p class="mb-1"><strong>Reported by:</strong> {{ report.user.username }}</p>
+                            <p class="mb-1"><strong>Reported at:</strong> {{ report.submitted_at }}</p>
+                            <p class="mb-1"><strong>Current Type:</strong> {{ report.park.dogruns_type }}</p>
+                            <p class="mb-1"><strong>Suggested Type:</strong> {{ report.new_dogruns_type }}</p>
+                            <p class="mb-1"><strong>Current Accessible:</strong> 
+                                {% if report.park.accessible == "True" %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Suggested Accessible:</strong> 
+                                {% if report.new_accessible %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </p>
+        
+                            <form method="post" action="{% url 'moderation_action' %}" class="d-inline-block me-2 prevent-double-submit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve_park_report">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <button type="submit" class="btn btn-success btn-sm">Confirm Update</button>
+                            </form>
+        
+                            <form method="post" action="{% url 'moderation_action' %}" class="d-inline-block prevent-double-submit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="dismiss_park_report">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <button type="submit" class="btn btn-secondary btn-sm">Dismiss</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No park info reports found.</p>
             {% endif %}
         </div>
     </div>

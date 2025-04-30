@@ -144,7 +144,12 @@
                                     </div>
                                     {% endif %}
                                 {% endfor %}
-
+                                <!-- Change Password Button -->
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'password_change_email' %}" class="btn btn-outline-secondary">
+                                        Change Password
+                                    </a>
+                                </div>
                                 <div class="d-flex justify-content-center gap-2 mt-4 pt-3 border-top">
                                      <button type="submit" class="btn btn-primary btn-save-changes" id="saveProfileChangesBtn">
                                          <i class="fas fa-save me-2"></i>Save Changes

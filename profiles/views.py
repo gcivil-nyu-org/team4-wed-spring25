@@ -6,9 +6,12 @@ from django.http import HttpResponseForbidden, HttpResponse, Http404
 from .models import UserProfile, PetProfile
 from .forms import UserProfileForm, PetProfileForm
 from parks.models import Review, Reply, ParkImage
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, OuterRef, Subquery, CharField
+from django.db.models.functions import Cast
+from accounts.decorators import ban_protected
 
 
+@ban_protected
 @login_required
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
@@ -16,11 +19,32 @@ def profile_view(request, username):
     pets = PetProfile.objects.filter(owner=user_profile)
     is_own_profile = request.user == profile_user
 
+    if user_profile.is_banned:
+        return render(
+            request,
+            "profiles/banned_profile.html",
+            {"profile_user": profile_user, "pet_view": False},
+        )
+
+    thumbnail_subquery = ParkImage.objects.filter(
+        park_id=OuterRef("park_id"),
+        is_removed=False,
+        review__is_removed=False,
+    ).values("image")[:1]
+
     # Prefetch images per review
     image_qs = ParkImage.objects.filter(is_removed=False)
-    user_reviews = Review.objects.filter(
-        user=profile_user, is_removed=False
-    ).prefetch_related(Prefetch("images", queryset=image_qs, to_attr="visible_images"))
+
+    user_reviews = (
+        Review.objects.filter(user=profile_user, is_removed=False)
+        .select_related("park")
+        .prefetch_related(
+            Prefetch("images", queryset=image_qs, to_attr="visible_images")
+        )
+        .annotate(
+            thumbnail_url=Cast(Subquery(thumbnail_subquery), output_field=CharField())
+        )
+    )
 
     user_replies = Reply.objects.filter(user=profile_user)
     user_images = ParkImage.objects.filter(user=profile_user, is_removed=False).filter(
@@ -38,6 +62,7 @@ def profile_view(request, username):
     return render(request, "profiles/profile.html", context)
 
 
+@ban_protected
 @login_required
 def edit_profile(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -58,6 +83,7 @@ def edit_profile(request):
     return render(request, "profiles/edit_profile.html", context)
 
 
+@ban_protected
 @login_required
 def add_pet(request):
     user_profile = get_object_or_404(UserProfile, user=request.user)
@@ -75,6 +101,7 @@ def add_pet(request):
     return render(request, "profiles/add_pet.html", {"form": form})
 
 
+@ban_protected
 @login_required
 def edit_pet(request, pet_id):
     pet = get_object_or_404(PetProfile, id=pet_id)
@@ -97,6 +124,7 @@ def edit_pet(request, pet_id):
     return render(request, "profiles/edit_pet.html", context)
 
 
+@ban_protected
 @login_required
 def delete_pet(request, pet_id):
     pet = get_object_or_404(PetProfile, id=pet_id)
@@ -117,10 +145,18 @@ def delete_pet(request, pet_id):
     return redirect("profiles:profile", username=pet.owner.user.username)
 
 
+@ban_protected
 @login_required
 def pet_detail(request, username, pet_id):
     profile_user = get_object_or_404(User, username=username)
     pet = get_object_or_404(PetProfile, id=pet_id)
+
+    if profile_user.userprofile.is_banned:
+        return render(
+            request,
+            "profiles/banned_profile.html",
+            {"profile_user": profile_user, "pet_view": True},
+        )
 
     if pet.owner.user != profile_user:
         raise Http404("Pet not found for this user.")
@@ -135,9 +171,11 @@ def pet_detail(request, username, pet_id):
     return render(request, "profiles/pet_detail.html", context)
 
 
+@ban_protected
 @login_required
 def search_view(request):
     query = request.GET.get("q", "")
+
     search_type = request.GET.get("type", "users")
     submitted_breed = request.GET.get("breed", "")
     min_age = request.GET.get("min_age")
@@ -199,10 +237,16 @@ def search_view(request):
         selected_breed_for_template = submitted_breed
 
     if search_type == "users":
-        user_results = User.objects.filter(username__icontains=query)
+        if query:
+            user_results = User.objects.filter(
+                Q(username__icontains=query) | Q(userprofile__name__icontains=query),
+                userprofile__is_banned=False,
+            ).distinct()
+        else:
+            user_results = User.objects.none()
 
     elif search_type == "pets":
-        pet_results = PetProfile.objects.all()
+        pet_results = PetProfile.objects.filter(owner__is_banned=False)
 
         if query:
             pet_results = pet_results.filter(name__icontains=query)
@@ -212,9 +256,15 @@ def search_view(request):
                 pet_results = pet_results.filter(breed=submitted_breed)
 
         if min_age:
-            pet_results = pet_results.filter(age__gte=int(min_age))
+            try:
+                pet_results = pet_results.filter(age__gte=int(min_age))
+            except (ValueError, TypeError):
+                pass
         if max_age:
-            pet_results = pet_results.filter(age__lte=int(max_age))
+            try:
+                pet_results = pet_results.filter(age__lte=int(max_age))
+            except (ValueError, TypeError):
+                pass
         if gender:
             pet_results = pet_results.filter(gender=gender)
         if has_photo:
@@ -232,5 +282,10 @@ def search_view(request):
             "user_results": user_results,
             "pet_results": pet_results,
             "breeds": breeds,
+            "submitted_breed": submitted_breed,
+            "min_age": min_age,
+            "max_age": max_age,
+            "gender": gender,
+            "has_photo": has_photo,
         },
     )

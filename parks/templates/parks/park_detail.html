@@ -17,401 +17,511 @@
         </div>
     {% endif %}
 
-    <!-- Park Heading -->
-    <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
-    <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
-        <div class="d-flex flex-column gap-1">
-            <h1 class="my-0">
-                {{ park.display_name }}
-            <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
-                {% if average_rating %}
-                    <span>{{ average_rating|floatformat:1 }}</span>
-                    <span class="d-flex align-items-center">{% render_stars average_rating 20 %}</span>
-                    <span> ({{ reviews|length }}) </span>
-                {% else %}
-                    <span style="color: #cccccc94;">No reviews</span>
-                {% endif %}
-                
-            </h5>
-        </div>
-    </div>
-
-    <!-- Park Image -->
-    <div class="text-center mt-3">
-        {% if images %}
-        <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-            <div class="carousel-indicators">
-                {% for img in images %}
-                <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
-                        class="{% if forloop.first %}active{% endif %}" aria-label="Slide {{ forloop.counter }}" >
-                </button>
-                {% endfor %}
-            </div>
-            <div class="carousel-inner">
-                {% for img in images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative" style="background-color: #f5f2ef;">
-                    <img 
-                    src="{{ img.image.url|replace:'upload/,upload/c_pad,w_800,h_400,q_auto,f_auto/' }}"
-                        data-full="{{ img.image.url|replace:'upload/,upload/w_1200,q_auto,f_auto/' }}"
-                        class="d-block w-100"
-                        alt="Park Image"
-                        style="height: 400px; object-fit: cover; border-radius: 10px; cursor: zoom-in;" 
-                        loading="lazy"
-                        onclick="openCarouselImageModal(this)"
-                    >
-
-                    <!-- show uploader's name -->
-                    <p class="text-end text-white px-2" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">
-                        <small>Uploaded by: <strong>{{ img.user.username }}</strong></small>
-                    </p>
+     <!-- Park Heading -->
+            <!-- <div class="text-center bg-brown text-white py-3 rounded"> -->
+            <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
+                <div class="d-flex flex-column gap-1">
+                    <h1 class="my-0">
+                        {{ park.display_name }}
+                    <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
+                        {% if average_rating %}
+                            <span>{{ average_rating|floatformat:1 }}</span>
+                            <span class="d-flex align-items-center">{% render_stars average_rating 20 %}</span>
+                            <span> ({{ reviews|length }}) </span>
+                        {% else %}
+                            <span style="color: #cccccc94;">No reviews</span>
+                        {% endif %}
                         
-                    {% if user.is_authenticated %}
-                    <div class="position-absolute top-0 end-0 mt-2 me-3 no-slide" style="z-index: 1055;">
+                    </h5>
+                </div>
+            </div>
 
-                            {% if img.user == user %}
-                            <!-- Delete Button -->
-                            <!-- <form method="POST" action="{% url 'delete_image' img.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="delete-btn">Delete</button>
-                            </form> -->
-                            {% else %}
-                            <!-- Report Button -->
-                                {% if img.id %}
-                                <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">Report</a>
+            <!-- Park Image -->
+            <div class="text-center p-3 mt-3">
+                {% if images %}
+                <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-indicators">
+                        {% for img in images %}
+                        <button type="button" data-bs-target="#imageCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                                class="{% if forloop.first %}active{% endif %}" aria-label="Slide {{ forloop.counter }}" >
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="carousel-inner">
+                        {% for img in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %} position-relative" style="background-color: #f5f2ef;">
+                            <img 
+                            src="{{ img.image.url|replace:'upload/,upload/c_pad,w_800,h_400,q_auto,f_auto/' }}"
+                                data-full="{{ img.image.url|replace:'upload/,upload/w_1200,q_auto,f_auto/' }}"
+                                class="d-block w-100"
+                                alt="Park Image"
+                                style="height: 400px; object-fit: cover; border-radius: 10px; cursor: zoom-in;" 
+                                loading="lazy"
+                                onclick="openCarouselImageModal(this)"
+                            >
+
+                            <!-- show uploader's name -->
+                            <p class="text-end text-white px-2" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); border-radius: 5px;">
+                                <small>Uploaded by: <strong> {% if img.user.userprofile.is_banned %} [banned user] {% else %} {{ img.user.username }} {% endif %} </strong></small>
+                            </p>
+                                
+                            {% if user.is_authenticated %}
+                            <div class="position-absolute top-0 end-0 mt-2 me-3 no-slide" style="z-index: 1055;">
+
+                                    {% if img.user == user %}
+                                    <!-- Delete Button -->
+                                    <!-- <form method="POST" action="{% url 'delete_image' img.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="delete-btn">Delete</button>
+                                    </form> -->
+                                    {% else %}
+                                    <!-- Report Button -->
+                                        {% if img.id %}
+                                        <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">Report</a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                    
+                                <!-- Modal -->
+                                {% if img.user != user and img.id %}
+                                <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'report_image' img.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="form_type" value="report_image">
+                                                <input type="hidden" name="image_id" value="{{ img.id }}">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="reportImageModalLabel{{ img.id }}">Report Image</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <label for="reason">Reason for report:</label>
+                                                    <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endif %}
                             {% endif %}
                         </div>
-            
-                        <!-- Modal -->
-                        {% if img.user != user and img.id %}
-                        <div class="modal fade" id="reportImageModal{{ img.id }}" tabindex="-1" aria-labelledby="reportImageModalLabel{{ img.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form method="POST" action="{% url 'report_image' img.id %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="form_type" value="report_image">
-                                        <input type="hidden" name="image_id" value="{{ img.id }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="reportImageModalLabel{{ img.id }}">Report Image</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <label for="reason">Reason for report:</label>
-                                            <textarea name="reason" class="form-control" rows="3" required></textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-danger">Submit Report</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-        </div>
-        
-        {% else %}
-        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png" 
-            alt="Dog Park Image"
-            class="d-block mx-auto shadow"
-            style="max-width: 100%; height: 250px; object-fit: contain; border-radius: 10px;"
-            loading="lazy">
-
-        {% endif %}
-    </div>
-
-    <!-- Map -->
-    <div class="col-md-9 d-flex flex-column mt-3 position-relative" style="width: 100%; height: 500px;">
-        <div id="scrollHint" ><p>Hold ⌘ (or Ctrl) + scroll to zoom the map</p></div>
-        <div class="map-container flex-grow-1 w-100" style="height: 100%;">
-            <!-- id map used in JS for Leaflet -->
-            <div id="detail-page-map" style="height: 100%"></div>
-        </div>
-    </div>
-
-    <!-- Park Details Table -->
-    <div class="table-responsive mt-4">
-        <table class="table table-bordered">
-            <tr><th>Address</th><td>{{ park.formatted_address }}</td></tr>
-            <tr><th>Dog Runs Type</th><td>{{ park.dogruns_type }}</td></tr>
-            <tr><th>Accessible</th><td><span>
-                {% if park.accessible == 'True' %}
-                    <span style="color: green">Yes</span>
-                {% else %}
-                    <span style="color: #c11212">No</span>
-                {% endif %}
-            </span><br></td></tr>
-            {% if park.notes %}
-                <tr><th>Notes</th><td>{{ park.notes|safe }}</td></tr>
-            {% endif %}
-            <tr><th>Users Checked In</th><td>{{ current_count }}</td></tr>
-            <tr><th>On Their Way</th><td>{{ on_the_way_count }}</td></tr>
-        </table>
-    </div>
-
-    <!-- Review Form -->
-    <div class="card mt-4">
-        <div class="card-header bg-brown text-white">
-            <h4 class="mt-2 mb-2">Leave a Review</h4>
-        </div>
-        <div class="card-body pt-0 pb-0">
-            {% if user.is_authenticated %}
-                {% if error_message %}
-                    <div class="alert alert-danger mt-3">{{ error_message }}</div>
-                {% endif %}
-                <form method="POST" action="{{ park.detail_page_url }}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="hidden" name="form_type" value="submit_review">
-
-                    <!-- Star Rating System -->
-                    <div class="stars mt-5 mb-5">
-                        {% for i in "12345" %}
-                            <span class="star" data-value=" {{ i }}">
-                                <svg width="40" height="40">
-                                    <use href="#star-icon" />
-                                </svg>
-                            </span>          
                         {% endfor %}
                     </div>
-                    <input type="hidden" name="rating" id="star-rating" required>
-                    
-                    <!-- Text -->
-                    <div class="mb-5">
-                        <textarea name="text" class="form-control" rows="5" placeholder="Share details of your own experience at this park"></textarea>
-                    </div>
-
-                    <!-- Image Upload -->
-                    <div>
-                        <label class="form-label">Add Images:</label>
-                        <small class="text-muted">You may upload multiple JPEG, PNG, or WebP images. Max total size: 5MB.</small>
-                        <input type="file" name="images" accept="image/*" class="form-control" multiple>
-                    </div>
-                    <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-4"></div>
-
-                    <div id="submit-review-button-wrapper" class="mt-5 d-flex gap-2" style="align-items: end; width: max-content;">
-                        <button id="submit-review-button" type="submit" class="btn btn-brown" disabled>Submit Review</button>
-                        <small id="submission-requirement-msg" style="display: none; color: #6D4C41;">Select a star rating to submit review</small>
-                    </div>
-
-                    <div class="mb-3"></div>
-                </form>
-            {% else %}
-                <p class="text-muted mt-3 mb-3" style="margin: 0;">You must be <a href="{% url 'login' %}?next={{ request.path }}">logged in</a> to leave a review.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Display Recent Reviews -->
-    <div class="card mt-4">
-        <div class="card-header bg-brown text-white">
-            <h4 class="m-0">Recent Reviews</h4>
-        </div>
-        <div class="card-body">
-            {% if reviews %}
-                {% for review in reviews %}
-                    <div class="border-bottom py-3 d-flex flex-column gap-2">
-                        <div class="review d-flex justify-content-between align-items-start">
-                            <div class="d-flex flex-column">
-                                <div class="d-flex align-items-center gap-2">
-                                    {% if review.is_deleted %}
-                                        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
-                                            alt="[deleted]" class="rounded-circle"
-                                            style="width: 30px; height: 30px; object-fit: cover;">
-                                        <span class="fw-bold text-muted">[deleted]</span>
-                                    {% else %}
-                                        {% with review.user.userprofile as profile %}
-                                            {% if profile.profile_picture and profile.profile_picture.url %}
-                                                <img src="{{ profile.profile_picture.url }}"
-                                                    alt="{{ review.user.username }}'s avatar"
-                                                    class="rounded-circle"
-                                                    style="width: 30px; height: 30px; object-fit: cover;">
-                                            {% else %}
-                                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
-                                                    alt="Default avatar"
-                                                    class="rounded-circle"
-                                                    style="width: 30px; height: 30px; object-fit: cover;">
-                                            {% endif %}
-                                        {% endwith %}
-                                        <a href="{% url 'profiles:profile' username=review.user.username %}" class="fw-bold text-dark text-decoration-none">
-                                            {{ review.user.username }}
-                                        </a>
-                                    {% endif %}
-                                </div>                                
-
-                                <p class="d-flex gap-1 m-0">
-                                    <span class="d-flex gap-0 align-items-center">
-                                        {% render_stars review.rating 17 %}
-                                    </span>
-                                    <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
-                                </p>
-                            </div>
-                            <div class="ms-3 text-end">
-                                {% if not review.is_deleted %}
-                                    {% if user.is_authenticated %}
-                                        {% if user == review.user %}
-                                            <form method="POST" action="{% url 'delete_review' review.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="delete-link">Delete</button>
-                                            </form>
-                                        {% else %}
-                                            <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
-                                            <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <form method="POST" action="{{ park.detail_page_url }}">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="form_type" value="report_review">
-                                                            <input type="hidden" name="review_id" value="{{ review.id }}">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <label for="reason">Reason for report:</label>
-                                                                <textarea name="reason" class="form-control" rows="3" required></textarea>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="submit" class="btn btn-danger">Submit Report</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-    {% endif %}
-{% endif %}
-
-                            </div>
-                        </div>
-
-                        {% if review.is_deleted %}
-                            <div class="text-muted fst-italic">Comment deleted by user</div>
-                        {% elif review.text %}
-                            <div>{{ review.text }}</div>
-                        {% endif %}
-
-
-                        <!-- Images Section -->
-                        {% if review.visible_images and not review.is_deleted %}
-                            
-
-                            <div class="scrollable-image-wrapper position-relative mt-2">
-                                <button class="scroll-btn scroll-left" type="button" aria-label="Scroll left">&#8249;</button>
-                                <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
-                                  {% for img in review.visible_images %}
-                                    <img 
-                                        data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
-                                        data-full="{{ img.image.url }}"
-                                        class="lazyload review-thumbnail"
-                                        data-review-id="{{ review.id }}"
-                                        alt="Review Image" 
-                                        style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
-                                        loading="lazy" 
-                                    />
-                                  {% endfor %}
-                                </div>
-                                <button class="scroll-btn scroll-right" type="button" aria-label="Scroll right">&#8250;</button>
-                            </div>
-                        {% endif %}
-
-                        {% if review.replies.all %}
-                        <div class="ms-2">
-                            <button class="toggle-replies-btn rounded-circle border text-muted mb-2"
-                                    type="button"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#replies-{{ review.id }}"
-                                    aria-expanded="true"
-                                    aria-controls="replies-{{ review.id }}">
-                                <span class="toggle-icon">−</span>
-                            </button>
-                        </div>
-
-                        <div class="collapse show" id="replies-{{ review.id }}">
-                            {% for reply in review.replies.all %}
-                                {% if not reply.parent_reply %}
-                                    {% render_replies reply %}
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-
-                        <!-- Reply Button (bottom-left Reddit style) -->
-                        {% if user.is_authenticated %}
-                        <div class="ms-2 mt-2">
-                            <button class="btn btn-sm btn-reply" data-bs-toggle="modal" data-bs-target="#replyModal{{ review.id }}">
-                                💬 Reply
-                            </button>
-                        </div>
-
-                        <div class="modal fade" id="replyModal{{ review.id }}" tabindex="-1" aria-labelledby="replyModalLabel{{ review.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form method="POST" action="{{ park.detail_page_url }}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="form_type" value="submit_reply">
-                                        <input type="hidden" name="parent_review_id" value="{{ review.id }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="replyModalLabel{{ review.id }}">Reply to Review</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <textarea name="reply_text" class="form-control" rows="3" placeholder="Write your reply here" required></textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary">Submit Reply</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+                
                 {% else %}
-                <p class="text-muted">No reviews yet. Be the first to leave one!</p>
-            {% endif %}
-        </div>
-    </div>
+                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744822910/park_default_ctbpdo.png" 
+                    alt="Dog Park Image"
+                    class="d-block mx-auto shadow"
+                    style="max-width: 100%; height: 250px; object-fit: contain; border-radius: 10px;"
+                    loading="lazy">
 
-    <!-- Back Button -->
-    <div class="text-center mt-5 mb-5">
-        <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
-    </div>
-
-    <!-- Image Modal -->
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content bg-dark position-relative">
-            <div class="modal-body p-0 text-center">
-              <button id="prevImageBtn" class="scroll-btn" style="left: 10px;">‹</button>
-              <img id="modalImage" src="" class="img-fluid w-100" alt="Expanded Image" />
-              <button id="nextImageBtn" class="scroll-btn" style="right: 10px;">›</button>
+                {% endif %}
             </div>
-          </div>
-        </div>
-    </div>
 
-    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content bg-dark">
-            <div class="modal-body p-0">
-            <img id="modalPreviewImg" src="" alt="Full Preview" class="img-fluid w-100" style="border-radius: 8px;">
+    <div class="row">
+
+        <!-- Left/Main Column -->
+        <div class="col-lg-8 col-md-7">
+            <!-- Map -->
+            <div class="card d-flex flex-column mt-3 position-relative" style="width: 100%; height: 500px;">
+                <div id="scrollHint" ><p>Hold ⌘ (or Ctrl) + scroll to zoom the map</p></div>
+                    <div class="map-container flex-grow-1 w-100" style="height: 100%;">
+                        <!-- id map used in JS for Leaflet -->
+                        <div id="detail-page-map" style="height: 100%"></div>
+                    </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="card mt-4">
+                <div class="card-header bg-brown text-white">
+                    <h4 class="mt-2 mb-2">Leave a Review</h4>
+                </div>
+                <div class="card-body pt-0 pb-0">
+                    {% if user.is_authenticated %}
+                        {% if error_message %}
+                            <div class="alert alert-danger mt-3">{{ error_message }}</div>
+                        {% endif %}
+                        <form method="POST" action="{{ park.detail_page_url }}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="submit_review">
+
+                            <!-- Star Rating System -->
+                            <div class="stars mt-5 mb-5">
+                                {% for i in "12345" %}
+                                    <span class="star" data-value=" {{ i }}">
+                                        <svg width="40" height="40">
+                                            <use href="#star-icon" />
+                                        </svg>
+                                    </span>          
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="rating" id="star-rating" required>
+                            
+                            <!-- Text -->
+                            <div class="mb-5">
+                                <textarea name="text" class="form-control" rows="5" placeholder="Share details of your own experience at this park"></textarea>
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div>
+                                <label class="form-label">Add Images:</label>
+                                <small class="text-muted">You may upload multiple JPEG, PNG, or WebP images. Max total size: 5MB.</small>
+                                <input type="file" name="images" accept="image/*" class="form-control" multiple>
+                            </div>
+                            <div id="imagePreview" class="d-flex flex-wrap gap-2 mt-4"></div>
+
+                            <div id="submit-review-button-wrapper" class="mt-5 d-flex gap-2" style="align-items: end; width: max-content;">
+                                <button id="submit-review-button" type="submit" class="btn btn-brown" disabled>Submit Review</button>
+                                <small id="submission-requirement-msg" style="display: none; color: #6D4C41;">Select a star rating to submit review</small>
+                            </div>
+
+                            <div class="mb-3"></div>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mt-3 mb-3" style="margin: 0;">You must be <a href="{% url 'login' %}?next={{ request.path }}">logged in</a> to leave a review.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Display Recent Reviews -->
+            <div class="card mt-4">
+                <div class="card-header bg-brown text-white">
+                    <h4 class="m-0">Recent Reviews</h4>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="border-bottom py-3 d-flex flex-column gap-2">
+                                <div class="review d-flex justify-content-between align-items-start">
+                                    <div class="d-flex flex-column">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if review.is_deleted %}
+                                                <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                                                    alt="[deleted]" class="rounded-circle"
+                                                    style="width: 30px; height: 30px; object-fit: cover;">
+                                                <span class="fw-bold text-muted">[deleted]</span>
+                                            {% else %}
+                                                {% if review.user.userprofile.is_banned %}
+                                                    <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                                                        alt="default profile pic" class="rounded-circle"
+                                                        style="width: 30px; height: 30px; object-fit: cover;">
+                                                    <span class="fw-bold text-muted">[banned]</span>
+                                                {% else %}
+                                                    {% with review.user.userprofile as profile %}
+                                                        {% if profile.profile_picture and profile.profile_picture.url %}
+                                                            <img src="{{ profile.profile_picture.url }}"
+                                                                alt="{{ review.user.username }}'s avatar"
+                                                                class="rounded-circle"
+                                                                style="width: 30px; height: 30px; object-fit: cover;">
+                                                        {% else %}
+                                                            <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                                                                alt="Default avatar"
+                                                                class="rounded-circle"
+                                                                style="width: 30px; height: 30px; object-fit: cover;">
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                    <a href="{% url 'profiles:profile' username=review.user.username %}" class="fw-bold text-dark text-decoration-none">
+                                                        {{ review.user.username }}
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>                                
+
+                                        <p class="d-flex gap-1 m-0">
+                                            <span class="d-flex gap-0 align-items-center">
+                                                {% render_stars review.rating 17 %}
+                                            </span>
+                                            <span class="text-muted float-end" style="font-size: 15px;">{{ review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="ms-3 text-end">
+                                        {% if not review.is_deleted %}
+                                            {% if user.is_authenticated %}
+                                                {% if user == review.user %}
+                                                    <form method="POST" action="{% url 'delete_review' review.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="delete-link">Delete</button>
+                                                    </form>
+                                                {% else %}
+                                                    <a href="#" class="text-danger small" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">Report</a>
+                                                    <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1" aria-labelledby="reportModalLabel{{ review.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form method="POST" action="{{ park.detail_page_url }}">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="form_type" value="report_review">
+                                                                    <input type="hidden" name="review_id" value="{{ review.id }}">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="reportModalLabel{{ review.id }}">Report Review</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <label for="reason">Reason for report:</label>
+                                                                        <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="submit" class="btn btn-danger">Submit Report</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+
+                                {% if review.is_deleted %}
+                                    <div class="text-muted fst-italic">Comment deleted by user</div>
+                                {% elif review.text %}
+                                    <div>{{ review.text }}</div>
+                                {% endif %}
+
+
+                                <!-- Images Section -->
+                                {% if review.visible_images and not review.is_deleted %}
+                                    
+
+                                    <div class="scrollable-image-wrapper position-relative mt-2">
+                                        <button class="scroll-btn scroll-left" type="button" aria-label="Scroll left">&#8249;</button>
+                                        <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
+                                        {% for img in review.visible_images %}
+                                            <img 
+                                                data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
+                                                data-full="{{ img.image.url }}"
+                                                class="lazyload review-thumbnail"
+                                                data-review-id="{{ review.id }}"
+                                                alt="Review Image" 
+                                                style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                                loading="lazy" 
+                                            />
+                                        {% endfor %}
+                                        </div>
+                                        <button class="scroll-btn scroll-right" type="button" aria-label="Scroll right">&#8250;</button>
+                                    </div>
+                                {% endif %}
+
+                                {% if review.replies.all %}
+                                <div class="ms-2">
+                                    <button class="toggle-replies-btn rounded-circle border text-muted mb-2"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#replies-{{ review.id }}"
+                                            aria-expanded="true"
+                                            aria-controls="replies-{{ review.id }}">
+                                        <span class="toggle-icon">−</span>
+                                    </button>
+                                </div>
+
+                                <div class="collapse show" id="replies-{{ review.id }}">
+                                    {% for reply in review.replies.all %}
+                                        {% if not reply.parent_reply %}
+                                            {% render_replies reply %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                                <!-- Reply Button (bottom-left Reddit style) -->
+                                {% if user.is_authenticated %}
+                                <div class="ms-2 mt-2">
+                                    <button class="btn btn-sm btn-reply" data-bs-toggle="modal" data-bs-target="#replyModal{{ review.id }}">
+                                        💬 Reply
+                                    </button>
+                                </div>
+
+                                <div class="modal fade" id="replyModal{{ review.id }}" tabindex="-1" aria-labelledby="replyModalLabel{{ review.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{{ park.detail_page_url }}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="form_type" value="submit_reply">
+                                                <input type="hidden" name="parent_review_id" value="{{ review.id }}">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="replyModalLabel{{ review.id }}">Reply to Review</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <textarea name="reply_text" class="form-control" rows="3" placeholder="Write your reply here" required></textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-primary">Submit Reply</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-muted">No reviews yet. Be the first to leave one!</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-5 mb-5">
+                <a href="{% url 'park_and_map' %}" class="btn btn-secondary">Go Back</a>
+            </div>
+
+            <!-- Image Modal -->
+            <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-dark position-relative">
+                    <div class="modal-body p-0 text-center">
+                    <button id="prevImageBtn" class="scroll-btn" style="left: 10px;">‹</button>
+                    <img id="modalImage" src="" class="img-fluid w-100" alt="Expanded Image" />
+                    <button id="nextImageBtn" class="scroll-btn" style="right: 10px;">›</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-body p-0">
+                    <img id="modalPreviewImg" src="" alt="Full Preview" class="img-fluid w-100" style="border-radius: 8px;">
+                    </div>
+                </div>
+                </div>
+            </div>
+    </div>
+        <!-- Right/Sidebar Column -->
+    <div class="col-lg-4 col-md-5" style="position: sticky; top: 80px; height: fit-content; margin-bottom: 20px;">
+        
+        <!-- Search Bar for checked-in / on-the-way users -->
+        <div class="card p-3 mb-4">
+            <div class="mt-2">
+                <form method="get" action="" class="d-flex mb-3" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search users here or on their way..." aria-label="Search" name="q" value="{{ query }}">
+                    <button class="btn btn-brown" type="submit">Search</button>
+                </form>
+
+                {% if presences %}
+                    <ul class="list-group">
+                    {% for presence in presences %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                {% with presence.user.userprofile as profile %}
+                                    {% if profile.profile_picture and profile.profile_picture.url %}
+                                        <img src="{{ profile.profile_picture.url }}" 
+                                            alt="{{ presence.user.username }}'s avatar" 
+                                            class="rounded-circle" 
+                                            style="width: 30px; height: 30px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png" 
+                                            alt="Default avatar" 
+                                            class="rounded-circle" 
+                                            style="width: 30px; height: 30px; object-fit: cover;">
+                                    {% endif %}
+                                {% endwith %}
+                                <div class="d-flex flex-column">
+                                    <a href="{% url 'profiles:profile' username=presence.user.username %}" 
+                                    class="fw-bold text-dark text-decoration-none">
+                                        {{ presence.user.username }}
+                                    </a>
+                                    {% if presence.status == "On their way" %}
+                                        <small class="text-muted">
+                                            Arriving at {{ presence.time|date:"g:i A" }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <span class="badge bg-secondary">{{ presence.status|capfirst }}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    {% if query %}
+                        <p class="text-muted">No users found for "{{ query }}".</p>
+                    {% else %}
+                        <p class="text-muted">No users currently checked in or on their way.</p>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
+
+        <!-- Park Details Table -->
+        <div class="card p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tr><th>Address</th><td>{{ park.formatted_address }}</td></tr>
+                    <tr><th>Dog Runs Type</th><td>{{ park.dogruns_type }}</td></tr>
+                    <tr><th>Accessible</th><td>
+                        {% if park.accessible == 'True' %}
+                            <span style="color: green">Yes</span>
+                        {% else %}
+                            <span style="color: #c11212">No</span>
+                        {% endif %}
+                    </td></tr>
+                    {% if park.notes %}
+                        <tr><th>Notes</th><td>{{ park.notes|safe }}</td></tr>
+                    {% endif %}
+                    <tr><th>Users Checked In</th><td>{{ current_count }}</td></tr>
+                    <tr><th>On Their Way</th><td>{{ on_the_way_count }}</td></tr>
+                </table>
+                <!-- Report Incorrect Park Info Button -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-sm btn-outline-danger btn-park-info-smaller" data-bs-toggle="modal" data-bs-target="#reportParkInfoModal">
+                        Info Report
+                    </button>                    
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</div>        
+
+        <!-- Report Incorrect Park Info Modal -->
+        <div class="modal fade" id="reportParkInfoModal" tabindex="-1" aria-labelledby="reportParkInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'report_park_info' park.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportParkInfoModalLabel">Report Incorrect Park Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                    <label for="new_dogruns_type" class="form-label">Correct Dog Runs Type:</label>
+                    <select class="form-select" name="new_dogruns_type" required>
+                        <option value="Off-Leash">Off-Leash</option>
+                        <option value="Run">Run</option>
+                    </select>
+                    </div>
+                    <div class="mb-3">
+                    <label for="new_accessible" class="form-label">Accessible:</label>
+                    <select class="form-select" name="new_accessible" required>
+                        <option value="True">Yes</option>
+                        <option value="False">No</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="submit-park-info-btn" type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+                </form>
+            </div>
+            </div>
+        </div>
+
 
 
 <script>
@@ -774,7 +884,17 @@
     });
 });
 
+document.addEventListener("DOMContentLoaded", function() {
+    const parkInfoForm = document.querySelector('#reportParkInfoModal form');
+    const submitBtn = document.getElementById('submit-park-info-btn');
 
+    if (parkInfoForm && submitBtn) {
+        parkInfoForm.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        });
+    }
+});
 
 </script>
 
@@ -987,6 +1107,11 @@
         display: inline-block;
         transition: transform 0.2s ease;
     }
-
+    .btn-park-info-smaller {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        line-height: 1.2;
+        border-radius: 4px;
+    }
 </style>
 {% endblock %}

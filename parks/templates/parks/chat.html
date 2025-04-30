@@ -1,44 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4 text-center fw-semibold" style="color: #333;">Chat with {{ recipient.username }}</h2>
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if recipient.userprofile.is_banned %}
+    <div class="alert alert-danger text-center mb-0 sticky-top" role="alert" style="">
+        <strong>This user is banned. You are not able to send new messages.</strong>
+    </div>
+    {% endif %}
+
+    <div class="container mt-4 position-relative">
+
+        <div class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 10;">
+             <a href="{% url 'report_user' user_id=recipient.id %}?next={{ request.path | urlencode }}"
+                class="btn btn-outline-danger btn-sm" title="Report {{ recipient.username }}">
+                <i class="fas fa-flag me-1"></i> Report User
+             </a>
+         </div>
+
+        <h2 class="mb-4 text-center fw-semibold d-flex justify-content-center gap-2" style="color: #333;">
+            Chat with
+            <a href="{% url 'profiles:profile' username=recipient.username %}" class="fw-bold text-decoration-none" style="color: #8B4513;">
+                {{ recipient.username }}
+            </a>
+            {% if recipient.is_staff %}
+                <span class="d-flex align-items-center">
+                    <span class="badge bg-danger d-none d-md-inline" style="font-size: small;">Admin</span>
+                </span>
+            {% endif %}
+        </h2>
 
     <div class="card shadow-sm border-0" style="border-radius: 16px; display: flex; flex-direction: column; height: 80vh;">
         <!-- Chat messages container -->
         <div class="card-body px-4 py-3" id="chat-container"
              style="flex-grow: 1; overflow-y: auto; background-color: #f1f1f1; border-radius: 16px 16px 0 0; padding-bottom: 10px;">
-            {% for message in messages %}
-                {% if message.sender == user %}
+            {% for chat in chat_messages %}
+                {% if chat.sender == user %}
                     <!-- Message from current user (right side) -->
                     <div class="d-flex justify-content-end mb-3">
                         <div class="bg-brown text-white p-2 px-3 rounded-4" style="max-width: 60%;">
-                            <div>{{ message.content }}</div>
-                            <div class="text-end small mt-1 opacity-75">{{ message.timestamp|date:"M d, H:i" }}</div>
+                            <div>{{ chat.content }}</div>
+                            <div class="text-end small mt-1 opacity-75">{{ chat.timestamp|date:"M d, H:i" }}</div>
                         </div>
                     </div>
                 {% else %}
                     <!-- Message from recipient (left side) -->
                     <div class="d-flex justify-content-start mb-3">
                         <div class="bg-light text-dark p-2 px-3 rounded-4" style="max-width: 60%;">
-                            <div>{{ message.content }}</div>
-                            <div class="text-end small mt-1 text-muted">{{ message.timestamp|date:"M d, H:i" }}</div>
+                            <div>{{ chat.content }}</div>
+                            <div class="text-end small mt-1 text-muted">{{ chat.timestamp|date:"M d, H:i" }}</div>
                         </div>
                     </div>
                 {% endif %}
             {% endfor %}
         </div>
-        
+
         <!-- Send message input and emoji picker -->
         <div class="card-footer bg-white border-top-0 px-4 py-3" style="border-radius: 0 0 16px 16px;">
             <div class="input-group">
                 <textarea id="message-input" class="form-control border-0 shadow-sm"
-                          placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"></textarea>
-                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;">
+                          placeholder="Type a message..." rows="1" style="resize: none; border-radius: 12px;"
+                          {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                ></textarea>
+                <button id="emoji-button" class="btn ms-2 px-4" style="background-color: #f0f0f0; color: #333; border-radius: 12px;"
+                {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                >
                     😊
                 </button>
                 <button id="send-message"
                         class="btn ms-2 px-4"
-                        style="background-color: #8B4513; color: white; border-radius: 12px;">
+                        style="background-color: #8B4513; color: white; border-radius: 12px;"
+                        {% if recipient.userprofile.is_banned %}disabled{% endif %}
+                        title="You cannot send messages because you are banned"
+                        >
                     Send
                 </button>
             </div>
@@ -88,6 +128,19 @@
     .bg-brown {
         background-color: #8B4513; /* Brown color */
     }
+
+
+
+    button:disabled {
+        cursor: not-allowed;
+        pointer-events: all !important;
+    }
+
+    textarea:disabled {
+        cursor: not-allowed;
+        pointer-events: all !important;
+    }
+
 </style>
 
 <script>
@@ -165,4 +218,21 @@
         }
     });
 </script>
+
+
+<script>
+  setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      setTimeout(function() {
+        alert.remove();
+      }, 500);
+    });
+  }, 2000);
+</script>
+
 {% endblock %}
+
+

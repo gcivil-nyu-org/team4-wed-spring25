@@ -3,6 +3,7 @@ from django.utils import timezone
 from .models import Announcement
 from .decorators import staff_required  # Use the custom decorator
 from .forms import AnnouncementForm
+from accounts.decorators import ban_protected
 
 
 def announcements_list(request):
@@ -15,6 +16,7 @@ def announcements_list(request):
     return render(request, "announcements/list.html", {"announcements": announcements})
 
 
+@ban_protected
 @staff_required
 def create_announcement(request):
     if request.method == "POST":
@@ -29,6 +31,7 @@ def create_announcement(request):
     return render(request, "announcements/create.html", {"form": form})
 
 
+@ban_protected
 @staff_required
 def edit_announcement(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)
@@ -44,6 +47,7 @@ def edit_announcement(request, pk):
     )
 
 
+@ban_protected
 @staff_required
 def delete_announcement(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)

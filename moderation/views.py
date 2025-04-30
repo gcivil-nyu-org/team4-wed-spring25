@@ -1,14 +1,24 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
-from parks.models import Review, ImageReport, ReviewReport, ParkImage
+from parks.models import Review, ImageReport, ReviewReport, ParkImage, ParkInfoReport
 from django.db.models import Count, Min, Max, Prefetch
 from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseNotAllowed
 from itertools import chain
+from .forms import UserReportForm
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from .models import ReportCategory
+from django.utils.translation import gettext_lazy as _
+from accounts.decorators import ban_protected
+from moderation.models import UserReport
+from profiles.models import UserProfile
 
 
+@ban_protected
 @login_required
 def dashboard(request):
     # Deny if user not admin
@@ -75,6 +85,38 @@ def dashboard(request):
         reverse=True,
     )
 
+    # Aggregate user reports
+    reported_user_data = (
+        UserReport.objects.values("user_being_reported")
+        .annotate(
+            report_count=Count("report_id"),
+            latest_reported=Max("reported_time"),
+            first_reported=Min("reported_time"),
+        )
+        .order_by("-latest_reported")
+    )
+
+    reported_users = []
+    for entry in reported_user_data:
+        user = User.objects.get(id=entry["user_being_reported"])
+        profile = UserProfile.objects.get(user=user)
+        if profile.is_banned:
+            continue
+        reports = UserReport.objects.filter(user_being_reported=user).select_related(
+            "reporter"
+        )
+        reported_users.append(
+            {
+                "user": user,
+                "profile": profile,
+                "report_count": entry["report_count"],
+                "latest_reported": entry["latest_reported"],
+                "first_reported": entry["first_reported"],
+                "reports": reports,
+            }
+        )
+    park_reports = ParkInfoReport.objects.select_related("park", "user")
+
     return render(
         request,
         "moderation/dashboard.html",
@@ -82,10 +124,13 @@ def dashboard(request):
             "reported_reviews": reported_reviews,
             "image_reports": image_reports,
             "removed_content": removed_content,
+            "reported_users": reported_users,
+            "park_reports": park_reports,
         },
     )
 
 
+@ban_protected
 @login_required
 def moderation_action(request):
     # Deny if not admin
@@ -94,9 +139,9 @@ def moderation_action(request):
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+    action = request.POST.get("action")
 
-    if request.method == "POST":
-        action = request.POST.get("action")
+    if "review_id" in request.POST:
         review = get_object_or_404(Review, id=request.POST.get("review_id"))
         reports = ReviewReport.objects.filter(review=review)
 
@@ -124,9 +169,33 @@ def moderation_action(request):
         else:
             messages.error(request, "Invalid Action")
 
+    elif "report_id" in request.POST:
+        from parks.models import ParkInfoReport  # put at top of file if needed
+
+        report = get_object_or_404(ParkInfoReport, id=request.POST.get("report_id"))
+
+        if action == "approve_park_report":
+            park = report.park
+            park.dogruns_type = report.new_dogruns_type
+            park.accessible = report.new_accessible
+            park.save()
+            report.delete()
+            messages.success(request, "Park info updated successfully.")
+
+        elif action == "dismiss_park_report":
+            report.delete()
+            messages.success(request, "Park info report dismissed.")
+
+        else:
+            messages.error(request, "Invalid Action for park info report.")
+
+    else:
+        messages.error(request, "Missing review_id or report_id.")
+
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def image_moderation_action(request):
     # Deny if not admin
@@ -165,6 +234,7 @@ def image_moderation_action(request):
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def removed_review_action(request):
     # Deny if not admin
@@ -189,21 +259,26 @@ def removed_review_action(request):
         review.save()
         messages.success(request, "Review Restored")
     elif action == "delete_review":
-        messages.error(request, "Action not available at this time, review not removed")
-        # if review.replies.filter(is_deleted=False).exists():
-        #     review.is_deleted = True
-        #     review.text = ""
-        #     review.save()
-        # else:
-        #     # Delete associated images (if any), then delete the review
-        #     review.images.all().delete()
-        #     review.delete()
+        if review.replies.filter(is_deleted=False).exists():
+            # if review has replies, remove the text, set it to is_deleted
+            review.text = ""
+            review.is_deleted = True
+            review.is_removed = False
+            review.removed_by = None
+            review.removed_at = None
+            review.save()
+        else:
+            # Delete associated images (if any), then delete the review
+            review.images.all().delete()
+            review.delete()
+        messages.success(request, "Review Permanently Deleted")
     else:
         messages.error(request, "Invalid Action")
 
     return redirect("moderation_dashboard")
 
 
+@ban_protected
 @login_required
 def removed_image_action(request):
     # Deny if not admin
@@ -233,4 +308,98 @@ def removed_image_action(request):
     else:
         messages.error(request, "Invalid Action")
 
+    return redirect("moderation_dashboard")
+
+
+User = get_user_model()
+
+
+@login_required
+def report_user(request, user_id):
+    reported_user = get_object_or_404(User, id=user_id)
+
+    next_param = request.GET.get("next") or request.POST.get("next")
+    default_next_url = reverse(
+        "profiles:profile", kwargs={"username": reported_user.username}
+    )
+
+    if next_param and url_has_allowed_host_and_scheme(
+        url=next_param,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        next_url = next_param
+    else:
+        next_url = default_next_url
+
+    if request.method == "POST":
+        form = UserReportForm(request.POST)
+        if form.is_valid():
+            try:
+                report = form.save(commit=False)
+                report.reporter = request.user
+                report.user_being_reported = reported_user
+                report.save()
+                messages.success(
+                    request, _("Your report has been submitted successfully.")
+                )
+                return redirect(next_url)
+            except Exception as e:
+                # Consider logging the error e
+                messages.error(
+                    request,
+                    _("An error occurred while submitting the report: %(error)s")
+                    % {"error": e},
+                )
+    else:
+        form = UserReportForm()
+    context = {
+        "form": form,
+        "reported_user": reported_user,
+        "next": next_url,
+        "ReportCategory": ReportCategory,
+    }
+    return render(request, "moderation/report_user.html", context)
+
+
+@ban_protected
+@login_required
+def ban_user_action(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    user_id = request.POST.get("user_id")
+    profile = get_object_or_404(UserProfile, user__id=user_id)
+
+    if profile.is_banned:
+        messages.warning(request, f"User {profile.user.username} is already banned.")
+    else:
+        profile.is_banned = True
+        profile.save()
+        messages.success(request, f"User {profile.user.username} has been banned.")
+
+    return redirect("moderation_dashboard")
+
+
+@ban_protected
+@login_required
+def dismiss_user_report(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    user_id = request.POST.get("user_id")
+    reported_user = get_object_or_404(User, id=user_id)
+
+    # Delete all user reports for this user
+    UserReport.objects.filter(user_being_reported=reported_user).delete()
+
+    messages.success(
+        request, f"Reports for user {reported_user.username} have been dismissed."
+    )
     return redirect("moderation_dashboard")
