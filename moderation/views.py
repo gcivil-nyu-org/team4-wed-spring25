@@ -259,15 +259,19 @@ def removed_review_action(request):
         review.save()
         messages.success(request, "Review Restored")
     elif action == "delete_review":
-        messages.error(request, "Action not available at this time, review not removed")
-        # if review.replies.filter(is_deleted=False).exists():
-        #     review.is_deleted = True
-        #     review.text = ""
-        #     review.save()
-        # else:
-        #     # Delete associated images (if any), then delete the review
-        #     review.images.all().delete()
-        #     review.delete()
+        if review.replies.filter(is_deleted=False).exists():
+            # if review has replies, remove the text, set it to is_deleted
+            review.text = ""
+            review.is_deleted = True
+            review.is_removed = False
+            review.removed_by = None
+            review.removed_at = None
+            review.save()
+        else:
+            # Delete associated images (if any), then delete the review
+            review.images.all().delete()
+            review.delete()
+        messages.success(request, "Review Permanently Deleted")
     else:
         messages.error(request, "Invalid Action")
 
