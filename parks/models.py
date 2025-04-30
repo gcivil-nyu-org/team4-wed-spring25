@@ -218,3 +218,16 @@ class Message(models.Model):
 
     def __str__(self):
         return f"From {self.sender} to {self.recipient} at {self.timestamp}"
+
+
+class ParkInfoReport(models.Model):
+    park = models.ForeignKey(
+        DogRunNew, on_delete=models.CASCADE, related_name="info_reports"
+    )
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    new_dogruns_type = models.CharField(
+        max_length=20, choices=[("Off-Leash", "Off-Leash"), ("Run", "Run")]
+    )
+    new_accessible = models.BooleanField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    is_handled = models.BooleanField(default=False)
