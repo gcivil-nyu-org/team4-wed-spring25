@@ -9,6 +9,7 @@
     const userIsLoggedIn = "{{ request.user.is_authenticated|yesno:'true,false' }}";
 </script>
 <div id="checkin-message-container"></div>
+<div id="login-url" data-url="{% url 'login' %}"></div>
 <!-- time input modal -->
 <div class="modal fade" id="timeModal" tabindex="-1" aria-labelledby="timeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -589,7 +590,8 @@
         const container = document.getElementById("checkin-message-container");
         container.innerHTML = "";
 
-        const loginUrl = `/login/?next=${encodeURIComponent(window.location.pathname)}`;
+        const baseLoginUrl = document.getElementById("login-url").dataset.url;
+        const loginUrl = `${baseLoginUrl}?next=${encodeURIComponent(window.location.pathname)}`
 
         const message = document.createElement("div");
         message.className = "alert-error alert-dismissible";
