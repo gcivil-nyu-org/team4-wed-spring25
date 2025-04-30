@@ -515,7 +515,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                    <button id="submit-park-info-btn" type="submit" class="btn btn-danger">Submit Report</button>
                 </div>
                 </form>
             </div>
@@ -884,7 +884,17 @@
     });
 });
 
+document.addEventListener("DOMContentLoaded", function() {
+    const parkInfoForm = document.querySelector('#reportParkInfoModal form');
+    const submitBtn = document.getElementById('submit-park-info-btn');
 
+    if (parkInfoForm && submitBtn) {
+        parkInfoForm.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+        });
+    }
+});
 
 </script>
 
