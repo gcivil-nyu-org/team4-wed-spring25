@@ -1,67 +1,69 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% load widget_tweaks %} {# 仍然需要加载 widget_tweaks 来给 reason 添加 form-control 类 #}
+{% load widget_tweaks %}
 
 {% block content %}
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-7">
 
-            <h2 class="text-center mb-4 fw-semibold">{% blocktrans with username=reported_user.username %}Report {{ username }}{% endblocktrans %}</h2>
+            <div class="card shadow-sm border">
+                <div class="card-body p-4">
 
-            {# 表单容器：移除 border 类，保留内边距、背景、圆角、阴影 #}
-            <form method="post" id="report-form" class="p-4 bg-light rounded-3 shadow-sm">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ next }}">
+                    <h2 class="text-center mb-4 fw-bold">
+                        {% blocktrans with username=reported_user.username %}Report {{ username }}{% endblocktrans %}
+                    </h2>
 
-                {# 类别选择区域 - 不再有内部边框 #}
-                <div class="mb-4">
-                    {# 标签稍作加粗并增加下边距 #}
-                    <p class="form-label fw-semibold mb-3">{{ form.category.label }}:</p>
-                    {# 直接排列单选按钮 #}
-                    {% for radio in form.category %}
-                    <div class="form-check mb-2"> {# 调整选项下方间距 #}
-                        {{ radio.tag }}
-                        <label class="form-check-label" for="{{ radio.id_for_label }}">
-                            {{ radio.choice_label }}
-                        </label>
-                    </div>
-                    {% endfor %}
-                    {% if form.category.errors %}
-                       <div class="text-danger small mt-2"> {# 错误提示位置调整 #}
-                           {{ form.category.errors|striptags }}
-                       </div>
-                    {% endif %}
-                </div>
-
-                {# 可选的分割线，如果觉得区域间需要更明确分隔 #}
-                {# <hr class="my-4"> #}
-
-                {# 详细原因区域 #}
-                <div class="mb-4">
-                     <label for="{{ form.reason.id_for_label }}" class="form-label fw-semibold">{{ form.reason.label }}:</label>
-                     {# reason 文本域应用 form-control 类 #}
-                     {{ form.reason|add_class:"form-control" }}
-                     {% if form.reason.errors %}
-                        <div class="text-danger small mt-1">
-                            {{ form.reason.errors|striptags }}
+                    <form method="post" id="report-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}"
+                        <div class="mb-4">
+                            <fieldset>
+                                <legend class="form-label fw-semibold fs-6 mb-3">{{ form.category.label }}</legend>
+                                <div class="border rounded p-3">
+                                    {% for radio in form.category %}
+                                    <div class="form-check mb-2">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </fieldset>
+                            {% if form.category.errors %}
+                               <div class="text-danger small mt-2">
+                                   {{ form.category.errors|striptags }}
+                               </div>
+                            {% endif %}
                         </div>
-                     {% endif %}
-                     <small class="form-text text-muted">{{ form.reason.help_text }}</small>
-                </div>
 
-                {# 提交按钮区域 #}
-                <div class="text-end mt-4"> {# 按钮组增加上边距 #}
-                    <button type="submit" class="btn btn-danger px-4 py-2"> {# 调整按钮内边距 #}
-                       {# 添加 Font Awesome 图标 (确保已加载) #}
-                       <i class="fas fa-paper-plane me-2"></i>
-                       {% trans "Submit Report" %}
-                    </button>
-                </div>
-            </form>
+                        <div class="mb-4">
+                             <label for="{{ form.reason.id_for_label }}" class="form-label fw-semibold">{{ form.reason.label }}</label>
+                             {{ form.reason|add_class:"form-control"|attr:"rows:4" }}
+                             {% if form.reason.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.reason.errors|striptags }}
+                                </div>
+                             {% endif %}
+                             {% if form.reason.help_text %}
+                                <small class="form-text text-secondary d-block mt-1">{{ form.reason.help_text }}</small>
+                             {% endif %}
+                        </div>
 
-        </div> {# End col #}
-    </div> {# End row #}
-</div> {# End container #}
+                        <div class="text-center mt-4 pt-2">
+                            <button type="submit" class="btn btn-danger btn-lg px-5">
+                               <i class="fas fa-paper-plane me-2"></i>
+                               {% trans "Submit Report" %}
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 {% endblock %}
