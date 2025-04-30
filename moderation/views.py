@@ -14,7 +14,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .models import ReportCategory
 from django.utils.translation import gettext_lazy as _
 from accounts.decorators import ban_protected
-from django.db.models import Count, Min, Max
 from moderation.models import UserReport
 from profiles.models import UserProfile
 
@@ -86,10 +85,9 @@ def dashboard(request):
         reverse=True,
     )
 
-     # Aggregate user reports
+    # Aggregate user reports
     reported_user_data = (
-        UserReport.objects
-        .values("user_being_reported")
+        UserReport.objects.values("user_being_reported")
         .annotate(
             report_count=Count("report_id"),
             latest_reported=Max("reported_time"),
@@ -102,16 +100,19 @@ def dashboard(request):
     for entry in reported_user_data:
         user = User.objects.get(id=entry["user_being_reported"])
         profile = UserProfile.objects.get(user=user)
-        reports = UserReport.objects.filter(user_being_reported=user).select_related("reporter")
-        reported_users.append({
-            "user": user,
-            "profile": profile,
-            "report_count": entry["report_count"],
-            "latest_reported": entry["latest_reported"],
-            "first_reported": entry["first_reported"],
-            "reports": reports,
-        })
-
+        reports = UserReport.objects.filter(user_being_reported=user).select_related(
+            "reporter"
+        )
+        reported_users.append(
+            {
+                "user": user,
+                "profile": profile,
+                "report_count": entry["report_count"],
+                "latest_reported": entry["latest_reported"],
+                "first_reported": entry["first_reported"],
+                "reports": reports,
+            }
+        )
 
     return render(
         request,
@@ -120,7 +121,7 @@ def dashboard(request):
             "reported_reviews": reported_reviews,
             "image_reports": image_reports,
             "removed_content": removed_content,
-            "reported_users": reported_users, 
+            "reported_users": reported_users,
         },
     )
 
