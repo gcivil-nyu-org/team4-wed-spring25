@@ -477,10 +477,51 @@
                     <tr><th>Users Checked In</th><td>{{ current_count }}</td></tr>
                     <tr><th>On Their Way</th><td>{{ on_the_way_count }}</td></tr>
                 </table>
+                <!-- Report Incorrect Park Info Button -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-sm btn-outline-danger btn-park-info-smaller" data-bs-toggle="modal" data-bs-target="#reportParkInfoModal">
+                        Info Report
+                    </button>                    
+                </div>
             </div>
         </div>
-    </div> <!-- end sidebar -->
-</div>
+    </div>
+</div>        
+
+        <!-- Report Incorrect Park Info Modal -->
+        <div class="modal fade" id="reportParkInfoModal" tabindex="-1" aria-labelledby="reportParkInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'report_park_info' park.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportParkInfoModalLabel">Report Incorrect Park Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                    <label for="new_dogruns_type" class="form-label">Correct Dog Runs Type:</label>
+                    <select class="form-select" name="new_dogruns_type" required>
+                        <option value="Off-Leash">Off-Leash</option>
+                        <option value="Run">Run</option>
+                    </select>
+                    </div>
+                    <div class="mb-3">
+                    <label for="new_accessible" class="form-label">Accessible:</label>
+                    <select class="form-select" name="new_accessible" required>
+                        <option value="True">Yes</option>
+                        <option value="False">No</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+                </form>
+            </div>
+            </div>
+        </div>
+
 
 
 <script>
@@ -1056,6 +1097,11 @@
         display: inline-block;
         transition: transform 0.2s ease;
     }
-
+    .btn-park-info-smaller {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        line-height: 1.2;
+        border-radius: 4px;
+    }
 </style>
 {% endblock %}

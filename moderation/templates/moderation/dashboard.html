@@ -48,6 +48,12 @@
                 <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ reported_users|length }}</span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="park-tab" data-bs-toggle="tab" data-bs-target="#park" type="button" role="tab" aria-controls="park" aria-selected="false">
+                Park Info Reports
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ park_reports|length }}</span>
+            </button>
+        </li>        
     </ul>
 
     <!-- Tab panes -->
@@ -537,12 +543,61 @@
                                     {% endfor %}
                                 </ul>
                             </div>
-
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
                 <p>No reported users.</p>
+            {% endif %}
+        </div>
+        <!-- Park Info Report -->
+        <div class="tab-pane fade" id="park" role="tabpanel" aria-labelledby="park-tab">
+            <h4 class="mb-3">Park Info Reports</h4>
+        
+            {% if park_reports %}
+                {% for report in park_reports %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Park: <a href="{{ report.park.detail_page_url }}">{{ report.park.display_name }}</a>
+                            </h5>
+                            <p class="mb-1"><strong>Reported by:</strong> {{ report.user.username }}</p>
+                            <p class="mb-1"><strong>Reported at:</strong> {{ report.submitted_at }}</p>
+                            <p class="mb-1"><strong>Current Type:</strong> {{ report.park.dogruns_type }}</p>
+                            <p class="mb-1"><strong>Suggested Type:</strong> {{ report.new_dogruns_type }}</p>
+                            <p class="mb-1"><strong>Current Accessible:</strong> 
+                                {% if report.park.accessible == "True" %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Suggested Accessible:</strong> 
+                                {% if report.new_accessible %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </p>
+        
+                            <form method="post" action="{% url 'moderation_action' %}" class="d-inline-block me-2 prevent-double-submit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve_park_report">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <button type="submit" class="btn btn-success btn-sm">Confirm Update</button>
+                            </form>
+        
+                            <form method="post" action="{% url 'moderation_action' %}" class="d-inline-block prevent-double-submit">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="dismiss_park_report">
+                                <input type="hidden" name="report_id" value="{{ report.id }}">
+                                <button type="submit" class="btn btn-secondary btn-sm">Dismiss</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No park info reports found.</p>
             {% endif %}
         </div>
     </div>
