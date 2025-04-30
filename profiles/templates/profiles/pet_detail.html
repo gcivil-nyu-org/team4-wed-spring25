@@ -48,10 +48,8 @@
 {% endblock %}
 
 {% block content %}
-    {% comment %} Only show the 'Back to Search' button if 'from_search=1' is in the URL query parameters {% endcomment %}
 {% if request.GET.from_search == '1' %}
     <div class="container mt-4 mb-3">
-        {# This link currently goes to a blank search page. Consider improving it later if needed. #}
         <a href="{% url 'profiles:search' %}" class="btn-back">
             &larr; Back to Search
         </a>
