@@ -46,7 +46,7 @@ def profile_view(request, username):
         )
     )
 
-    user_replies = Reply.objects.filter(user=profile_user)
+    user_replies = Reply.objects.filter(user=profile_user, is_deleted=False)
     user_images = ParkImage.objects.filter(user=profile_user, is_removed=False).filter(
         Q(review__isnull=True) | Q(review__is_deleted=False)
     )
