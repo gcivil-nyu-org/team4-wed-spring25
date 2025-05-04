@@ -158,6 +158,19 @@ class Reply(models.Model):
 
     is_deleted = models.BooleanField(default=False)
 
+    # Soft Delete fields
+    is_removed = models.BooleanField(default=False)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="removed_replies",
+    )
+
+    is_removed_permanently = models.BooleanField(default=False)
+
     def has_active_children(self):
         return self.children.filter(is_deleted=False).exists()
 

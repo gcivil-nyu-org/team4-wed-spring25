@@ -262,7 +262,7 @@ def park_detail(request, slug, id):
 
     images = ParkImage.objects.filter(
         park=park, is_removed=False, review__is_removed=False
-    )
+    ).filter(Q(review__isnull=False) & Q(review__is_deleted=False))
 
     # Prefetch only non-removed images for each review
     visible_images = Prefetch(
@@ -569,12 +569,23 @@ def delete_reply(request, reply_id):
 @ban_protected
 @login_required
 def report_reply(request, reply_id):
+
+    if not request.user.is_authenticated:
+        messages.error(request, "You must be logged in to report a review.")
+
     if request.method == "POST":
         reason = request.POST.get("reason", "").strip()
         reply = get_object_or_404(Reply, id=reply_id)
+
         if reply.user != request.user and reason:
-            ReplyReport.objects.create(reply=reply, user=request.user, reason=reason)
-            messages.success(request, "Reply reported successfully.")
+
+            if ReplyReport.objects.filter(reply=reply, user=request.user).exists():
+                messages.error(request, "You have already reported this reply before.")
+            else:
+                ReplyReport.objects.create(
+                    reply=reply, user=request.user, reason=reason
+                )
+                messages.success(request, "Reply reported successfully.")
         else:
             messages.error(request, "You cannot report your own reply.")
     return redirect(request.META.get("HTTP_REFERER", "/"))
