@@ -262,7 +262,7 @@ def park_detail(request, slug, id):
 
     images = ParkImage.objects.filter(
         park=park, is_removed=False, review__is_removed=False
-    )
+    ).filter(Q(review__isnull=False) & Q(review__is_deleted=False))
 
     # Prefetch only non-removed images for each review
     visible_images = Prefetch(
