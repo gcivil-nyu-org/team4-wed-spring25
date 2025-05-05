@@ -22,7 +22,7 @@
             <div class="d-flex justify-content-center bg-brown text-white py-3 rounded">
                 <div class="d-flex flex-column gap-1">
                     <h1 class="my-0">
-                        {{ park.display_name }}
+                        {{ park.display_name }}</h1>
                     <h5 class="d-flex my-0 gap-2" style="color: #ccc;">
                         {% if average_rating %}
                             <span>{{ average_rating|floatformat:1 }}</span>
@@ -66,7 +66,7 @@
                             </p>
                                 
                             {% if user.is_authenticated %}
-                            <div class="position-absolute top-0 end-0 mt-2 me-3 no-slide">
+                            <div class="position-absolute top-0 end-0 mt-2 me-3 no-slide" style="z-index: 6;">
 
                                     {% if img.user == user %}
                                     <!-- Delete Button -->
@@ -77,7 +77,9 @@
                                     {% else %}
                                     <!-- Report Button -->
                                         {% if img.id %}
-                                        <a href="#" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">Report</a>
+                                            <button type="button" class="report-image-btn" data-bs-toggle="modal" data-bs-target="#reportImageModal{{ img.id }}">
+                                                Report
+                                            </button>
                                         {% endif %}
                                     {% endif %}
                                 </div>
@@ -161,7 +163,7 @@
                             <!-- Star Rating System -->
                             <div class="stars mt-5 mb-5">
                                 {% for i in "12345" %}
-                                    <span class="star" data-value=" {{ i }}">
+                                    <span class="star" data-value="{{ i }}">
                                         <svg width="40" height="40">
                                             <use href="#star-icon" />
                                         </svg>
