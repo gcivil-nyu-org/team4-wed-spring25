@@ -3,6 +3,12 @@ import re
 from .models import UserProfile, PetProfile
 
 
+import re
+from django import forms
+from .models import UserProfile
+import phonenumbers
+from phonenumbers import NumberParseException
+
 class UserProfileForm(forms.ModelForm):
     BOROUGH_CHOICES = [
         ("", "Choose your location"),
@@ -21,11 +27,11 @@ class UserProfileForm(forms.ModelForm):
     )
     phone_number = forms.CharField(
         required=False,
-        max_length=15,
+        max_length=20,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "Optional",
+                "placeholder": "e.g., (123) 456-7890",
                 "id": "phone_number",
             }
         ),
@@ -57,11 +63,28 @@ class UserProfileForm(forms.ModelForm):
         }
 
     def clean_phone_number(self):
-        phone_number = self.cleaned_data.get("phone_number")
-        if phone_number and phone_number.strip():
-            if not re.fullmatch(r"^\d+$", phone_number.strip()):
-                raise forms.ValidationError("Phone numbers can only contain numbers!")
-        return phone_number
+        phone_number_str = self.cleaned_data.get("phone_number", "").strip()
+        if phone_number_str:
+            try:
+                parsed_number = phonenumbers.parse(phone_number_str, "US")
+
+                if not phonenumbers.is_valid_number(parsed_number):
+                    raise forms.ValidationError("Please enter a valid US phone number.")
+
+                national_number = phonenumbers.national_significant_number(parsed_number)
+                print(f"DEBUG: national_number is: {repr(national_number)}")
+                print(f"DEBUG: len(national_number) is: {len(national_number)}")
+
+                if len(national_number) != 10:
+                     raise forms.ValidationError("Please enter a valid 10-digit US phone number.")
+
+
+                return national_number
+
+            except NumberParseException:
+                raise forms.ValidationError("Invalid phone number format entered.")
+
+        return phone_number_str
 
 
 ALLOWED_BREEDS = [

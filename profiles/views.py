@@ -9,7 +9,8 @@ from parks.models import Review, Reply, ParkImage
 from django.db.models import Prefetch, Q, OuterRef, Subquery, CharField
 from django.db.models.functions import Cast
 from accounts.decorators import ban_protected
-
+from django.http import JsonResponse
+from django.urls import reverse
 
 @ban_protected
 @login_required
@@ -32,7 +33,6 @@ def profile_view(request, username):
         review__is_removed=False,
     ).values("image")[:1]
 
-    # Prefetch images per review
     image_qs = ParkImage.objects.filter(is_removed=False)
 
     user_reviews = (
@@ -71,7 +71,10 @@ def edit_profile(request):
         form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             form.save()
-            return redirect("profiles:profile", username=request.user.username)
+            redirect_url = reverse("profiles:profile", kwargs={'username': request.user.username})
+            return JsonResponse({'success': True, 'redirect_url': redirect_url})
+        else:
+            return JsonResponse(form.errors, status=400)
     else:
         form = UserProfileForm(instance=user_profile)
 
@@ -79,7 +82,6 @@ def edit_profile(request):
         "form": form,
         "object": user_profile,
     }
-
     return render(request, "profiles/edit_profile.html", context)
 
 
