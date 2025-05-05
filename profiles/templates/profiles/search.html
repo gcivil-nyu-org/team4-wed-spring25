@@ -413,10 +413,12 @@
                                         <div class="result-avatar">
                                              <span class="avatar-placeholder">{{ user.username|first|upper }}</span>
                                         </div>
-                                        <div class="result-info">
-                                            <span class="result-primary-info">{{ user.username }}</span>
-                                            {# <span class="result-secondary-info">Other info...</span> #}
-                                        </div>
+                                        <span class="result-primary-info">
+                                                {{ user.username }}
+                                                {% if user.userprofile and user.userprofile.name %}
+                                                    ({{ user.userprofile.name }})
+                                                {% endif %}
+                                            </span>
                                     </div>
                                 </a>
                             </li>

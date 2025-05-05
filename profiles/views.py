@@ -46,7 +46,7 @@ def profile_view(request, username):
         )
     )
 
-    user_replies = Reply.objects.filter(user=profile_user)
+    user_replies = Reply.objects.filter(user=profile_user, is_deleted=False)
     user_images = ParkImage.objects.filter(user=profile_user, is_removed=False).filter(
         Q(review__isnull=True) | Q(review__is_deleted=False)
     )
@@ -175,6 +175,7 @@ def pet_detail(request, username, pet_id):
 @login_required
 def search_view(request):
     query = request.GET.get("q", "")
+
     search_type = request.GET.get("type", "users")
     submitted_breed = request.GET.get("breed", "")
     min_age = request.GET.get("min_age")
@@ -236,10 +237,16 @@ def search_view(request):
         selected_breed_for_template = submitted_breed
 
     if search_type == "users":
-        user_results = User.objects.filter(username__icontains=query)
+        if query:
+            user_results = User.objects.filter(
+                Q(username__icontains=query) | Q(userprofile__name__icontains=query),
+                userprofile__is_banned=False,
+            ).distinct()
+        else:
+            user_results = User.objects.none()
 
     elif search_type == "pets":
-        pet_results = PetProfile.objects.all()
+        pet_results = PetProfile.objects.filter(owner__is_banned=False)
 
         if query:
             pet_results = pet_results.filter(name__icontains=query)
@@ -249,9 +256,15 @@ def search_view(request):
                 pet_results = pet_results.filter(breed=submitted_breed)
 
         if min_age:
-            pet_results = pet_results.filter(age__gte=int(min_age))
+            try:
+                pet_results = pet_results.filter(age__gte=int(min_age))
+            except (ValueError, TypeError):
+                pass
         if max_age:
-            pet_results = pet_results.filter(age__lte=int(max_age))
+            try:
+                pet_results = pet_results.filter(age__lte=int(max_age))
+            except (ValueError, TypeError):
+                pass
         if gender:
             pet_results = pet_results.filter(gender=gender)
         if has_photo:
@@ -269,5 +282,10 @@ def search_view(request):
             "user_results": user_results,
             "pet_results": pet_results,
             "breeds": breeds,
+            "submitted_breed": submitted_breed,
+            "min_age": min_age,
+            "max_age": max_age,
+            "gender": gender,
+            "has_photo": has_photo,
         },
     )

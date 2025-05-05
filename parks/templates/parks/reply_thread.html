@@ -8,6 +8,12 @@
                  class="rounded-circle"
                  style="width: 24px; height: 24px; object-fit: cover; filter: grayscale(100%);">
             <span class="fw-semibold text-muted">[deleted]</span>
+        {% elif reply.is_removed or reply.is_removed_permanently %}
+            <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
+                    alt="deleted avatar"
+                    class="rounded-circle"
+                    style="width: 24px; height: 24px; object-fit: cover; filter: grayscale(100%);">
+            <span class="fw-semibold text-muted">[removed]</span>
         {% else %}
             {% if reply.user.userprofile.is_banned %}
                 <img src="https://res.cloudinary.com/depkyxqbe/image/upload/v1744661155/default_user_llkafr.png"
@@ -39,12 +45,14 @@
     <p class="ms-1 text-muted">
         {% if reply.is_deleted %}
             <em>Comment deleted by user</em>
+        {% elif reply.is_removed or reply.is_removed_permanently%}
+            <em>Comment removed by admin</em>
         {% else %}
             {{ reply.text }}
         {% endif %}
     </p>
 
-    {% if not reply.is_deleted %}
+    {% if not reply.is_deleted and not reply.is_removed and not reply.is_removed_permanently%}
     <!-- Action Buttons -->
     <div class="ms-1 mb-2">
         {% if user.is_authenticated %}

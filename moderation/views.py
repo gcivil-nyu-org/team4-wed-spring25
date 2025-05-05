@@ -1,7 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
-from parks.models import Review, ImageReport, ReviewReport, ParkImage, ParkInfoReport
+from parks.models import (
+    Review,
+    ImageReport,
+    ReviewReport,
+    ParkImage,
+    ParkInfoReport,
+    ReplyReport,
+    Reply,
+)
 from django.db.models import Count, Min, Max, Prefetch
 from django.contrib import messages
 from django.utils import timezone
@@ -54,6 +62,21 @@ def dashboard(request):
         .prefetch_related("reports")
     )
 
+    reply_reports = (
+        Reply.objects.annotate(
+            report_count=Count("reports"),
+            first_reported=Min("reports__created_at"),
+            latest_reported=Max("reports__created_at"),
+        )
+        .filter(
+            report_count__gt=0,
+            # is_removed=False,
+            review__is_removed=False,
+        )
+        .select_related("user", "review", "parent_reply")
+        .prefetch_related("reports")
+    )
+
     # Removed Content Object
     removed_reviews = (
         Review.objects.filter(is_removed=True, is_deleted=False)
@@ -68,6 +91,10 @@ def dashboard(request):
         "user", "park", "review"
     )
 
+    removed_replies = Reply.objects.filter(is_removed=True).select_related(
+        "review", "user"
+    )
+
     # Tag each item with its type
     tagged_reviews = [
         {"type": "review", "content": review, "removed_at": review.removed_at}
@@ -77,10 +104,14 @@ def dashboard(request):
         {"type": "image", "content": image, "removed_at": image.removed_at}
         for image in removed_images
     ]
+    tagged_replies = [
+        {"type": "reply", "content": reply, "removed_at": reply.removed_at}
+        for reply in removed_replies
+    ]
 
     # Combine and sort by removed_at (descending)
     removed_content = sorted(
-        chain(tagged_reviews, tagged_images),
+        chain(tagged_reviews, tagged_images, tagged_replies),
         key=lambda x: x["removed_at"],
         reverse=True,
     )
@@ -126,6 +157,7 @@ def dashboard(request):
             "removed_content": removed_content,
             "reported_users": reported_users,
             "park_reports": park_reports,
+            "reply_reports": reply_reports,
         },
     )
 
@@ -211,7 +243,7 @@ def image_moderation_action(request):
 
     if action == "remove_image" and image.is_removed:
         messages.warning(request, "This image is already removed.")
-    elif action == "dismiss_report" and not reports.exists():
+    elif action == "dismiss_image_report" and not reports.exists():
         messages.warning(request, "There are no reports to dismiss.")
 
     if action == "remove_image":
@@ -221,13 +253,52 @@ def image_moderation_action(request):
         image.save()
         reports.delete()
         messages.success(request, "Image removed.")
-    elif action == "dismiss_report":
+    elif action == "dismiss_image_report":
         image.is_removed = False
         image.removed_at = None
         image.removed_by = None
         image.save()
         reports.delete()
         messages.success(request, "Image report dismissed.")
+    else:
+        messages.error(request, "Invalid Action")
+
+    return redirect("moderation_dashboard")
+
+
+@ban_protected
+@login_required
+def reply_moderation_action(request):
+    # Deny if not admin
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    action = request.POST.get("action")
+    reply = get_object_or_404(Reply, id=request.POST.get("reply_id"))
+    reports = ReplyReport.objects.filter(reply=reply)
+
+    if action == "remove_reply" and reply.is_removed:
+        messages.warning(request, "This reply is already removed.")
+    elif action == "dismiss_reply_report" and not reports.exists():
+        messages.warning(request, "There are no reports to dismiss.")
+
+    if action == "remove_reply":
+        reply.is_removed = True
+        reply.removed_at = timezone.now()
+        reply.removed_by = request.user
+        reply.save()
+        reports.delete()
+        messages.success(request, "Reply removed.")
+    elif action == "dismiss_reply_report":
+        reply.is_removed = False
+        reply.removed_at = None
+        reply.removed_by = None
+        reply.save()
+        reports.delete()
+        messages.success(request, "Reply report dismissed.")
     else:
         messages.error(request, "Invalid Action")
 
@@ -259,15 +330,19 @@ def removed_review_action(request):
         review.save()
         messages.success(request, "Review Restored")
     elif action == "delete_review":
-        messages.error(request, "Action not available at this time, review not removed")
-        # if review.replies.filter(is_deleted=False).exists():
-        #     review.is_deleted = True
-        #     review.text = ""
-        #     review.save()
-        # else:
-        #     # Delete associated images (if any), then delete the review
-        #     review.images.all().delete()
-        #     review.delete()
+        if review.replies.filter(is_deleted=False).exists():
+            # if review has replies, remove the text, set it to is_deleted
+            review.text = ""
+            review.is_deleted = True
+            review.is_removed = False
+            review.removed_by = None
+            review.removed_at = None
+            review.save()
+        else:
+            # Delete associated images (if any), then delete the review
+            review.images.all().delete()
+            review.delete()
+        messages.success(request, "Review Permanently Deleted")
     else:
         messages.error(request, "Invalid Action")
 
@@ -301,6 +376,46 @@ def removed_image_action(request):
     elif action == "delete_image":
         image.delete()
         messages.success(request, "Image Permanently Deleted")
+    else:
+        messages.error(request, "Invalid Action")
+
+    return redirect("moderation_dashboard")
+
+
+@ban_protected
+@login_required
+def removed_reply_action(request):
+    # Deny if not admin
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    action = request.POST.get("action")
+    reply = get_object_or_404(Reply, id=request.POST.get("reply_id"))
+
+    if action == "restore_reply" and not reply.is_removed:
+        messages.warning(
+            request, "This reply is not reported or has already been restored."
+        )
+
+    if action == "restore_reply":
+        reply.is_removed = False
+        reply.removed_by = None
+        reply.removed_at = None
+        reply.save()
+        messages.success(request, "Reply Restored")
+    elif action == "delete_reply":
+        reply.text = ""
+        reply.is_removed = False
+        reply.removed_by = None
+        reply.removed_at = None
+
+        reply.is_removed_permanently = True
+        reply.save()
+
+        messages.success(request, "Reply Permanently Deleted")
     else:
         messages.error(request, "Invalid Action")
 
