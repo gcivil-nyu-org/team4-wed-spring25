@@ -240,6 +240,16 @@
     .delete-image-btn:hover {
         background-color: rgba(0, 0, 0, 0.95);
     }
+
+    .btn-dark.rounded-circle {
+        background-color: rgba(0,0,0,0.6);
+        color: white;
+        border: none;
+    }
+    .btn-dark.rounded-circle:hover {
+        background-color: rgba(0,0,0,0.8);
+    }
+
 </style>
 {% endblock %}
 
@@ -510,13 +520,20 @@
             {% if user_images %}
                 <div class="d-flex flex-wrap gap-3">
                     {% for img in user_images %}
-                    <div class="position-relative" style="width: 180px;">
-                        <img src="{{ img.image.url|replace:'upload/,upload/w_300,q_auto,f_auto/' }}" class="img-thumbnail" style="height: 150px; object-fit: cover; border-radius: 10px;">
-                        <form method="POST" action="{% url 'delete_image' img.id %}" class="delete-form-image">
+                    <div class="position-relative" style="width: 180px; height: 150px; border-radius: 10px; overflow: hidden;">
+                        <img src="{{ img.image.url|replace:'upload/,upload/w_300,q_auto,f_auto/' }}" 
+                             class="img-thumbnail" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+    
+                        <form method="POST" action="{% url 'delete_image' img.id %}" 
+                              style="position: absolute; top: 8px; right: 8px;">
                             {% csrf_token %}
-                            <button type="submit" class="delete-image-btn" aria-label="Delete image">&times;</button>
+                            <button type="submit" class="btn btn-sm btn-dark rounded-circle" 
+                                    style="width: 28px; height: 28px; padding: 0; line-height: 1; font-size: 16px;">
+                                &times;
+                            </button>
                         </form>
-                    </div>                    
+                    </div>
                     {% endfor %}
                 </div>
             {% else %}
