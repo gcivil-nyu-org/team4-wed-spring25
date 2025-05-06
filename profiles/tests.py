@@ -82,14 +82,23 @@ class ProfileViewsTest(TestCase):
         self.client.login(username="testuser", password="testpass")
         update_data = {
             "location": "Brooklyn",
-            "phone_number": "9876543210",
+            "phone_number": "(929) 654-3210",
             "website": "https://newsite.com",
             "bio": "New bio text",
             "signature": "Paws up!",
         }
         response = self.client.post(self.edit_profile_url, update_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, self.profile_url)
+
+        self.assertEqual(response.status_code, 200)
+
+        json_response = response.json()
+        self.assertIn("success", json_response)
+        self.assertTrue(json_response["success"])
+        self.assertIn("redirect_url", json_response)
+
+        expected_redirect_url = self.profile_url
+        self.assertEqual(json_response["redirect_url"], expected_redirect_url)
+
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.location, "Brooklyn")
         self.assertEqual(self.profile.signature, "Paws up!")
@@ -213,10 +222,23 @@ class ProfileViewsTest(TestCase):
 
     def test_edit_profile_post_invalid(self):
         self.client.login(username="testuser", password="testpass")
-        response = self.client.post(self.edit_profile_url, {"phone_number": "123" * 20})
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "profiles/edit_profile.html")
-        self.assertContains(response, "form")
+        invalid_data = {
+            "location": "Brooklyn",
+            "phone_number": "invalid-phone",
+            "website": "https://newsite.com",
+            "bio": "New bio text",
+            "signature": "Paws up!",
+        }
+        response = self.client.post(self.edit_profile_url, invalid_data)
+
+        self.assertEqual(response.status_code, 400)
+
+        json_response = response.json()
+        self.assertIn("phone_number", json_response)
+        self.assertIsInstance(json_response["phone_number"], list)
+        self.assertIn(
+            "Invalid phone number format entered.", json_response["phone_number"]
+        )
 
     def test_add_pet_post_invalid(self):
         self.client.login(username="testuser", password="testpass")
@@ -304,4 +326,4 @@ class CustomFilterTests(TestCase):
 
     def test_replace_filter_no_match(self):
         result = replace("media/a", "upload/,upload/w_300/")
-        self.assertEqual(result, "media/a")  # nothing to replace
+        self.assertEqual(result, "media/a")
