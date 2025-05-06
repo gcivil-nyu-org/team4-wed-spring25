@@ -481,10 +481,20 @@
                 </table>
                 <!-- Report Incorrect Park Info Button -->
                 <div class="text-center mt-3">
-                    <button class="btn btn-sm btn-outline-danger btn-park-info-smaller" data-bs-toggle="modal" data-bs-target="#reportParkInfoModal">
-                        Info Report
-                    </button>                    
-                </div>
+                    {% if user.is_authenticated %}
+                        <!-- Logged-in users: trigger modal -->
+                        <button class="btn btn-sm btn-outline-danger btn-park-info-smaller"
+                                data-bs-toggle="modal" data-bs-target="#reportParkInfoModal">
+                            Info Report
+                        </button>
+                    {% else %}
+                        <!-- Not logged-in users: redirect to login -->
+                        <a href="{% url 'login' %}?next={{ request.path }}"
+                           class="btn btn-sm btn-outline-danger btn-park-info-smaller">
+                            Info Report
+                        </a>
+                    {% endif %}
+                </div>                
             </div>
         </div>
     </div>
@@ -897,6 +907,32 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+// Disable submit reply buttons when clicked
+const replyForms = document.querySelectorAll("form input[name='form_type'][value='submit_reply']");
+replyForms.forEach(input => {
+    const form = input.closest("form");
+    const button = form.querySelector("button[type='submit']");
+    form.addEventListener("submit", function () {
+        if (button) {
+            button.disabled = true;
+            button.innerText = "Submitting...";
+        }
+    });
+});
+
+// Disable delete reply buttons when clicked
+const deleteReplyForms = document.querySelectorAll("form[action^='/delete_reply/']");
+deleteReplyForms.forEach(form => {
+    const button = form.querySelector("button[type='submit']");
+    if (button) {
+        form.addEventListener("submit", function () {
+            button.disabled = true;
+            button.innerText = "Deleting...";
+        });
+    }
+});
+
 
 </script>
 
