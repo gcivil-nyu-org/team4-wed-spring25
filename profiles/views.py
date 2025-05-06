@@ -12,6 +12,7 @@ from accounts.decorators import ban_protected
 from django.http import JsonResponse
 from django.urls import reverse
 
+
 @ban_protected
 @login_required
 def profile_view(request, username):
@@ -71,8 +72,10 @@ def edit_profile(request):
         form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             form.save()
-            redirect_url = reverse("profiles:profile", kwargs={'username': request.user.username})
-            return JsonResponse({'success': True, 'redirect_url': redirect_url})
+            redirect_url = reverse(
+                "profiles:profile", kwargs={"username": request.user.username}
+            )
+            return JsonResponse({"success": True, "redirect_url": redirect_url})
         else:
             return JsonResponse(form.errors, status=400)
     else:

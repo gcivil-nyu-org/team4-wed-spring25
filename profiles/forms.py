@@ -1,13 +1,10 @@
-from django import forms
-import re
-from .models import UserProfile, PetProfile
+from .models import PetProfile
 
-
-import re
 from django import forms
 from .models import UserProfile
 import phonenumbers
 from phonenumbers import NumberParseException
+
 
 class UserProfileForm(forms.ModelForm):
     BOROUGH_CHOICES = [
@@ -71,13 +68,16 @@ class UserProfileForm(forms.ModelForm):
                 if not phonenumbers.is_valid_number(parsed_number):
                     raise forms.ValidationError("Please enter a valid US phone number.")
 
-                national_number = phonenumbers.national_significant_number(parsed_number)
+                national_number = phonenumbers.national_significant_number(
+                    parsed_number
+                )
                 print(f"DEBUG: national_number is: {repr(national_number)}")
                 print(f"DEBUG: len(national_number) is: {len(national_number)}")
 
                 if len(national_number) != 10:
-                     raise forms.ValidationError("Please enter a valid 10-digit US phone number.")
-
+                    raise forms.ValidationError(
+                        "Please enter a valid 10-digit US phone number."
+                    )
 
                 return national_number
 
@@ -115,6 +115,43 @@ ALLOWED_BREEDS = [
     "Shih Tzu",
     "Siberian Husky",
     "Yorkshire Terrier",
+    "Akita",
+    "Alaskan Malamute",
+    "Australian Cattle Dog",
+    "Australian Shepherd",
+    "Basenji",
+    "Belgian Malinois",
+    "Bernese Mountain Dog",
+    "Bichon Frise",
+    "Bloodhound",
+    "Cane Corso",
+    "Cavalier King Charles Spaniel",
+    "English Cocker Spaniel",
+    "English Setter",
+    "English Springer Spaniel",
+    "Finnish Spitz",
+    "Greyhound",
+    "Havanese",
+    "Irish Setter",
+    "Italian Greyhound",
+    "Jack Russell Terrier",
+    "Keeshond",
+    "Leonberger",
+    "Lhasa Apso",
+    "Mastiff",
+    "Newfoundland",
+    "Old English Sheepdog",
+    "Papillon",
+    "Rhodesian Ridgeback",
+    "Saint Bernard",
+    "Saluki",
+    "Shar Pei",
+    "Shetland Sheepdog",
+    "Staffordshire Bull Terrier",
+    "Vizsla",
+    "Weimaraner",
+    "West Highland White Terrier",
+    "Whippet",
     "Abyssinian",
     "American Shorthair",
     "Bengal",
@@ -128,6 +165,30 @@ ALLOWED_BREEDS = [
     "Scottish Fold",
     "Siamese",
     "Sphynx",
+    "Balinese",
+    "Chartreux",
+    "Cornish Rex",
+    "Devon Rex",
+    "Egyptian Mau",
+    "Havana Brown",
+    "Japanese Bobtail",
+    "Korat",
+    "LaPerm",
+    "Manx",
+    "Norwegian Forest Cat",
+    "Ocicat",
+    "Oriental Shorthair",
+    "Peterbald",
+    "Ragamuffin",
+    "Savannah",
+    "Selkirk Rex",
+    "Singapura",
+    "Snowshoe",
+    "Somali",
+    "Tonkinese",
+    "Turkish Angora",
+    "Turkish Van",
+    "Others",
 ]
 breeds = sorted(ALLOWED_BREEDS)
 
