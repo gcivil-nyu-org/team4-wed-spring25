@@ -140,11 +140,10 @@
                                         </label>
                                         {{ field }}
                                         {% if field.help_text %}<div id="{{ field.id_for_label }}_help" class="form-text">{{ field.help_text|safe }}</div>{% endif %}
-                                        {% if field.errors %}<div class="invalid-feedback d-block mt-1">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                                        <div class="invalid-feedback mt-1">
                                     </div>
                                     {% endif %}
                                 {% endfor %}
-                                <!-- Change Password Button -->
                                 <div class="text-center mt-3">
                                     <a href="{% url 'password_change_email' %}" class="btn btn-outline-secondary">
                                         Change Password
@@ -206,10 +205,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let croppedImageBlob = null;
     let currentModal = null;
 
-     if (cropModalElement) { try { currentModal = new bootstrap.Modal(cropModalElement); } catch (e) { console.error("Failed to init modal:", e); }} else { console.warn("Profile crop modal element not found!"); }
-     if (!imageInput) console.warn("Profile image input element not found!"); if (!previewImage) console.warn("Profile image preview element not found!"); if (!imageToCrop) console.warn("Image element inside modal not found!"); if (!cropAndSaveButton) console.warn("Crop button inside modal not found!"); if (!fileNameDisplay) console.warn("Filename display span not found!"); if (!profileForm) console.warn("Profile edit form element not found!"); if (!saveChangesBtn) console.warn("Save changes button not found!"); if (!cropperErrorDiv) console.warn("Cropper error div not found!");
-
-     if (imageInput) {
+    if (cropModalElement) { try { currentModal = new bootstrap.Modal(cropModalElement); }
+    catch (e) { console.error("Failed to init modal:", e); }}
+    else { console.warn("Profile crop modal element not found!"); }
+    if (imageInput) {
          imageInput.addEventListener('change', function (event) {
              const files = event.target.files;
              if (files && files.length > 0) {
@@ -332,125 +331,174 @@ document.addEventListener('DOMContentLoaded', function () {
                   cropper.destroy();
                   cropper = null;
               }
-              if (imageInput) imageInput.value = '';
           });
      }
 
     if (profileForm && saveChangesBtn) {
-    profileForm.addEventListener('submit', function (event) {
-        event.preventDefault();
+        profileForm.addEventListener('submit', function (event) {
+            event.preventDefault();
 
-        const phoneInput = document.getElementById('phone_number');
-        if (phoneInput && phoneInput.value.trim() !== '' && !/^\d+$/.test(phoneInput.value.trim())) {
-            alert("Phone numbers can only contain numbers!");
-            phoneInput.classList.add("is-invalid");
-            phoneInput.focus();
-            return;
-        } else if (phoneInput) {
-            phoneInput.classList.remove("is-invalid");
-        }
+            const phoneInput = document.getElementById('id_phone_number');
+            if (phoneInput && phoneInput.value.trim() !== '') {
 
-        saveChangesBtn.disabled = true;
-        if(spinner) spinner.classList.remove('d-none');
-
-        const formData = new FormData(profileForm);
-
-        if (croppedImageBlob && imageInput) {
-            let inputName = imageInput.getAttribute('name');
-            if (inputName && inputName.endsWith('_original')) {
-                inputName = inputName.replace('_original', '');
-            } else {
-                inputName = 'profile_picture';
-                console.warn(`Input name defaulting to '${inputName}'`);
             }
-            formData.delete(imageInput.getAttribute('name'));
-            formData.append(inputName, croppedImageBlob, 'profile_picture.png');
-            console.log(`Appending cropped blob with name: ${inputName}`);
-        } else {
-            if(imageInput) formData.delete(imageInput.getAttribute('name'));
 
-            const clearCheckbox = document.getElementById('{{ form.profile_picture.id_for_label }}-clear_id');
-            if (clearCheckbox && clearCheckbox.checked) {
-                formData.append('{{ form.profile_picture.html_name }}-clear', 'on');
-                console.log("Appending clear flag.");
-            } else {
-                 formData.delete('{{ form.profile_picture.html_name }}-clear');
-            }
-        }
 
-        fetch(profileForm.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log('Profile updated successfully!');
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    const profileUrl = "{% url 'profiles:profile' username=user.username %}";
-                    if (profileUrl) {
-                        window.location.href = profileUrl;
-                    } else {
-                        window.location.reload();
-                    }
+            saveChangesBtn.disabled = true;
+            if(spinner) spinner.classList.remove('d-none');
+
+             profileForm.querySelectorAll('.form-control, .form-select').forEach(input => {
+                input.classList.remove('is-invalid');
+                const wrapper = input.closest('.field-wrapper');
+                if (wrapper) {
+                    const errorDiv = wrapper.querySelector('.invalid-feedback');
+                    if (errorDiv) errorDiv.innerHTML = '';
                 }
+            });
+            const nonFieldErrorsArea = document.getElementById('nonFieldErrorsJs');
+            if (nonFieldErrorsArea) nonFieldErrorsArea.innerHTML = '';
+
+            const formData = new FormData(profileForm);
+
+            if (croppedImageBlob && imageInput) {
+                let inputName = imageInput.getAttribute('name');
+                if (inputName && inputName.endsWith('_original')) {
+                    inputName = inputName.replace('_original', '');
+                } else { inputName = 'profile_picture'; }
+                formData.delete(imageInput.getAttribute('name'));
+                formData.append(inputName, croppedImageBlob, 'profile_picture.png');
             } else {
-                console.error('Error updating profile:', response.status, response.statusText);
-                response.json().then(errors => {
-                    console.error('Server validation errors:', errors);
-                    let errorMsg = 'Error saving profile. Please check the form.\n';
-                    for (const field in errors) {
-                        errorMsg += `\n${field}: ${errors[field].join(', ')}`;
+                 if(imageInput) formData.delete(imageInput.getAttribute('name'));
+                 const clearCheckbox = document.getElementById('{{ form.profile_picture.id_for_label }}-clear_id');
+                 if (clearCheckbox && !clearCheckbox.checked) {
+                     formData.delete('{{ form.profile_picture.html_name }}-clear');
+                 } else if (clearCheckbox && clearCheckbox.checked) {
+                 }
+            }
+
+            fetch(profileForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Profile updated successfully!');
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        const profileUrl = "{% url 'profiles:profile' username=user.username %}";
+                        window.location.href = profileUrl || window.location.pathname;
                     }
-                    alert(errorMsg);
-                }).catch(() => {
-                    alert(`Error saving profile (${response.status}). Please try again.`);
-                });
+                } else {
+                    console.error('Error updating profile:', response.status, response.statusText);
+                    response.json().then(serverErrors => {
+                        console.log('Server validation errors:', serverErrors);
+
+                        profileForm.querySelectorAll('.form-control, .form-select').forEach(input => {
+                            input.classList.remove('is-invalid');
+                            const wrapper = input.closest('.field-wrapper');
+                            if (wrapper) {
+                                const errorDiv = wrapper.querySelector('.invalid-feedback');
+                                if (errorDiv) errorDiv.innerHTML = '';
+                            }
+                        });
+                         if (nonFieldErrorsArea) nonFieldErrorsArea.innerHTML = '';
+
+                        for (const fieldName in serverErrors) {
+                            if (serverErrors.hasOwnProperty(fieldName)) {
+                                const errorMessages = serverErrors[fieldName];
+
+                                if (fieldName === '__all__') {
+                                     if (nonFieldErrorsArea) {
+                                         let errorHtml = '<ul class="list-unstyled mb-0">';
+                                         errorMessages.forEach(msg => { errorHtml += `<li>${msg}</li>`; });
+                                         errorHtml += '</ul>';
+                                         nonFieldErrorsArea.innerHTML = errorHtml;
+                                         nonFieldErrorsArea.className = 'alert alert-danger';
+                                         nonFieldErrorsArea.classList.remove('d-none');
+                                    } else {
+                                        console.warn("Non-field errors:", errorMessages);
+                                        alert("Please correct the following general errors:\n- " + errorMessages.join("\n- "));
+                                    }
+                                } else {
+                                    const inputElement = profileForm.elements[fieldName];
+                                    if (inputElement) {
+                                        inputElement.classList.add('is-invalid');
+
+                                        const wrapper = inputElement.closest('.field-wrapper');
+                                        let errorDiv = null;
+                                        if (wrapper) {
+                                            errorDiv = wrapper.querySelector('.invalid-feedback');
+                                        }
+
+                                        if (errorDiv) {
+                                            errorDiv.innerHTML = errorMessages.join('<br>');
+                                        } else {
+                                            console.warn(`Could not find error div for field: ${fieldName}`);
+                                        }
+                                    } else {
+                                        console.warn(`Could not find form element for error field: ${fieldName}`);
+                                         if (nonFieldErrorsArea) {
+                                             nonFieldErrorsArea.innerHTML += `<p class="mb-1"><strong>${fieldName}:</strong> ${errorMessages.join(', ')}</p>`;
+                                             nonFieldErrorsArea.classList.remove('d-none');
+                                              if (!nonFieldErrorsArea.classList.contains('alert')) {
+                                                  nonFieldErrorsArea.className = 'alert alert-danger';
+                                              }
+                                         }
+                                    }
+                                }
+                            }
+                        }
+
+                    }).catch((parsingError) => {
+                        console.error("Error parsing server response:", parsingError);
+                        alert(`An unexpected error occurred (Status: ${response.status}). Please try again.`);
+                        profileForm.querySelectorAll('.form-control, .form-select').forEach(input => input.classList.remove('is-invalid'));
+                        if (nonFieldErrorsArea) nonFieldErrorsArea.innerHTML = '';
+
+                    });
+                    saveChangesBtn.disabled = false;
+                    if(spinner) spinner.classList.add('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Network error during profile update:', error);
+                alert('A network error occurred. Please check your connection and try again.');
                 saveChangesBtn.disabled = false;
                 if(spinner) spinner.classList.add('d-none');
-            }
-        })
-        .catch(error => {
-            console.error('Network error during profile update:', error);
-            alert('Network error occurred. Please try again.');
-            saveChangesBtn.disabled = false;
-            if(spinner) spinner.classList.add('d-none');
+            });
         });
-    });
-}   else {
+    } else {
          console.error("Profile form or save button not found, submit event listener not added.");
     }
 
-    
-    // Unsaved changes warning messages
     function formDataToObject(formData) {
         const obj = {};
-        for (const [key, value] of formData.entries()) {
-            obj[key] = value;
-        }
-        return obj;
+        for (const [key, value] of formData.entries()) { obj[key] = value; } return obj;
     }
-
     const originalData = formDataToObject(new FormData(profileForm));
     const backBtn = document.querySelector('.btn-back');
-
     if (backBtn) {
         backBtn.addEventListener('click', function (e) {
             let formChanged = false;
-            const fields = profileForm.querySelectorAll("input, textarea, select");
-            
-            fields.forEach(field => {
-                if (field.name !== "profile_picture_original" && field.name !== "profile_picture-clear" && field.value.trim() !== (originalData[field.name] || "").trim()) {
-                    formChanged = true;
-                }
-            });
+            const currentFormData = new FormData(profileForm);
+            for (const key in originalData) {
+                 if (key !== 'csrfmiddlewaretoken' && key !== 'profile_picture_original' && (currentFormData.get(key) || '') !== (originalData[key] || '')) {
+                    if (!(key === 'profile_picture-clear' && !currentFormData.has(key) && !originalData[key])) {
+                        console.log(`Change detected in field: ${key}, New: '${currentFormData.get(key)}', Old: '${originalData[key]}'`);
+                        formChanged = true;
+                        break;
+                    }
+                 }
+            }
+            if (croppedImageBlob) {
+                 formChanged = true;
+            }
 
             if (formChanged) {
-                // display warning
                 const confirmLeave = confirm("You have unsaved changes. Are you sure you want to leave?");
                 if (!confirmLeave) {
                     e.preventDefault();

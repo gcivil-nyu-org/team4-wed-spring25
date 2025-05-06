@@ -40,6 +40,12 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="replies-tab" data-bs-toggle="tab" data-bs-target="#replies" type="button" role="tab" aria-controls="replies" aria-selected="false">
+                Reported Replies
+                <span class="d-inline-flex justify-content-center align-items-center" style="background-color: #806056; color: white; border-radius: 50%; width: 24px; height: 24px; font-size: 16px;">{{ reply_reports|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="removed-tab" data-bs-toggle="tab" data-bs-target="#removed" type="button" role="tab" aria-controls="removed" aria-selected="false">Removed Content</button>
         </li>
         <li class="nav-item" role="presentation">
@@ -351,6 +357,174 @@
         </div>
 
 
+
+        <!-- Reported Replies Tab -->
+        <div class="tab-pane fade" id="replies" role="tabpanel" aria-labelledby="replies-tab">
+            {% if reply_reports %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Reported Replies</h4>
+                    <select id="replySortSelector" class="form-select w-auto">
+                        <option value="latest">Most Recent</option> 
+                        <option value="recent">Newest First Report</option>
+                        <option value="most-reported">Most Reported</option>
+                        <option value="oldest">Oldest First Report</option>
+                    </select>
+                </div>
+        
+                {% for reply in reply_reports %}
+                    <div class="reply-report-card card mb-3"
+                        data-reported-at="{{ reply.first_reported|date:'U' }}"
+                        data-latest-reported="{{ reply.latest_reported|date:'U' }}"
+                        data-report-count="{{ reply.report_count }}"
+                    >
+                        <div class="card-body py-4 px-3">
+                            <div class="d-flex flex-column gap-3">
+                                <!-- Report Metadata -->
+                                <div class="d-flex flex-column gap-2 border-bottom">
+                                    <div class="d-flex gap-3">
+                                        <span style="font-weight: bold; color: red;"> {{ reply.report_count }} {% if reply.report_count == 1 %} Report {% else %} Reports {% endif %}</span>
+                                        <span style="font-weight: bold;"> | </span>
+                                        <span class="text-dark fw-semibold">First Reported:</span>
+                                        <span class="text-secondary">{{ reply.first_reported|date:"F j, Y, h:i a" }}</span>
+                                    </div>
+        
+                                    <div>
+                                        <strong>Reasons:</strong>
+                                        <ul>
+                                            {% for r in reply.reports.all %}
+                                                <li class="list-group-item px-0 py-1">
+                                                    <div class="d-flex gap-2">
+                                                        <small class="text-muted">{{ r.created_at|date:"M d, Y, h:i A" }}</small>
+                                                        <span>
+                                                            <strong class="text-primary">{{ r.user.username }}</strong>
+                                                            {% if r.user.is_staff %}
+                                                                <span class="badge bg-danger">Admin</span>
+                                                            {% endif %}
+                                                        </span>
+                                                        <span>{{ r.reason }}</span>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+
+
+                                <!-- Reported Reply -->
+                                <div class="pb-4 border-bottom">
+                                    <strong >Reported Reply:</strong>
+                                    <!-- Card -->
+                                    <div class="border p-3 d-flex flex-column gap-2 mt-2 bg-light border-bottom" style="margin-bottom: 24px;">
+                                        <h6 class="card-title mb-1">Reply by <a class="text-danger fw-bold" href="{% url 'profiles:profile' reply.user.username %}">{{ reply.user.username }}</a> 
+                                            in <a href="{{ reply.review.park.detail_page_url }}" style="color: #6D4C41; font-weight: bold;">{{ reply.review.park.display_name }}</a> 
+                                        </h6>
+                                        
+                                        {% if reply.text %}
+                                            {{ reply.text }}
+                                        {% endif %}
+                                    </div>
+
+                                    {% if reply.parent_reply and not reply.parent_reply.is_deleted %}
+                                        <button class="btn btn-sm btn-outline-secondary toggle-parent" type="button">
+                                            Show Parent Reply
+                                        </button>
+
+                                        <div class="attached-review border p-3 d-flex flex-column gap-2 mt-2 bg-light d-none">
+                                            <div class="p-3 pt-0 d-flex flex-column gap-2 py-3 ">
+                                                <div class="review d-flex justify-content-between align-items-start">
+                                                    <div class="d-flex flex-column">
+                                                        <h6 class="card-title mb-1">Parent Reply by <a class="text-danger fw-bold" href="{% url 'profiles:profile' reply.parent_reply.user.username %}">{{ reply.parent_reply.user.username }}</a> 
+                                                            in <a href="{{ reply.review.park.detail_page_url }}" style="color: #6D4C41; font-weight: bold;">{{ reply.review.park.display_name }}</a> 
+                                                        </h6>
+                                                        {% if reply.parent_reply.text %}
+                                                            <div>{{ reply.parent_reply.text }}</div>
+                                                        {% endif %}                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Option to preview review -->
+                                    {% if reply.review and not reply.review.is_deleted and not reply.review.is_removed %}
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm btn-outline-secondary toggle-review" type="button">
+                                                Show Entire Review
+                                            </button>
+
+                                            <div class="attached-review border p-3 d-flex flex-column gap-2 mt-2 bg-light d-none">
+                                                <div class="p-3 pt-0 d-flex flex-column gap-2 py-3 ">
+                                                    <div class="review d-flex justify-content-between align-items-start">
+                                                        <div class="d-flex flex-column">
+                                                            <h6 class="card-title mb-1">Review by <a class="text-danger fw-bold" href="{% url 'profiles:profile' reply.review.user.username %}">{{ reply.review.user.username }}</a> 
+                                                                in <a href="{{ reply.review.park.detail_page_url }}" style="color: #6D4C41; font-weight: bold;">{{ reply.review.park.display_name }}</a> 
+                                                            </h6>
+                                                            <p class="d-flex gap-1 m-0">
+                                                                <span class="d-flex gap-0 align-items-center">
+                                                                    {% render_stars reply.review.rating 17 %}
+                                                                </span>
+                                                                <span class="text-muted float-end" style="font-size: 15px;">{{ reply.review.created_at|localtime|date:"Y-m-d H:i" }}</span>
+                                                            </p>
+
+                                                            {% if reply.review.text %}
+                                                                <div>{{ reply.review.text }}</div>
+                                                            {% endif %}
+                                    
+                                                            {% if reply.review.images.all %}
+                                                                <div class="scrollable-image-wrapper position-relative mt-2">
+                                                                    <div class="scrollable-image-inner d-flex overflow-auto" style="gap: 10px;">
+                                                                    {% for img in reply.review.images.all %}
+                                                                        <img 
+                                                                            data-src="{{ img.image.url|replace:'upload/,upload/w_200,q_auto,f_auto/' }}"
+                                                                            data-full="{{ img.image.url }}"
+                                                                            class="lazyload review-thumbnail"
+                                                                            data-review-id="{{ review.id }}"
+                                                                            alt="Review Image" 
+                                                                            style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                                                            loading="lazy" 
+                                                                        />
+                                                                    {% endfor %}
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                
+                                <!-- Action Buttons -->
+                                <div class="pt-2">
+                                    <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                        <form method="post" action="{% url 'reply_moderation_action' %}" class="prevent-double-submit">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_reply">
+                                            <input type="hidden" name="reply_id" value="{{ reply.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm action-button">Remove Reply</button>
+                                        </form>
+        
+                                        <form method="post" action="{% url 'reply_moderation_action' %}" class="prevent-double-submit">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="dismiss_reply_report">
+                                            <input type="hidden" name="reply_id" value="{{ reply.id }}">
+                                            <button type="submit" class="btn btn-success btn-sm action-button">Dismiss Report</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No reply reports.</p>
+            {% endif %}
+        </div>
+
+
         <!-- Removed Content Tab -->
         <div class="tab-pane fade" id="removed" role="tabpanel" aria-labelledby="removed-tab">
             {% if removed_content %}
@@ -370,9 +544,20 @@
                                         <strong>Removed at:</strong> {{ item.content.removed_at|date:"M d, Y, h:i A" }}
                                     </span>
                                 </div>
-                                <span class="d-flex badge bg-danger justify-content-center align-items-center" style="height: 25px;">
-                                    <span>Removed</span>
-                                </span>
+
+                                {% if item.type == 'review' %}
+                                    <span class="d-flex badge bg-primary justify-content-center align-items-center" style="height: 25px;">
+                                        <span>Review</span>
+                                    </span>
+                                {% elif item.type == 'image' %}
+                                    <span class="d-flex badge bg-info justify-content-center align-items-center" style="height: 25px;">
+                                        <span>Image</span>
+                                    </span>
+                                {% elif item.type == 'reply' %}
+                                    <span class="d-flex badge bg-warning justify-content-center align-items-center" style="height: 25px;">
+                                        <span>Reply</span>
+                                    </span>
+                                {% endif %}
                             </div>
 
                             {% if item.type == "review" %}
@@ -474,6 +659,37 @@
                                         <button type="submit" class="btn btn-outline-danger btn-sm action-button">Delete Permanently</button>
                                     </form>
                                 </div>
+                            {% elif item.type == "reply" %}
+                                <div class="pb-4 border-bottom">
+                                    <!-- Card -->
+                                    <div class="border p-3 d-flex flex-column gap-2 mt-2 bg-light" style="margin-bottom: 24px;">
+                                        <h6 class="card-title mb-1">Reply by <a class="text-danger fw-bold" href="{% url 'profiles:profile' item.content.user.username %}">{{ item.content.user.username }}</a> 
+                                            in <a href="{{ item.content.review.park.detail_page_url }}" style="color: #6D4C41; font-weight: bold;">{{ item.content.review.park.display_name }}</a> 
+                                        </h6>
+                                        
+                                        {% if item.content.text %}
+                                            {{ item.content.text }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-end gap-2 flex-wrap pt-2">
+                                    <form method="post" action="{% url 'removed_reply_action' %}" class="prevent-double-submit">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="restore_reply">
+                                        <input type="hidden" name="reply_id" value="{{ item.content.id }}">
+                                        <button type="submit" class="btn btn-success btn-sm action-button">Restore</button>
+                                    </form>
+            
+                                    <form method="post" action="{% url 'removed_reply_action' %}" class="prevent-double-submit">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_reply">
+                                        <input type="hidden" name="reply_id" value="{{ item.content.id }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm action-button">Delete Permanently</button>
+                                    </form>
+                                </div>
+                                
                             {% endif %}
                         </div>
                     </div>
@@ -482,6 +698,7 @@
                 <p class="text-muted">No removed content found.</p>
             {% endif %}
         </div>
+
         <!-- Reported Users Tab -->
         <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
             {% if reported_users %}
@@ -628,6 +845,13 @@
         }
 
 
+        // Run sort immediately on page load
+        sortReviews();
+
+        // Re-sort when selection changes
+        sortSelect.addEventListener("change", sortReviews);
+
+
 
         const imageSortSelect = document.getElementById("imageSortSelector");
         const imageContainer = document.getElementById("images");
@@ -656,23 +880,30 @@
 
 
 
-        // Run sort immediately on page load
-        sortReviews();
+        const replySortSelect = document.getElementById("replySortSelector");
+        const replyContainer = document.getElementById("replies");
+        const replyCards = Array.from(replyContainer.querySelectorAll(".reply-report-card"));
 
-        // Re-sort when selection changes
-        sortSelect.addEventListener("change", sortReviews);
+        function sortReplyReports() {
+            const sortBy = replySortSelect.value;
 
-        
-        document.querySelectorAll(".toggle-review").forEach(button => {
-            button.addEventListener("click", () => {
-                const review = button.nextElementSibling;
-                review.classList.toggle("d-none");
-                button.textContent = review.classList.contains("d-none") 
-                    ? "Show Entire Review" 
-                    : "Hide Entire Review";
+            const sorted = [...replyCards].sort((a, b) => {
+                if (sortBy === "most-reported") {
+                    return b.dataset.reportCount - a.dataset.reportCount;
+                } else if (sortBy === "oldest") {
+                    return a.dataset.reportedAt - b.dataset.reportedAt;
+                } else if (sortBy === "latest") {
+                    return b.dataset.latestReported - a.dataset.latestReported;
+                } else {
+                    return b.dataset.reportedAt - a.dataset.reportedAt;
+                }
             });
-        });
 
+            sorted.forEach(card => replyContainer.appendChild(card));
+        }
+
+        sortReplyReports();
+        replySortSelect.addEventListener("change", sortReplyReports);
     });
 </script>
 
@@ -796,6 +1027,37 @@
                 if (clickedButton) {
                     clickedButton.innerText = "Processing...";
                 }
+            });
+        });
+
+
+        document.querySelectorAll(".toggle-review").forEach(button => {
+            button.addEventListener("click", () => {
+                const review = button.nextElementSibling;
+                review.classList.toggle("d-none");
+                button.textContent = review.classList.contains("d-none") 
+                    ? "Show Entire Review" 
+                    : "Hide Entire Review";
+            });
+        });
+
+        document.querySelectorAll(".toggle-reply-review").forEach(button => {
+            button.addEventListener("click", () => {
+                const review = button.nextElementSibling;
+                review.classList.toggle("d-none");
+                button.textContent = review.classList.contains("d-none") 
+                    ? "Show Entire Review" 
+                    : "Hide Entire Review";
+            });
+        });
+
+        document.querySelectorAll(".toggle-parent").forEach(button => {
+            button.addEventListener("click", () => {
+                const review = button.nextElementSibling;
+                review.classList.toggle("d-none");
+                button.textContent = review.classList.contains("d-none") 
+                    ? "Show Parent Reply" 
+                    : "Hide Parent Reply";
             });
         });
     });

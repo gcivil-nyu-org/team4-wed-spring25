@@ -8,7 +8,11 @@ from parks.models import (
     ImageReport,
     ParkImage,
     ParkInfoReport,
+    Reply,
+    ReplyReport,
 )
+
+from moderation.models import UserReport
 
 from django.utils import timezone
 
@@ -170,7 +174,7 @@ class ModerationTests(TestCase):
 
         res = self.client.post(
             reverse("image_moderation_action"),
-            {"action": "dismiss_report", "image_id": image.id},
+            {"action": "dismiss_image_report", "image_id": image.id},
             follow=True,
         )
 
@@ -289,7 +293,7 @@ class ModerationImageTests(TestCase):
         self.client.login(username="admin", password="pass")
         res = self.client.post(
             reverse("image_moderation_action"),
-            {"action": "dismiss_report", "image_id": self.image.id},
+            {"action": "dismiss_image_report", "image_id": self.image.id},
         )
         self.assertRedirects(res, reverse("moderation_dashboard"))
         self.image.refresh_from_db()
@@ -535,3 +539,102 @@ class ParkInfoReportModerationTests(TestCase):
         self.assertTrue(
             ParkInfoReport.objects.filter(id=self.report.id).exists()
         )  # not deleted
+
+
+class ReplyModerationTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="pass", is_staff=True
+        )
+        self.user = User.objects.create_user(username="user", password="pass")
+        self.park = DogRunNew.objects.create(
+            id=1,
+            prop_id="rp1",
+            name="Reply Park",
+            address="456 Dog St",
+            dogruns_type="All",
+            accessible="Yes",
+            display_name="Reply Park",
+            slug="reply-park",
+        )
+        self.review = Review.objects.create(
+            park=self.park, user=self.user, text="Review for reply", rating=3
+        )
+        self.reply = Reply.objects.create(
+            review=self.review, user=self.user, text="Offensive reply"
+        )
+
+    def test_remove_reply_action(self):
+        self.client.login(username="admin", password="pass")
+        ReplyReport.objects.create(reply=self.reply, user=self.admin, reason="Spam")
+        res = self.client.post(
+            reverse("reply_moderation_action"),
+            {"action": "remove_reply", "reply_id": self.reply.id},
+        )
+        self.assertRedirects(res, reverse("moderation_dashboard"))
+        self.reply.refresh_from_db()
+        self.assertTrue(self.reply.is_removed)
+
+    def test_dismiss_reply_report_action(self):
+        self.client.login(username="admin", password="pass")
+        ReplyReport.objects.create(reply=self.reply, user=self.admin, reason="Spam")
+        self.reply.is_removed = True
+        self.reply.save()
+        res = self.client.post(
+            reverse("reply_moderation_action"),
+            {"action": "dismiss_reply_report", "reply_id": self.reply.id},
+        )
+        self.assertRedirects(res, reverse("moderation_dashboard"))
+        self.reply.refresh_from_db()
+        self.assertFalse(self.reply.is_removed)
+        self.assertEqual(ReplyReport.objects.count(), 0)
+
+    def test_reply_action_requires_post(self):
+        self.client.login(username="admin", password="pass")
+        res = self.client.get(reverse("reply_moderation_action"))
+        self.assertEqual(res.status_code, 405)
+
+    def test_reply_action_denied_for_non_admin(self):
+        self.client.login(username="user", password="pass")
+        res = self.client.post(
+            reverse("reply_moderation_action"),
+            {"action": "remove_reply", "reply_id": self.reply.id},
+        )
+        self.assertEqual(res.status_code, 403)
+
+    def test_invalid_reply_action(self):
+        self.client.login(username="admin", password="pass")
+        res = self.client.post(
+            reverse("reply_moderation_action"),
+            {"action": "invalid", "reply_id": self.reply.id},
+        )
+        self.assertRedirects(res, reverse("moderation_dashboard"))
+
+
+class UserReportTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="pass", is_staff=True
+        )
+        self.user = User.objects.create_user(username="user", password="pass")
+        self.reporter = User.objects.create_user(username="reporter", password="pass")
+
+    def test_dismiss_user_report(self):
+        self.client.login(username="admin", password="pass")
+        UserReport.objects.create(
+            user_being_reported=self.user, reporter=self.reporter, reason="Spam"
+        )
+        res = self.client.post(
+            reverse("dismiss_user_report"), {"user_id": self.user.id}
+        )
+        self.assertRedirects(res, reverse("moderation_dashboard"))
+        self.assertEqual(UserReport.objects.count(), 0)
+
+    def test_ban_user_action(self):
+        self.client.login(username="admin", password="pass")
+        res = self.client.post(reverse("ban_user"), {"user_id": self.user.id})
+        self.assertRedirects(res, reverse("moderation_dashboard"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.userprofile.is_banned)
